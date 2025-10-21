@@ -56,9 +56,9 @@ FROM alpine:${ALPINE_VERSION} AS runner
 # Replace alpine repository source cdn; Add GNU gfortran library
 # RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
 # RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
-RUN \
-    apk update && apk upgrade \
-    && apk add --no-cache libgfortran
+# RUN \
+#     apk update && apk upgrade \
+#     && apk add --no-cache libgfortran
 
 # copy entrypoint to set Intel environment before running this container
 COPY docker/entrypoint_alpine.sh /entrypoint.sh

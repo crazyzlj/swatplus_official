@@ -92,20 +92,20 @@ LABEL maintainer="Liang-Jun Zhu <zlj@lreis.ac.cn>"
 
 # install Intel GPG key and the runtimes of Intel Fortran and gfortran
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends wget gpg \
-    ca-certificates \
-    libgfortran5 \
-    bash \
-    && \
-    wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
-        | gpg --dearmor | tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null \
-    && echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" \
-        | tee /etc/apt/sources.list.d/oneAPI.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends intel-oneapi-runtime-fortran \
-    && apt-get purge -y wget gpg ca-certificates \
-    && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && apt-get install -y --no-install-recommends wget gpg \
+#     ca-certificates \
+#     libgfortran5 \
+#     bash \
+#     && \
+#     wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+#         | gpg --dearmor | tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null \
+#     && echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" \
+#         | tee /etc/apt/sources.list.d/oneAPI.list \
+#     && apt-get update \
+#     && apt-get install -y --no-install-recommends intel-oneapi-runtime-fortran \
+#     && apt-get purge -y wget gpg ca-certificates \
+#     && apt-get autoremove -y \
+#     && rm -rf /var/lib/apt/lists/*
 
 # copy entrypoint to set Intel environment before running this container
 COPY docker/entrypoint.sh /entrypoint.sh
