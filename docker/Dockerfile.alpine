@@ -1,11 +1,16 @@
 ##
-# crazyzlj/swatplus:alpine-xx.xx.xx
+# crazyzlj/swatplus:alpine-<SWATPLUSVER>
 #
 # Usage: 
 #   > cd <path/to/swatplus_official>
-#   > docker build -t <tag> -f docker/Dockerfile.alpine .
-#   or build and push for amd64 and arm64 platforms simultanously
-#   > docker buildx build --platform linux/amd64,linux/arm64 --push -t <tag> -f docker/Dockerfile.alpine .
+#   # Option 1: Specify SWAT+ version mannually
+#   > docker build -t crazyzlj/swatplus:alpine-61.0.1 --build-arg SWATPLUSVER=61.0.1 -f docker/Dockerfile.alpine .
+#   # Option 2: Read SWAT+ version from the "VERSION" file
+#   #  Bash/Zsh/sh (Linux/macOS)
+#   > docker build -t crazyzlj/swatplus:alpine-$(cat VERSION) --build-arg SWATPLUSVER=$(cat VERSION) -f docker/Dockerfile.alpine .
+#   #  PowerShell (Windows)
+#   > docker build -t "crazyzlj/swatplus:alpine-$(Get-Content VERSION)" --build-arg "SWATPLUSVER=$(Get-Content VERSION)" -f docker/Dockerfile.alpine .
+#
 #
 # Copyright 2025 Liang-Jun Zhu <zlj@lreis.ac.cn>
 
@@ -26,13 +31,21 @@ RUN \
 WORKDIR /swatplus_official
 COPY . .
 
-# # Build for release, the executable name will be swatplus-61.0.2.11-gnu-lin_x86_64-Rel
-ARG TAG=61.0.2.11
+# # Build for release, the executable name will be swatplus-<SWATPLUSVER>-gnu-lin_x86_64-Rel/Dbg
+ARG SWATPLUSVER
 ARG INSTALL_DIR=/swatplus_official/dist
+
 RUN cd /swatplus_official \
-    && mkdir build \
-    && cd build \
-    && cmake .. -DCMAKE_BUILD_TYPE=Release -DTAG=${TAG} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+    && mkdir build_gfortran_rel \
+    && cd build_gfortran_rel \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_Fortran_COMPILER=gfortran -DTAG=${SWATPLUSVER} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+    && make -j 4 \
+    && make install \
+    && cd .. \
+    && \
+    mkdir build_gfortran_dbg \
+    && cd build_gfortran_dbg \
+    && cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_Fortran_COMPILER=gfortran -DTAG=${SWATPLUSVER} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
     && make -j 4 \
     && make install \
     && cd ..
@@ -47,6 +60,21 @@ RUN \
     apk update && apk upgrade \
     && apk add --no-cache libgfortran
 
+# copy entrypoint to set Intel environment before running this container
+COPY docker/entrypoint_alpine.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Order layers starting with less frequently varying ones
+ARG SWATPLUSVER
 ARG INSTALL_DIR=/swatplus_official/dist
-COPY --from=builder ${INSTALL_DIR}/bin/ /usr/bin/
+COPY --from=builder ${INSTALL_DIR}/bin/ /usr/local/bin/
+
+# set work directory if necessory
+#WORKDIR /data
+
+# set Intel environment
+ENTRYPOINT ["/entrypoint.sh"]
+
+# run swatplus compiled by Intel, by default
+ENV SWATPLUSEXEC="swatplus-${SWATPLUSVER}-gnu-lin_x86_64-Rel"
+CMD ["${SWATPLUSEXEC}"]
