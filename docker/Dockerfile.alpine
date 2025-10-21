@@ -1,0 +1,52 @@
+##
+# crazyzlj/swatplus:alpine-xx.xx.xx
+#
+# Usage: 
+#   > cd <path/to/swatplus_official>
+#   > docker build -t <tag> -f docker/Dockerfile.alpine .
+#   or build and push for amd64 and arm64 platforms simultanously
+#   > docker buildx build --platform linux/amd64,linux/arm64 --push -t <tag> -f docker/Dockerfile.alpine .
+#
+# Copyright 2025 Liang-Jun Zhu <zlj@lreis.ac.cn>
+
+# Use alpine as the build container
+ARG ALPINE_VERSION=3.22
+FROM alpine:${ALPINE_VERSION} AS builder
+
+LABEL maintainer="Liang-Jun Zhu <zlj@lreis.ac.cn>"
+
+# Replace alpine repository source cdn to accelarate access speed; Setup build environment
+# RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
+# RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+RUN \
+    apk update && apk upgrade \
+    && apk add --no-cache cmake gfortran make musl-dev
+
+# Copy source directory
+WORKDIR /swatplus_official
+COPY . .
+
+# # Build for release, the executable name will be swatplus-61.0.2.11-gnu-lin_x86_64-Rel
+ARG TAG=61.0.2.11
+ARG INSTALL_DIR=/swatplus_official/dist
+RUN cd /swatplus_official \
+    && mkdir build \
+    && cd build \
+    && cmake .. -DCMAKE_BUILD_TYPE=Release -DTAG=${TAG} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+    && make -j 4 \
+    && make install \
+    && cd ..
+
+# # Build final image
+FROM alpine:${ALPINE_VERSION} AS runner
+
+# Replace alpine repository source cdn; Add GNU gfortran library
+# RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
+# RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+RUN \
+    apk update && apk upgrade \
+    && apk add --no-cache libgfortran
+
+# Order layers starting with less frequently varying ones
+ARG INSTALL_DIR=/swatplus_official/dist
+COPY --from=builder ${INSTALL_DIR}/bin/ /usr/bin/
