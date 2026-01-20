@@ -14,6 +14,8 @@
       
       implicit none  
       
+      external :: soil_phys_init, soils_test_adjust, layersplit
+      
 
       integer :: msoils = 0       !none          !ending of loop
       integer :: isol = 0         !none          |counter
@@ -22,6 +24,7 @@
       integer :: j = 0            !none          |counter
       integer :: nly = 0          !              |end of loop
       integer :: ly = 0           !none          |counter
+      integer :: npl = 0          !none          |counter
       integer :: csld = 0         !mm            |current custom soil layer depth in millimeters
       integer :: pcd = 0          !mm            |previous custom depth in millimeters
       integer :: prev_depth = 0   !mm            |previous custom depth in millimeters
@@ -42,12 +45,7 @@
       real :: sum_usle_k = 0.     !              |temporary sum to do weighted average with 
       real :: sum_ec = 0.         !              |temporary sum to do weighted average with 
       real :: sum_cal = 0.        !              |temporary sum to do weighted average with 
-      real :: sum_ph = 0.         !              |temporary sum to do weighted average with 
-      real :: cbn_ltxbd = 0.       !              |Layer thickness time bulk density of that layer 
-      real :: cbn_ltxbd_sum = 0.   !              |Sum of layer thickness times bulk density
-      real :: cbn_wsum = 0.       !              |Temporary sum to do carbon weighted average sum 
-      real :: cbn_wavg = 0.       !              |weighted average of soil carbon
-      real :: cbn_adjust_frac = 0. !             |computed  weigted average adjustment factor for soil carbon
+      real :: sum_ph = 0.         !              |temporary sum to do weighted average with   
       logical :: i_exist          !none          |check to determine if a file exists
       character (len=500) :: header = "" !       |header of file
       character (len=80) :: titldum = "" !       |title of file
@@ -351,10 +349,12 @@
    
         !! allocate soil1 arrays - carbon/nutrients
         nly = soil(ihru)%nly
+        npl = pcom(ihru)%npl
         !allocate (cs_soil(ihru)%ly(nly))
         allocate (soil1(ihru)%sw(nly), source = 0.)
         allocate (soil1(ihru)%cbn(nly), source = 0.)
         allocate (soil1(ihru)%sed(nly))
+        allocate (soil1(ihru)%rsd_tot(nly))
         allocate (soil1(ihru)%mn(nly))
         allocate (soil1(ihru)%mp(nly))
         allocate (soil1(ihru)%tot(nly))
@@ -367,7 +367,6 @@
         allocate (soil1(ihru)%org_flx_cum_lr(nly))
         allocate (soil1(ihru)%hact(nly))
         allocate (soil1(ihru)%hsta(nly))
-        allocate (soil1(ihru)%rsd(nly))
         allocate (soil1(ihru)%str(nly))
         allocate (soil1(ihru)%lig(nly))
         allocate (soil1(ihru)%meta(nly))
@@ -385,7 +384,6 @@
         allocate (soil1_init(ihru)%seq(nly))
         allocate (soil1_init(ihru)%hact(nly))
         allocate (soil1_init(ihru)%hsta(nly))
-        allocate (soil1_init(ihru)%rsd(nly))
         allocate (soil1_init(ihru)%str(nly))
         allocate (soil1_init(ihru)%lig(nly))
         allocate (soil1_init(ihru)%meta(nly))
@@ -398,13 +396,4 @@
       end do
 
       return
-    end subroutine soils_init
-      
-      
-      
-      
-      
-      
-      
-      
-      
+    end subroutine soils_init     

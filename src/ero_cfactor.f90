@@ -34,27 +34,27 @@
       
       implicit none
 
-      integer :: j = 0      !none          |HRU number
-      integer :: ipl = 0    !none          |sequential plant number
-      integer :: idp = 0    !none          |plant number in data file - pldb
-      real :: c = 0.        !              |
-      real :: ab_gr_t = 0.  !tons          |above ground biomass of each plant
-      real :: rsd_pctcov = 0. !              |percent of cover by residue
-      real :: rsd_covfact = 0.!              |residue cover factor
-      real :: can_covfact = 0.!              |canopy cover factor
-      real :: can_frcov = 0.  !              |fraction of canopy cover
-      real :: rsd_sumfac = 0. !              |sum of residue cover factor by plant
-      real :: grnd_sumfac = 0.!              |ground cover factor for each plant
-      real :: grnd_covfact = 0.!              |sum of plant ground cover factor by plant
-      real :: bio_covfac = 0.
-      real :: cover = 0.    !kg/ha         |soil cover - sum of residue and biomass
+      integer :: j = 0              !none          |HRU number
+      integer :: ipl = 0            !none          |sequential plant number
+      integer :: idp = 0            !none          |plant number in data file - pldb
+      real :: c = 0.                !              |
+      real :: ab_gr_t = 0.          !tons          |above ground biomass of each plant
+      real :: rsd_pctcov = 0.       !              |percent of cover by residue
+      real :: rsd_covfact = 0.      !              |residue cover factor
+      real :: can_covfact = 0.      !              |canopy cover factor
+      real :: can_frcov = 0.        !              |fraction of canopy cover
+      real :: rsd_sumfac = 0.       !              |sum of residue cover factor by plant
+      real :: grnd_sumfac = 0.      !              |ground cover factor for each plant
+      real :: grnd_covfact = 0.     !              |sum of plant ground cover factor by plant
+      real :: cover = 0.            !kg/ha         |soil cover - sum of residue and biomass
+      
       j = ihru
 
       bsn_cc%cfac = 1
       !! HRU sediment calculations
       if (bsn_cc%cfac == 0) then
         !! old method using minimum c factor (average of each plant in community)
-        cover = pl_mass(j)%ab_gr_com%m + soil1(j)%rsd(1)%m
+        cover = pl_mass(j)%ab_gr_com%m + pl_mass(j)%rsd_tot%m
         if (pcom(j)%npl > 0) then
           c = Exp((-.2231 - cvm_com(j)) * Exp(-.00115 * cover) + cvm_com(j))
         else
@@ -67,7 +67,7 @@
       else
         !! new method using residue and biomass cover
         grnd_sumfac = 0.
-        rsd_sumfac = pldb(idp)%rsd_pctcov * (soil1(j)%rsd(1)%m +1.) / 1000.
+        rsd_sumfac = pldb(idp)%rsd_pctcov * (pl_mass(j)%rsd_tot%m +1.) / 1000.
         do ipl = 1, pcom(j)%npl
           idp = pcom(j)%plcur(ipl)%idplt
           if (pl_mass(j)%ab_gr(ipl)%m > 1.e-6) then
@@ -101,7 +101,7 @@
         c = Max(1.e-10, rsd_covfact * can_covfact * grnd_covfact)
         
         !! newer method using residue and biomass cover
-        rsd_sumfac = (soil1(j)%rsd(1)%m +1.) / 1000.
+        rsd_sumfac = (pl_mass(j)%rsd_tot%m +1.) / 1000.
         grnd_sumfac = 0.
         can_covfact = 10000.
         do ipl = 1, pcom(j)%npl
@@ -123,7 +123,7 @@
         
         !! erosion output variables
         ero_output(j)%ero_d%c = c
-        ero_output(j)%ero_d%rsd_m = soil1(j)%rsd(1)%m
+        ero_output(j)%ero_d%rsd_m = pl_mass(j)%rsd_tot%m
         ero_output(j)%ero_d%rsd_pctcov = rsd_pctcov
         ero_output(j)%ero_d%rsd_cfac = rsd_covfact
         ero_output(j)%ero_d%can_lai3 = can_frcov

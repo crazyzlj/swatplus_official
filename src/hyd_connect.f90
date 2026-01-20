@@ -12,9 +12,11 @@
       use constituent_mass_module
       use ru_module
       use basin_module
-      use gwflow_module, only: nat_model
       
       implicit none
+      
+      external :: aqu2d_read, dr_db_read, gwflow_chan_read, gwflow_read, hyd_read_connect, overbank_read, &
+                  recall_read, recall_read_cs, recall_read_salt, ru_read, ru_read_elements
 
       integer :: eof = 0              !           |end of file
       integer :: imax = 0             !none       |determine max number for array (imax) and total number in file
@@ -158,10 +160,7 @@
                 
       !read connect file for recalls
       if (sp_ob%recall > 0) then
-        call hyd_read_connect(in_con%rec_con, "recall  ", sp_ob1%recall, sp_ob%recall, hd_tot%recall, 1) 
-        call recall_read
-        call recall_read_salt !rtb salt
-        call recall_read_cs !rtb cs
+        call hyd_read_connect(in_con%rec_con, "recall  ", sp_ob1%recall, sp_ob%recall, hd_tot%recall, 1)
       end if
                 
       !read connect file for export coefficients

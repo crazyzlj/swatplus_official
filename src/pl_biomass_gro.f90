@@ -16,6 +16,8 @@
       
       implicit none 
       
+      external :: pl_nup, pl_pup, pl_tstr, salt_uptake, cs_uptake
+      
       integer :: j = 0          !none               |HRU number
       real :: ruedecl = 0.      !none               |decline in radiation use efficiency for the
                                 !                   |plant
@@ -140,7 +142,7 @@
           if (pcom(j)%plstr(ipl)%reg > 1.) pcom(j)%plstr(ipl)%reg = 1.
 
           pl_mass_up%m = bioday * pcom(j)%plstr(ipl)%reg
-          pl_mass_up%c = 0.42 * bioday * pcom(j)%plstr(ipl)%reg
+          pl_mass_up%c = 0.42 * pl_mass_up%m
           hpw_d(j)%bm_grow = hpw_d(j)%bm_grow + pl_mass_up%m
           hpw_d(j)%c_gro = hpw_d(j)%c_gro + pl_mass_up%c
                 
