@@ -48,7 +48,7 @@
       use constituent_mass_module
       use soil_module
       use basin_module
-      use gwflow_module, only : gwflow_percsol,gw_solute_flag,hru_soil
+      use gwflow_module, only : gwflow_percsol,gw_soil_flag,gw_solute_flag,hru_soil
       
       implicit none
       
@@ -56,7 +56,7 @@
       integer :: jj = 0
       integer :: isalt = 0
       integer :: sol_index = 0
-      integer :: gw_soil_flag = 0
+      !integer :: gw_soil_flag = 0
       real :: cosalt = 0.
       real :: cosurfsalt = 0.
       real :: percsaltlyr(8) = 0.
