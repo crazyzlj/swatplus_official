@@ -89,5 +89,8 @@
           endif
     end if     ! time%step > 1
 
+      !if (j == 1735) then
+      !    print *, "after sq_canopyinit, precip_eff, canostro", precip_eff, canstor(j)
+      !end if
       return
       end subroutine sq_canopyint

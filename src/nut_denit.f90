@@ -21,5 +21,9 @@
               soil1(j)%tot(k)%c))
       soil1(j)%mn(k)%no3 = max(0.0001,soil1(j)%mn(k)%no3 - wdn)
 
+      !if (j==1735) then
+      !  print *, "nut_denit, soil1_mn_no3: ", soil1(j)%mn(k)%no3
+      !endif
+
       return
       end subroutine nut_denit

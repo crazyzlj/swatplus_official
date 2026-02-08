@@ -116,6 +116,9 @@
 
 !! calculate temperature for each layer on current day
       xx = 0.
+      !if (j == 1735) then
+      !  print *, "soil temperature: "
+      !endif
       do k = 1, soil(j)%nly
         zd = 0.
         df = 0.
@@ -136,6 +139,9 @@
            soil(j)%phys(k)%tmp = 10. - (10. - soil(j)%phys(k)%tmp) * 0.1
        end if     
       endif
+      !if (j == 1735) then
+      !  print *, "soil temperature of layer ", k, soil(j)%phys(k)%tmp
+      !endif
 
       end do
 

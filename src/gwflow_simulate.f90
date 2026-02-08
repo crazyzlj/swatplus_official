@@ -174,6 +174,9 @@
           else
             gw_state(i)%stor = 0.
           endif
+          !if (i == 612) then
+          !    print *, "gwflow_simulate: head, botm, stor: ", gw_state(i)%head, gw_state(i)%botm, gw_state(i)%stor
+          !endif
         endif
       enddo
       
@@ -285,6 +288,12 @@
           gw_ss(i)%satx + gw_ss(i)%soil + &
           gw_ss(i)%ppag + gw_ss(i)%ppex + gw_ss(i)%tile + &
           gw_ss(i)%resv + gw_ss(i)%wetl + gw_ss(i)%canl + gw_ss(i)%fpln  
+
+          !if (i==611 .or. i==612) then
+          !    print *, "  after sum sources/sinks,",i,": gw_ss, totl: ", gw_ss(i)%totl, ", rech: ",gw_ss(i)%rech, ", gwet:", gw_ss(i)%gwet, ",gwsw:",gw_ss(i)%gwsw, ",swgw:", gw_ss(i)%swgw
+          !    print *, "                                        satx:", gw_ss(i)%satx, ",soil:", gw_ss(i)%soil,",ppag:",gw_ss(i)%ppag,",ppex:",gw_ss(i)%ppex,",tile:",gw_ss(i)%tile
+          !    print *, "                                        resv:", gw_ss(i)%resv, ",wetl:",gw_ss(i)%wetl,",canl:",gw_ss(i)%canl,",fpln:",gw_ss(i)%fpln
+          !endif
         endif
       enddo     
       if (gw_solute_flag == 1) then
@@ -303,6 +312,14 @@
                                            gwsol_ss(i)%solute(s)%wetl + & !wetland
                                            gwsol_ss(i)%solute(s)%canl + & !canal exchange
                                            gwsol_ss(i)%solute(s)%fpln     !floodplain exchange
+              !if (i==611 .or. i==612) then
+              !    print *, "  solute, (", s ,"), ", i,", rech:",gwsol_ss(i)%solute(s)%rech, ", gwsw:",gwsol_ss(i)%solute(s)%gwsw, &
+              !                                          "swgw:",gwsol_ss(i)%solute(s)%swgw, ", satx:",gwsol_ss(i)%solute(s)%satx, &
+              !                                          "soil:",gwsol_ss(i)%solute(s)%soil, ", ppag:",gwsol_ss(i)%solute(s)%ppag, &
+              !                                          "ppex:",gwsol_ss(i)%solute(s)%ppex, ", tile:",gwsol_ss(i)%solute(s)%tile, &
+              !                                          "resv:",gwsol_ss(i)%solute(s)%resv, ", wetl:",gwsol_ss(i)%solute(s)%wetl, &
+              !                                          "canl:",gwsol_ss(i)%solute(s)%canl, ", fpln:",gwsol_ss(i)%solute(s)%fpln
+              !endif
             enddo
           endif
         enddo
@@ -357,6 +374,9 @@
             !if the cell is interior (not a boundary cell)
             if(gw_state(i)%stat == 1) then
               
+              !if (i==612) then
+              !    print *, "start calc new storage and head! "
+              !endif
               !loop through the cells connected to the current cell
               Q = 0.
               do k=1,gw_state(i)%ncon
@@ -412,6 +432,9 @@
                 endif
                 !sum total flow to/from current cell
                 Q = Q + Q_cell
+                !if (i == 612) then
+                !    print *, "612->",cell_id, ": Q_cell: ", Q_cell, ", Q:", Q
+                !endif
               enddo !go to next connected cell
 
               !update storage and head for the cell
@@ -432,6 +455,9 @@
         do i=1,ncell
           gw_state(i)%hold = gw_state(i)%head
           gw_state(i)%head = gw_state(i)%hnew
+          !if (i==611 .or. i==612) then
+          !    print *, "grid", i, ", previous head:", gw_state(i)%hold, ", new head:", gw_state(i)%head
+          !endif
         enddo
         
         !simulate fate and transport of solutes - calculate new concentrations
@@ -456,6 +482,9 @@
                 time_fraction = real(t)/real(num_ts_transport)
                 gw_volume_inter = gw_volume_old + ((gw_volume_new-gw_volume_old)*time_fraction)
                   
+                !if (i == 612) then
+                !   print *, "  gw_volume_old: ", gw_volume_old, ", gw_volume_new: ", gw_volume_new, ", gw_volume_inter:", gw_volume_inter
+                !endif  
                 !advection transport
                 mass_adv = 0.
                 do k=1,gw_state(i)%ncon !loop through the connected cells
@@ -470,6 +499,12 @@
                       mass_adv(s) = mass_adv(s) + (Q_cell * gwsol_state(i)%solute(s)%conc) !g
                     enddo
                  endif
+                  !if (i == 612) then
+                  !  print *, "advection: 612->",cell_id, ": mass_adv: (1): ", mass_adv(1), ", (2):", mass_adv(2)
+                  !endif
+                  !if (cell_id == 612) then
+                  !    print *, "advection: ", i, "->612, mass_adv: (1): ", mass_adv(1), ", (2):", mass_adv(2)
+                  !endif
                 enddo !go to next connected cell
                 
                 !dispersion transport
@@ -485,6 +520,12 @@
                     mass_dsp(s) = mass_dsp(s) + (gw_long_disp * ((gwsol_state(cell_id)%solute(s)%conc -   &
                        gwsol_state(i)%solute(s)%conc)/conn_length) * face_sat) !g
                   enddo
+                  !if (i == 612) then
+                  !  print *, "dispersion 612->",cell_id, ": mass_dsp: (1): ", mass_dsp(1), ", (2):", mass_dsp(2)
+                  !endif
+                  !if (cell_id == 612) then
+                  !    print *, "dispersion: ", i, "->612, mass_dsp: (1): ", mass_dsp(1), ", (2):", mass_dsp(2)
+                  !endif
                 enddo !go to next connected cell
                 
                 !chemical reactions --> fill in mass_rct and mass_min
@@ -497,6 +538,9 @@
                 do s=1,gw_nsolute !loop through the solutes
                   m_change(s) = (mass_adv(s) + mass_dsp(s) + mass_rct(s) + mass_min(s) + gwsol_ss(i)%solute(s)%totl) * &
                      (gw_trans_time_step/gwsol_sorb(s))    
+                  !if (i == 612 .or. i == 611) then
+                  !  print *, " change in mass(g) of ", i, ": (", s, "): adv", mass_adv(s), ", dsp: ", mass_dsp(s), ", rct:", mass_rct(s), ", totl: ", gwsol_ss(i)%solute(s)%totl, " -> change: ", m_change(s)
+                  !endif 
                 enddo
                   
                 !calculate mass removed due to sorption (g)
@@ -512,6 +556,9 @@
                   if(gwsol_state(i)%solute(s)%mass < 0) then
                     gwsol_state(i)%solute(s)%mass = 0.
                   endif
+                  !if (i == 612 .or. i == 611) then
+                  !  print *, " new mass(g) of ", i,": (", s, "): ", gwsol_state(i)%solute(s)%mass
+                  !endif
                 enddo
                   
                 !calculate new concentration (g/m3)
@@ -525,6 +572,9 @@
                     gwsol_state(i)%solute(s)%mass = 0.
                   enddo
                 endif
+                !if (i == 612) then
+                !    print *, "    new concentration: (1): ", gwsol_state(i)%solute(1)%cnew, ", (2): ", gwsol_state(i)%solute(2)%cnew
+                !endif
                   
                 !store values for mass budget analysis
                 do s=1,gw_nsolute !loop through the solutes
@@ -2498,6 +2548,7 @@
             gwsol_ss(i)%solute(s)%totl = 0.
           enddo
         enddo
+        hru_soil = 0.
         mass_adv = 0.
         mass_dsp = 0.
         mass_rct = 0.

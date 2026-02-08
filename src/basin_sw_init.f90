@@ -29,6 +29,13 @@
         hwb_a(ihru)%sno_init = hru(ihru)%sno_mm
       end do
       
+      !debug -ljzhu
+      !print *, "initialize hru (1735) soil water:"
+      !print *, hwb_d(ihru)%sw_init,hwb_m(ihru)%sw_init,hwb_y(ihru)%sw_init,hwb_a(ihru)%sw_init
+      !print *, "initialize hru (1735) snow water:"
+      !print *, hwb_d(ihru)%sno_init,hwb_m(ihru)%sno_init,hwb_y(ihru)%sno_init,hwb_a(ihru)%sno_init
+      !end of debug
+      
         ! summing subbasin output for the basin
         bwb_d%sw_init = 0.
         bwb_d%sno_init = 0.

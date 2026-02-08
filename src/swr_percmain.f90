@@ -61,6 +61,9 @@
       j = ihru
       ires =  hru(j)%dbs%surf_stor !Jaehak 2022
 
+      !if (j == 1735) then
+      !    print *, "begin swr_percmain, ires: ", ires
+      !end if
       !rtb gwflow: add groundwater transferred to soil profile
       if(bsn_cc%gwflow.eq.1) then
         call gwflow_soil(j)
@@ -137,8 +140,14 @@
       
       !! update soil profile water
       soil(j)%sw = 0.
+      !if (j == 1735) then
+      !    print *, "   after swr_satexcess, soil profile water: "
+      !end if
       do j1 = 1, soil(j)%nly
         soil(j)%sw = soil(j)%sw + soil(j)%phys(j1)%st
+        !if (j == 1735) then
+        !  print *, "   layer, soil water: ", j1, soil(j)%sw
+        !end if
       end do
 
       !! compute shallow water table depth and tile flow
@@ -219,8 +228,14 @@
 
       !! update soil profile water
       soil(j)%sw = 0.
+      !if (j == 1735) then
+      !    print *, "   end of swr_satexcess, soil profile water: "
+      !end if
       do j1 = 1, soil(j)%nly
         soil(j)%sw = soil(j)%sw + soil(j)%phys(j1)%st
+        !if (j == 1735) then
+        !  print *, "   layer, soil water: ", j1, soil(j)%sw
+        !end if
       end do
 
       return

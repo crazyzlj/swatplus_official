@@ -81,6 +81,10 @@
       hnb_d(j)%rsd_nitorg_n = 0.
       hnb_d(j)%rsd_laborg_p = 0.
 
+      !if(j==1735) then
+      !  print *, "nut_nminrl, decomp: M,C,N,P:", decomp%m, decomp%c, decomp%n, decomp%p
+      !endif
+
       !! compute humus mineralization of organic soil pools 
       do k = 1, soil(j)%nly
 
@@ -163,6 +167,7 @@
             decr = pldb(idp)%rsdco_pl * ca * csf
             decr = Max(bsn_prm%decr_min, decr)
             decr = Min(decr, 1.)
+            decomp = decr * soil1(j)%pl(ipl)%rsd(k)
             soil1(j)%pl(ipl)%rsd(k) = soil1(j)%pl(ipl)%rsd(k) - decomp
 
             ! The following if statements are to prevent runtime underflow errors with gfortran 
@@ -170,13 +175,13 @@
             if (soil1(j)%pl(ipl)%rsd(k)%c < 1.e-10) soil1(j)%pl(ipl)%rsd(k)%c = 0.0 
             if (soil1(j)%pl(ipl)%rsd(k)%n < 1.e-10) soil1(j)%pl(ipl)%rsd(k)%n = 0.0 
             if (soil1(j)%pl(ipl)%rsd(k)%p < 1.e-10) soil1(j)%pl(ipl)%rsd(k)%p = 0.0 
-          end do
+          !end do
           
           soil1(j)%mn(k)%no3 = soil1(j)%mn(k)%no3 + .8 * decomp%n
           soil1(j)%hact(k)%n = soil1(j)%hact(k)%n + .2 * decomp%n
           soil1(j)%mp(k)%lab = soil1(j)%mp(k)%lab + .8 * decomp%p
           soil1(j)%hsta(k)%p = soil1(j)%hsta(k)%p + .2 * decomp%p
-
+          end do
           !!  compute denitrification
           wdn = 0.   
           if (i_sep(j) /= k .or. sep(isep)%opt  /= 1) then
@@ -192,6 +197,9 @@
           !call nut_denit(k,j,cdg,wdn,0.05)
 
         end if
+        !if (j==1735) then
+        !  print *, "nut_nminrl, ", k, ": activeN:", soil1(j)%hact(k)%n, ",stableN:",soil1(j)%hsta(k)%n, ",no3:",soil1(j)%mn(k)%no3, ", stableP:",soil1(j)%hsta(k)%p,",solP:",soil1(j)%mp(k)%lab
+        !endif
       end do        ! k = 1, soil(j)%nly
 
       return

@@ -43,6 +43,9 @@
         do jj = 1,soil(j)%nly
           soil1(j)%mp(jj)%lab = soil1(j)%mp(jj)%lab + hru_soil(j,jj,2) !kg/ha
           gwsoilp(j) = gwsoilp(j) + hru_soil(j,jj,2) !HRU total
+          !if (j == 1735) then
+          !    print *, "nut_solp, add P mass from gw, layer, hru_soil, soil1_mp_lab, gwsoilp: ", jj, hru_soil(j,jj,2), soil1(j)%mp(jj)%lab, gwsoilp(j)
+          !end if
         enddo
       endif
       
@@ -90,6 +93,9 @@
      if(bsn_cc%gwflow == 1 .and. gw_solute_flag == 1) then
        gwflow_percsol(j,2) = hls_d(j)%lchlabp  
      endif
+        !if (j == 1735) then
+        !    print *, "after leaching, layer, soil1(j)%mp(ly)%lab,hls_d(j)%lchlabp, gwflow_percsol: ", ly, soil1(j)%mp(ly)%lab, hls_d(j)%lchlabp,gwflow_percsol(j,2)
+        !end if
       end do
       
       return

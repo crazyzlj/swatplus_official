@@ -99,8 +99,14 @@
       
       !rtb - calculate soil water at the beginning of the day
       sw_volume_begin = 0.
+      !if (j == 1735) then
+      !  print *, "soil water at the beginning of the day"
+      !endif
       do j1=1,soil(j)%nly
         sw_volume_begin = sw_volume_begin + soil(j)%phys(j1)%st
+        !if (j == 1735) then
+        !  print *, "soil layer ", j1, soil(j)%phys(j1)%st
+        !endif
       enddo
      
       !h => hwb_d(j)
@@ -125,6 +131,10 @@
         w%tave = w%tave + ob(iob)%tlaps
       end if
       precip_eff = w%precip
+      
+      !if (j == 1735) then
+      !  print *, "pcp, tmax, tmin, tave: ", precip_eff, w%tmax, w%tmin, w%tave
+      !endif
       
       hsc_d(j) = hscz
       hrc_d(j) = hrcz
@@ -346,6 +356,10 @@
         bss_ex(1,j) = bss_ex(1,j) + satexq(j)
         satexq_chan = bss_ex(1,j) * brt(j)
         bss_ex(1,j) = bss_ex(1,j) - satexq_chan
+        
+        !if (j == 1735) then
+        !  print *, "   satexq(j),satexq_chan,bss_ex(1,j): ", satexq(j),satexq_chan,bss_ex(1,j)
+        !end if
 
         !! compute peak rate similar to swat-deg using SCS triangular unit hydrograph
         !runoff_m3 = 10. * surfq(j) * hru(j)%area_ha
@@ -473,7 +487,7 @@
           strstmp_av = strstmp_av / npl_gro
         end if
 
-        !! compute aoil water content to 300 mm depth
+        !! compute soil water content to 300 mm depth
         soil(j)%sw_300 = 0.
         do ly = 1, soil(j)%nly
           if (ly == 1) then
@@ -657,6 +671,9 @@
         qdr(j) = qday + latq(j) + qtile
 
         if (qdr(j) < 0.) qdr(j) = 0.
+        !if (j == 1735) then
+        !    print *, "water yield: ", qdr(j)
+        !end if
 
         !! compute chl-a, CBOD and dissolved oxygen loadings
         call swr_subwq
@@ -884,6 +901,10 @@
         hls_d(j)%usle = usle
         hls_d(j)%sedminp = sedminpa(j) + sedminps(j)
         hls_d(j)%tileno3 = tileno3(j)
+        
+        !if (j == 1735) then
+        !    print *, "  percn: ", percn(j), ", gwflow_percsol: ", gwflow_percsol(j,1)
+        !endif
 
       !! set hydrographs for direct routing or landscape unit
       call hru_hyds

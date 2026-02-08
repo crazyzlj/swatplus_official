@@ -62,6 +62,9 @@
         do jj = 1, soil(j)%nly
           soil1(j)%mn(jj)%no3 = soil1(j)%mn(jj)%no3 + hru_soil(j,jj,1) !kg/ha
           gwsoiln(j) = gwsoiln(j) + hru_soil(j,jj,1) !HRU total
+          !if (j == 1735) then
+          !    print *, "nut_nlch, add nitrate mass from gw, layer, hru_soil, soil1_mn_no3, gwsoiln: ", jj, hru_soil(j,jj,1), soil1(j)%mn(jj)%no3, gwsoiln(j)
+          !end if
         enddo
       endif
       
@@ -146,6 +149,9 @@
         if (jj == soil(j)%nly) then
           percn(j) = percnlyr
         end if
+        !if (j == 1735) then
+        !    print *, "after leaching, layer, percnlyr, percn: ", jj, percnlyr, percn(j)
+        !end if
       end do
       
       !nloss = (2.18 * hru(j)%topo%dis_stream - 8.63) / 100.

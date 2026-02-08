@@ -36,6 +36,9 @@
       else
         surfq(j) = 0.
       endif
+      !if (j==1735) then
+      !    print *, "sq_crackflow, voltot: ", voltot, ", surfq:", surfq(j)
+      !endif
 
       if (time%step > 1) then
         voli = 0.

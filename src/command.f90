@@ -268,7 +268,7 @@
             ob(icmd)%hin_til = ob(icmd)%hin_til / conv
             ob(icmd)%hin_til%flo = ob(icmd)%hin_til%flo / 10.      ! m3/10*ha = mm
           end if
-        end if
+        end if ! ob(icmd)%rcv_tot > 0
 
         ! select the next command type
         select case (ob(icmd)%typ)
@@ -403,7 +403,7 @@
                 if (cs_db%num_tot > 0 .and. obcs_alloc(icmd).eq.1) then
                   obcs(icmd)%hd(1) = obcs(icmd)%hin(1)
                 end if
-            end if
+              end if ! sd_ch(isdch)%chl > 1.e-3
             
           end select
         if (pco%fdcout == "y" .and. ob(icmd)%typ == "chandeg") then
@@ -426,6 +426,7 @@
         end if
         
         !set the next command
+        !print *, "icmd ", icmd, "(",ob(icmd)%typ,")->", ob(icmd)%cmd_next, "(", ob(ob(icmd)%cmd_next)%typ,")"
         icmd = ob(icmd)%cmd_next
         
       end do

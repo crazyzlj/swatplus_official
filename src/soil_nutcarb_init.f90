@@ -31,6 +31,9 @@
       if (isol < 0) continue
 
       nly = soil(ihru)%nly
+      !if (ihru==1735) then
+      !    print *,"soil_nutcarb_init"
+      !endif
 
       !! set soil nutrient initialization from nutrients.sol
       isol_pl = hru(ihru)%dbs%soil_plant_init

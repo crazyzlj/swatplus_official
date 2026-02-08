@@ -37,6 +37,9 @@
       j = 0
       j = ihru 
 
+      !if (j == 1735) then
+      !    print *, "nut_nitvol:"
+      !end if
       do k = 1, soil(j)%nly
         tf = 0.
         tf = .41 * (soil(j)%phys(k)%tmp - 5.) / 10.
@@ -66,6 +69,9 @@
           rnv = soil1(j)%mn(k)%nh4 * (1. - Exp(-akn - akv))
           rnit = 1. - Exp(-akn)
           rvol = 1. - Exp(-akv)
+          !if (j == 1735) then
+          !  print *, "    layer, tf, swf, xx, rnit, rvol:", k, tf, swf, xx, rnit, rvol
+          !end if
 
           !! calculate nitrification (NH3 => NO3)
           !! apply septic algorithm only to active septic systems
@@ -88,6 +94,9 @@
                rvol = rvol + soil1(j)%mn(k)%nh4
                soil1(j)%mn(k)%nh4 = 0.
              endif
+             !if (j == 1735) then
+             !    print *, "    after nitrification and volatilization, rnit, rvol, nh4:", rnit, rvol, soil1(j)%mn(k)%nh4
+             !end if
           end if
         end if
 

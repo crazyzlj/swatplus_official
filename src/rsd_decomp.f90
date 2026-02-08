@@ -68,6 +68,9 @@
         !! mineralization can occur only if temp above 0 deg
         if (soil(j)%phys(1)%tmp > 0.) then
           
+          !if (j==1735) then
+          !  print *, "rsd_decomp of plant ", ipl, " for soil layer 1, BEFORE: activeN:", soil1(j)%hact(1)%n, ",no3:",soil1(j)%mn(1)%no3, ", stableP:",soil1(j)%hsta(1)%p,",solP:",soil1(j)%mp(1)%lab
+          !endif
           if (pl_mass(j)%rsd(ipl)%n > 1.e-4) then
             cnr = pl_mass(j)%rsd(ipl)%c / pl_mass(j)%rsd(ipl)%n
             if (cnr > 500.) cnr = 500.
@@ -119,6 +122,9 @@
           hnb_d(j)%rsd_nitorg_n = hnb_d(j)%rsd_nitorg_n + .8 * decomp%n
           hnb_d(j)%rsd_laborg_p = hnb_d(j)%rsd_laborg_p + .8 * decomp%p
             
+          !if (j==1735) then
+          !  print *, "rsd_decomp of plant ", ipl, " for soil layer 1, AFTER: activeN:", soil1(j)%hact(1)%n, ",no3:",soil1(j)%mn(1)%no3, ", stableP:",soil1(j)%hsta(1)%p,",solP:",soil1(j)%mp(1)%lab
+          !endif
         end if     ! soil temperature > 0.
       end do       ! ipl = 1, pcom(j)%npl
       
