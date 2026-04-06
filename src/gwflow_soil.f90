@@ -11,9 +11,6 @@
       
       implicit none
 
-      
-      
-      
       external :: sq_crackvol
       integer, intent (in) :: hru_id     !       |hru number
       integer :: k = 0                   !       |counter
@@ -32,7 +29,6 @@
       real :: layer_transfer = 0.        !       |amount of water and solute transferred to the soil layer
       real :: hru_area_m2 = 0.           !m2     |surface area of the hru
       
-
 
       !area of the HRU in m2
       hru_area_m2 = ob(hru_id)%area_ha * 10000.    
@@ -59,18 +55,22 @@
             !if water table is within the soil profile --> calculate groundwater volume (Q) to transfer; then transfer to soil layer
             hru_Q = 0.
             if(vadose_z < hru_soilz) then !water table is within the soil profile
-              !if (hru_id == 1735 .and. cell_id == 612) then
-              !  print *, "gwflow_soil, hru_id: ", hru_id, ": gw_state_hold&head, vadose_z: ", gw_state(cell_id)%hold,gw_state(cell_id)%head,vadose_z
-              !  print *, "    before checking vadose_z and hru_soilz, solute_conc: (1):", gwsol_state(cell_id)%solute(1)%conc, ", (2): ", gwsol_state(cell_id)%solute(2)%conc
+              !if (hru_id == 1662) then
+              !  write(9003,*) "gwflow_soil, hru_id: ", hru_id, ": gw_state_hold&head, vadose_z: ", gw_state(cell_id)%hold,gw_state(cell_id)%head,vadose_z
+              !  write(9003,*) "    before checking vadose_z and hru_soilz, solute_conc: (1):", gwsol_state(cell_id)%solute(1)%conc, ", (2): ", gwsol_state(cell_id)%solute(2)%conc
               !endif
               poly_area = gw_state(cell_id)%area * cells_fract(hru_id,k) !area of cell within HRU
               hru_Q = (hru_soilz - vadose_z) * poly_area * gw_state(cell_id)%spyd !m3 of groundwater to transfer to the soil profile 
 
               !store for water balance calculations (in gwflow_simulate)
+              if (hru_Q  >= gw_state(cell_id)%stor) then !can only remove what is there
+                hru_Q = gw_state(cell_id)%stor
+              endif
+              gw_state(cell_id)%stor = gw_state(cell_id)%stor + (hru_Q*(-1)) !update available groundwater in the cell
               gw_ss(cell_id)%soil = gw_ss(cell_id)%soil + (hru_Q*(-1)) !negative = leaving the aquifer
               gw_ss_sum(cell_id)%soil = gw_ss_sum(cell_id)%soil + (hru_Q*(-1))
-              !if (hru_id == 1735 .and. cell_id == 612) then
-              !  print *, "hru_id: ", hru_id, ": hru_Q, gw_ss, gw_ss_sum: ", hru_Q, gw_ss(cell_id)%soil,gw_ss_sum(cell_id)%soil
+              !if (hru_id == 1662 .and. cell_id == 612) then
+              !  write(9003,*) "  hru_Q: ",hru_Q, "gw_ss: ", gw_ss(cell_id)%soil
               !endif
 
             !solutes
@@ -81,9 +81,9 @@
                   if(solmass(s) > gwsol_state(cell_id)%solute(s)%mass) then !can only remove what is there
                     solmass(s) = gwsol_state(cell_id)%solute(s)%mass
                   endif
-                  gwsol_ss(cell_id)%solute(s)%soil = gwsol_ss(cell_id)%solute(s)%soil + solmass(s) * (-1) !negative = leaving the aquifer
+                  gwsol_ss(cell_id)%solute(s)%soil = gwsol_ss(cell_id)%solute(s)%soil + (solmass(s)*(-1)) !negative = leaving the aquifer
                   gwsol_ss_sum(cell_id)%solute(s)%soil = gwsol_ss_sum(cell_id)%solute(s)%soil + (solmass(s)*(-1))
-                  !if (hru_id == 1735 .and. cell_id == 612) then
+                  !if (hru_id == 1662 .and. cell_id == 612) then
                   !  print *, "hru_id: ", hru_id, "  solute ", s
                   !  print *, "     solmass, gwsol_ss, gwsol_ss_sum: ", solmass(s), gwsol_ss(cell_id)%solute(s)%soil, gwsol_ss_sum(cell_id)%solute(s)%soil
                   !endif
@@ -118,13 +118,16 @@
                 endif
                 layer_transfer = (hru_Q*layer_fraction) / hru_area_m2 * 1000. !m3 --> mm
                 soil(hru_id)%phys(jj)%st = soil(hru_id)%phys(jj)%st + layer_transfer !mm
+                !if (layer_transfer > 0. .and. hru_id == 1662) then
+                !    write(9003,*) "  from groundwater to layer ", jj, ", water: ", layer_transfer, ", soil_st: ", soil(hru_id)%phys(jj)%st
+                !endif
                 gwsoilq(hru_id) = gwsoilq(hru_id) + layer_transfer !store for hru output
-              if (gw_solute_flag == 1) then
+                if (gw_solute_flag == 1) then
                   do s=1,gw_nsolute !loop through the solutes
                     layer_transfer = (solmass(s)*layer_fraction) / 1000. / ob(hru_id)%area_ha !g --> kg/ha
                     hru_soil(hru_id,jj,s) = hru_soil(hru_id,jj,s) + layer_transfer !kg/ha (mass added to soil profile in nut_nlch, nut_solp, salt_lch, cs_lch)
-                    !if (hru_id == 1735) then
-                    !    print *, "        from groundwater id ", cell_id, " to hru ",hru_id, ", layer:", jj, ", transfer:",layer_transfer,", hru_soil: ", hru_soil(hru_id,jj,s)
+                    !if (layer_transfer > 0 .and. hru_id == 1662) then
+                    !  write(9003,*) "  from groundwater to layer:", jj, ", solute:",layer_transfer,", hru_soil: ", hru_soil(hru_id,jj,s)
                     !endif
                   enddo
                 endif
