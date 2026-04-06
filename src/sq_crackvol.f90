@@ -46,7 +46,7 @@
                   volcrnew
         if (soil(j)%ly(l)%volcr < 0.) soil(j)%ly(l)%volcr = 0.
         voltot = voltot + soil(j)%ly(l)%volcr + volcrmin
-        !if (j==1735) then
+        !if (j == 1662) then
         !    print *, "sq_crackvol, layer: ", l, ": crdep: ", soil(j)%phys(l)%crdep, ",st:",soil(j)%phys(l)%st,",fc:",soil(j)%phys(l)%fc,",volcrnew:",volcrnew,",sw:",soil(j)%sw,",volcr:",soil(j)%ly(l)%volcr,",voltot:",voltot
         !endif
       end do

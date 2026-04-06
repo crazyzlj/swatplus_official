@@ -81,13 +81,16 @@
       hnb_d(j)%rsd_nitorg_n = 0.
       hnb_d(j)%rsd_laborg_p = 0.
 
-      !if(j==1735) then
-      !  print *, "nut_nminrl, decomp: M,C,N,P:", decomp%m, decomp%c, decomp%n, decomp%p
+      !if(j == 1662) then
+      !   write(9003,*) "nut_nminrl, decomp: M: ", decomp%m, ", C: ", decomp%c, ", N: ", decomp%n, ", P:", decomp%p
       !endif
 
       !! compute humus mineralization of organic soil pools 
       do k = 1, soil(j)%nly
-
+        !if (j == 1662) then
+        !  write(9003,*)  "nut_nminrl, ", k, ", before, activeN:", soil1(j)%hact(k)%n, ",stableN:",soil1(j)%hsta(k)%n,&
+        !      ",no3:",soil1(j)%mn(k)%no3, ", stableP:",soil1(j)%hsta(k)%p,",solP:",soil1(j)%mp(k)%lab
+        !endif  
         if (k == 1) then
           kk = 2
         else
@@ -197,8 +200,9 @@
           !call nut_denit(k,j,cdg,wdn,0.05)
 
         end if
-        !if (j==1735) then
-        !  print *, "nut_nminrl, ", k, ": activeN:", soil1(j)%hact(k)%n, ",stableN:",soil1(j)%hsta(k)%n, ",no3:",soil1(j)%mn(k)%no3, ", stableP:",soil1(j)%hsta(k)%p,",solP:",soil1(j)%mp(k)%lab
+        !if (j == 1662) then
+        !  write(9003,*)  "nut_nminrl, ", k, ", after, activeN:", soil1(j)%hact(k)%n, ",stableN:",soil1(j)%hsta(k)%n,&
+        !      ",no3:",soil1(j)%mn(k)%no3, ", stableP:",soil1(j)%hsta(k)%p,",solP:",soil1(j)%mp(k)%lab
         !endif
       end do        ! k = 1, soil(j)%nly
 

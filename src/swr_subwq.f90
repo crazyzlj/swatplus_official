@@ -103,7 +103,7 @@
           doxq(j) = soxy * exp(-0.1 * cbodu(j))
           if (doxq(j) < 0.0) doxq(j) = 0.0
           if (doxq(j) > soxy) doxq(j) = soxy
-          !if (j == 1735) then
+          !if (j == 1662) then
           !    print *, "swr_subwq: chl_a, cbodu, soxy, doxq: ", chl_a(j), cbodu(j), soxy, doxq(j)
           !end if
         else

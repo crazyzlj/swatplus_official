@@ -14,15 +14,17 @@
                             !              |layer due to denitrification 
       real :: void          !              |
       real :: vof = 0.      !              |
-
+      !if (j == 1662) then
+      !  write(9003,*) "nut_denit, before, lyr: ", k, ", no3: ", soil1(j)%mn(k)%no3
+      !endif
       wdn = 0.
       vof = 1. / (1. + (void/0.04)**5)
       wdn =  soil1(j)%mn(k)%no3 * (1. - Exp(-bsn_prm%cdn * cdg * vof *          &
               soil1(j)%tot(k)%c))
       soil1(j)%mn(k)%no3 = max(0.0001,soil1(j)%mn(k)%no3 - wdn)
 
-      !if (j==1735) then
-      !  print *, "nut_denit, soil1_mn_no3: ", soil1(j)%mn(k)%no3
+      !if (j == 1662) then
+      !  write(9003,*) "nut_denit, after, lyr: ", k, ", no3: ", soil1(j)%mn(k)%no3
       !endif
 
       return

@@ -86,8 +86,5 @@
           snomlt = 0.
         end if
  
-      !if (j == 1735) then
-      !    print *, "after sq_snom, precip_eff: ", precip_eff
-      !endif
       return
       end subroutine sq_snom

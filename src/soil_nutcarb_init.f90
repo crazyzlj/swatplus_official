@@ -32,7 +32,7 @@
       if (isol < 0) continue
 
       nly = soil(ihru)%nly
-      !if (ihru==1735) then
+      !if (ihru == 1662) then
       !    print *,"soil_nutcarb_init"
       !endif
 
@@ -79,6 +79,9 @@
           soil1(ihru)%mn(ly)%no3 = 7. * dep_frac
         end if
         soil1(ihru)%mn(ly)%no3 =  soil1(ihru)%mn(ly)%no3 * wt1      !! mg/kg => kg/ha
+        !if (ihru == 1662) then
+        !  write(9003,*) "soil_nut_carb_init, lyr: ", ly, ", no3: ", soil1(ihru)%mn(ly)%no3
+        !endif
 
         !set initial labile P pool
         if (solt_db(isolt)%lab_p > 1.e-9) then

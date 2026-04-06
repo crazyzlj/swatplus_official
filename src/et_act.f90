@@ -135,7 +135,10 @@
         eos1 = es_max * eos1
         es_max = Min(es_max, eos1)
         es_max = Max(es_max, 0.)
-
+        !if (j == 1662) then
+        !  write(9003,*)  "et_act, INPUT, : ires", ires, ", canev: ", canev, ", pet: ", pet, ", ep_max:", ep_max,&
+        !      ", eaj: ", eaj, ", eos1:", eos1,", es_max: ", es_max, ", wet_flo: ", wet(j)%flo, ", pet_day:", pet_day
+        !end if
         if (wet(j)%flo > 0.) then !wetlands water evaporation reduced by canopy Jaehak 2022
         
           if (pcom(j)%lai_sum <= 4.0) then 
@@ -163,7 +166,9 @@
           
         !! initialize soil evaporation variables
         esleft = es_max
-
+        !if (j == 1662) then
+        !  write(9003,*)  "init soil et var, esleft:", esleft
+        !end if
         !! compute sublimation
         if (w%tave > 0.) then
           if (hru(j)%sno_mm >= esleft) then
@@ -178,7 +183,9 @@
             hru(j)%sno_mm = 0.
           endif
         endif
-
+        !if (j == 1662) then
+        !  write(9003,*)  "after sublimation, esleft:", esleft, ", w%tave:", w%tave
+        !end if
         !! compute evaporation from ponded water
         wet_wat_d(j)%evap = 0.
         if (wet(j)%flo > 0.) then
@@ -196,6 +203,9 @@
           wet(j)%flo = 10. * wetvol_mm * hru(j)%area_ha
           hru(j)%water_evap = wet_wat_d(j)%evap / (10. * hru(j)%area_ha)  !mm=m3/(10*ha)
         endif
+        !if (j == 1662) then
+        !  write(9003,*)  "after et from pond, esleft:", esleft, ", wet(j)%flo:", wet(j)%flo
+        !end if
 
 !! take soil evap from each soil layer
       evzp = 0.
@@ -214,6 +224,9 @@
           !! calculate evaporation from soil layer
           evz = eosl * soil(j)%phys(ly)%d / (soil(j)%phys(ly)%d +        &
              Exp(2.374 - .00713 * soil(j)%phys(ly)%d))
+          !if (j == 1662) then
+          !    write(9003,*) "  d:", soil(j)%phys(ly)%d, ", eosl: ", eosl, ", evz: ", evz
+          !endif
           sev = evz - evzp * (1. - hru(j)%hyd%esco)
           evzp = evz
           if (soil(j)%phys(ly)%st < soil(j)%phys(ly)%fc) then
@@ -221,6 +234,9 @@
              soil(j)%phys(ly)%fc
             sev = sev * exp(xx)
           end if
+          !if (j == 1662) then
+          !    write(9003,*) "  xx:", xx, ", sev: ", sev
+          !endif
           sev = Min(sev, soil(j)%phys(ly)%st * etco)
 
           if (sev < 0.) sev = 0.
@@ -249,6 +265,10 @@
           no3up = Min(no3up, soil1(j)%mn(2)%no3)
           soil1(j)%mn(2)%no3 = max(0.0001,soil1(j)%mn(2)%no3 - no3up)
           soil1(j)%mn(1)%no3 = max(0.0001,soil1(j)%mn(1)%no3 + no3up)
+          !if (j == 1662) then
+          !  write(9003,*)  "et_act, sev:", sev, ", soil_st: ", soil(j)%phys(2)%st, "sev_st: ", sev_st, &
+          !      ", no3up: ", no3up, ", no3: ", soil1(j)%mn(1)%no3, soil1(j)%mn(2)%no3
+          !end if
         endif
 
       end do    !layer loop

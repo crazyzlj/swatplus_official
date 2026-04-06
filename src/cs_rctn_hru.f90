@@ -113,9 +113,6 @@
         cs_soil(j)%ly(jj)%cs(1) = (cs_soil(j)%ly(jj)%csc(1)/1000.)*water_volume / hru(j)%area_ha !kg of seo4 per ha
         cs_soil(j)%ly(jj)%cs(2) = (cs_soil(j)%ly(jj)%csc(2)/1000.)*water_volume / hru(j)%area_ha !kg of seo3 per ha
         soil1(j)%mn(jj)%no3 = (conc_new(3)/1000.)*water_volume / hru(j)%area_ha !kg of no3-n per ha
-        !if (j==1735) then
-        !  print *, "cs_rctn_hru, soil1_mn_no3: ", soil1(j)%mn(jj)%no3
-        !endif
        
         !check mass after chemical reactions
         mass_seo4_after = mass_seo4_after + cs_soil(j)%ly(jj)%cs(1)

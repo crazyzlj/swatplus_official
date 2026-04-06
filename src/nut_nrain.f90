@@ -64,6 +64,8 @@
         hnb_d(j)%nh4atmo = .01 * atmodep(iadep)%nh4_rf * w%precip + atmodep(iadep)%nh4_dry / 365.
         soil1(j)%mn(1)%nh4 = soil1(j)%mn(1)%nh4 + hnb_d(j)%nh4atmo
       endif
-       
+      !if (j == 1662) then
+      !  write(9003,*) "nut_nrain, after no3: ", soil1(j)%mn(1)%no3
+      !end if
       return
       end subroutine nut_nrain

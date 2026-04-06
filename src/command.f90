@@ -119,7 +119,9 @@
           ob(icmd)%tsin = 0.
           ob(icmd)%peakrate = 0.
           hyd_flo = 0.
-          
+          !if (icmd == 1662) then
+          !  write(9003, *) "command, after init, hin_sur_flo: ", ob(icmd)%hin_sur%flo
+          !endif
           if (ob(icmd)%rcv_tot > 0) then
           do in = 1, ob(icmd)%rcv_tot
             iob = ob(icmd)%obj_in(in)
@@ -194,6 +196,10 @@
                   obcs(icmd)%hin_sur(1) = obcs(icmd)%hin_sur(1) + frac_in * obcs(iob)%hd(1)
                 end if
               end if
+
+              !if (icmd == 1662) then
+              !  write(9003, *) "command, after init2, hin_sur_flo: ", ob(icmd)%hin_sur%flo
+              !endif
               
             else
               ! all objects other than hru's
@@ -278,14 +284,23 @@
           if (ob(icmd)%typ == "hru" .or. ob(icmd)%typ == "ru") then  !only convert hru and subbasin hyds for routing
             conv = ob(icmd)%area_ha
             ob(icmd)%hin_sur = ob(icmd)%hin_sur / conv
+            !if (icmd == 1662) then
+            !  write(9003, *) "command, convert to mm, after divided conv, hin_sur_flo: ", ob(icmd)%hin_sur%flo
+            !endif
             ob(icmd)%hin_sur%flo = ob(icmd)%hin_sur%flo / 10.      ! m3/10*ha = mm
             ob(icmd)%hin_lat = ob(icmd)%hin_lat / conv
             ob(icmd)%hin_lat%flo = ob(icmd)%hin_lat%flo / 10.      ! m3/10*ha = mm
             ob(icmd)%hin_til = ob(icmd)%hin_til / conv
             ob(icmd)%hin_til%flo = ob(icmd)%hin_til%flo / 10.      ! m3/10*ha = mm
+
+            !if (icmd == 1662) then
+            !  write(9003, *) "command, convert to mm, hin_sur_flo: ", ob(icmd)%hin_sur%flo
+            !endif
           end if
         end if ! ob(icmd)%rcv_tot > 0
-
+        !if (icmd == 1662) then
+        !  write(9003, *) "command, before select case, hin_sur_flo: ", ob(icmd)%hin_sur%flo
+        !endif
         ! select the next command type
         select case (ob(icmd)%typ)
             

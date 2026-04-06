@@ -101,13 +101,13 @@
         bz_perc(j) = sepday
       end if
       
-      !if (j==1735) then
+      !if (j == 1662) then
       !    print *, "swr_permicro, layer: ", ly1, ", sepday: ", sepday
       !endif
       !! switched to linear relationship for dep_imp and seepage
       if (ly1 == soil(j)%nly) then
         sepday = sepday * hru(j)%hyd%perco_lim
-        !if (j==1735) then
+        !if (j == 1662) then
         !  print *, "            sepday for dep_imp and seepage: ", sepday
         !endif
       end if

@@ -76,7 +76,9 @@
         else
           fr_ly = 1. - chemapp_db(fertop)%surf_frac                     
         endif
-
+        !if (j == 1662) then
+        !  write(9003,*) "pl_fert, before, lyr: ", l, ", no3: ", soil1(j)%mn(l)%no3
+        !endif
         !! add mineral n and p for all methods
         soil1(j)%mn(l)%no3 = soil1(j)%mn(l)%no3 + fr_ly * frt_kg *          &
                        (1. - fertdb(ifrt)%fnh3n) * fertdb(ifrt)%fminn
@@ -134,7 +136,9 @@
           ! soil1(j)%rsd(l) = soil1(j)%meta(l) + soil1(j)%str(l)
           
         end if
-        
+        !if (j == 1662) then
+        !  write(9003,*) "pl_fert, after, lyr: ", l, ", no3: ", soil1(j)%mn(l)%no3
+        !endif
       end do 
 
       !! summary calculations

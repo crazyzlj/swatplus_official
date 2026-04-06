@@ -33,7 +33,7 @@
       real :: sub_recharge = 0.       !m3         |summation of recharge for subbasin
       real :: sub_solmass(100) = 0.   !g          |total solute mass in recharge, for the subbasin
       
-
+      !write(9003,*) "gwflow_rech before: ", gw_state(923)%head, gw_state(923)%stor
       !calculate recharge and solute mass to the water table
       !open(1357,file='gwflow_daily_hru_recharge')
       do k=1,sp_ob%hru
@@ -42,15 +42,15 @@
         gw_rech(k) = ((1.-gw_delay(k))*gwflow_perc(k)) + (gw_delay(k)*recharge)
         if (gw_rech(k) < 1.e-6) gw_rech(k) = 0.
         !write(1357,*) k,gw_rech(k)
-        !if (k == 1735) then
-        !    print *, "gwflow_rech: gw_rech: ", gw_rech(k)
+        !if (k == 1662) then
+        !    write(9003,*) "gwflow_rech, ", "gwflow_perc: ", gwflow_perc(k), ", gw_rech: ", gw_rech(k)
         !endif
         if (gw_solute_flag == 1) then
           do s=1,gw_nsolute !loop through the solutes
             recharge_sol = gw_rechsol(k,s)
             gw_rechsol(k,s) = ((1.-gw_delay(k))*gwflow_percsol(k,s)) + (gw_delay(k)*recharge_sol)
-            !if (k == 1735) then
-            !    print *, "    gw_rechsol: s, recharge_sol, gwflow_percsol, gw_rechsol", s, recharge_sol, gwflow_percsol(k,s), gw_rechsol(k,s)
+            !if (k == 1662) then
+            !    write(9003,*) "gwflow_rech, gwflow_percsol: ", gwflow_percsol(k,s), "s(",s,"): ", gw_rechsol(k,s)
             !endif
           enddo
         endif
@@ -199,8 +199,8 @@
           if (gw_solute_flag == 1) then
             do s=1,gw_nsolute !loop through the solutes
               rech_solmass(s) = gw_rechsol(k,s) * ob(ob_num)%area_ha * 1000. !g
-              !if (ob_num == 1735) then
-              !    print *, "    s, rech_solmass: ", s, rech_solmass(s)
+              !if (ob_num == 1662) then
+              !    write(9003,*) "s(",s,"): ", gw_rechsol(k,s), ", rech_solmass: ", rech_solmass(s)
               !endif
             enddo
           endif
@@ -212,16 +212,16 @@
             cell_rech_volume = rech_volume * hru_cells_fract(k,i)
             gw_ss(cell_id)%rech = gw_ss(cell_id)%rech + cell_rech_volume
             gw_ss_sum(cell_id)%rech = gw_ss_sum(cell_id)%rech + cell_rech_volume
-            !if (k == 1735 .and. cell_id == 612) then
-            !    print *, "    rech_volume, cell_rech_volume, gw_ss.rech, gw_ss_sum.rech: ", rech_volume, cell_rech_volume, gw_ss(cell_id)%rech,gw_ss_sum(cell_id)%rech
+            !if (cell_id == 923) then
+            !    write(9003,*) "    hru: ", k, ", rech_volume(m3): ", rech_volume, ", cell_rech_volume: ", cell_rech_volume, ", total: ", gw_ss(cell_id)%rech
             !endif
             if (gw_solute_flag == 1) then
               do s=1,gw_nsolute !loop through the solutes
                 cell_rech_solmass(s) = rech_solmass(s) * hru_cells_fract(k,i)
                 gwsol_ss(cell_id)%solute(s)%rech = gwsol_ss(cell_id)%solute(s)%rech + cell_rech_solmass(s)
                 gwsol_ss_sum(cell_id)%solute(s)%rech = gwsol_ss_sum(cell_id)%solute(s)%rech + cell_rech_solmass(s)
-                !if (k == 1735 .and. cell_id == 612) then
-                !  print *, "    s,cell_rech_solmass, gwsol_ss, gwsol_ss_sum: ", s, cell_rech_solmass(s), gwsol_ss(cell_id)%solute(s)%rech, gwsol_ss_sum(cell_id)%solute(s)%rech
+                !if (cell_id == 923) then
+                !  write(9003,*) "    hru: ", k, ", cell_rech_solmass(g): ", cell_rech_solmass(s), ", total: ", gwsol_ss(cell_id)%solute(s)%rech
                 !endif
               enddo
             endif
@@ -231,6 +231,6 @@
       endif
       
       endif !check for LSU-cell connection
-       
+      !write(9003,*) "rech after: ", gw_state(923)%head, gw_state(923)%stor
       return
       end subroutine gwflow_rech      

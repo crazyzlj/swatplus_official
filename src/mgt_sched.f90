@@ -64,6 +64,13 @@
       iob = hru(j)%obj_no
       wsa1 = hru(ihru)%area_ha * 10. 
       
+      !if (j == 1662) then
+      !    write(9003,*) "mgt_sched, op: ", mgt%op
+      !    do jj = 1, soil(j)%nly
+      !      write(9003,*) "    after, ly: ", jj, ", no3:", soil1(j)%mn(jj)%no3
+      !    end do
+      !endif
+      
       ! determine which plant in community (%op2)
       if (mgt%op /= "fert      ") then
         mgt%op2 = 0
@@ -606,6 +613,11 @@
       
       mgt = sched(isched)%mgt_ops(hru(j)%cur_op)
    
+      !if (j == 1662) then
+      !    do jj = 1, soil(j)%nly
+      !      write(9003,*) "    after, ly: ", jj, ", no3:", soil1(j)%mn(jj)%no3
+      !    end do
+      !endif
       return
 
       end subroutine mgt_sched

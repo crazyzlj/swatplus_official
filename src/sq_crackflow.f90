@@ -36,7 +36,7 @@
       else
         surfq(j) = 0.
       endif
-      !if (j==1735) then
+      !if (j == 1662) then
       !    print *, "sq_crackflow, voltot: ", voltot, ", surfq:", surfq(j)
       !endif
 

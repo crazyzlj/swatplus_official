@@ -150,7 +150,9 @@
           soil1(j)%tot(l)%p = soil1(j)%tot(l)%p + manure_kg *       &   
                        fertdb(it)%forgp  
           end if
-
+          !if (j == 1662) then
+          !  write(9003,*) "pl_graze, after, lyr: ", l, ", no3: ", soil1(j)%mn(l)%no3
+          !endif
         end if
 
       return

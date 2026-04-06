@@ -117,24 +117,27 @@
       !! then simulate flood plain flow else simulate the regular channel flow
       !! taking floodwater to wetlands    
       if (volrt > maxrt) then   
-      ch(jrch)%chfloodvol = (volrt - maxrt) * 86400 * rt_delt
-      do ihr = 1, sp_ob%hru
-        iobhr = hru(ihr)%obj_no
-        ichan = ob(iobhr)%flood_ch_lnk
-        if (ichan == jrch) then
-          ires = hru(ihr)%dbs%surf_stor
-          depstmax = wet_ob(ires)%pvol
-          depst = wet_ob(ires)%pvol - wet(ires)%flo
-          depst = max(0., depst)
-          depst = min(depst, ch(jrch)%chfloodvol)
+        ch(jrch)%chfloodvol = (volrt - maxrt) * 86400 * rt_delt
+        do ihr = 1, sp_ob%hru
+          iobhr = hru(ihr)%obj_no
+          ichan = ob(iobhr)%flood_ch_lnk
+          if (ichan == jrch) then
+            ires = hru(ihr)%dbs%surf_stor
+            depstmax = wet_ob(ires)%pvol
+            depst = wet_ob(ires)%pvol - wet(ires)%flo
+            depst = max(0., depst)
+            depst = min(depst, ch(jrch)%chfloodvol)
 
-          if (depst > 0.) then
-            wet(ires)%flo = wet(ires)%flo + depst 
-            wet_in_d(ires)%flo = wet_in_d(ires)%flo + depst / 10000.
-            volrt = volrt- depst / (86400 * rt_delt)
-            ch(jrch)%chfloodvol = ch(jrch)%chfloodvol - depst
-            vol = vol - depst
+            if (depst > 0.) then
+              wet(ires)%flo = wet(ires)%flo + depst 
+              wet_in_d(ires)%flo = wet_in_d(ires)%flo + depst / 10000.
+              volrt = volrt- depst / (86400 * rt_delt)
+              ch(jrch)%chfloodvol = ch(jrch)%chfloodvol - depst
+              vol = vol - depst
             end if
+            !if (ihr == 1662) then
+            !  write(9003,*) "ch_rtday, wet_flo(ihr):", wet(ihr)%flo, "wet_flo(ires):", wet(ires)%flo
+            !endif
           end if
         end do    
       end if

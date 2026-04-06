@@ -98,14 +98,18 @@
       
       j = ihru
       
+      !if (j == 1662) then
+      !  write(9003,*)  "hru_control"
+      !end if
+      
       !rtb - calculate soil water at the beginning of the day
       sw_volume_begin = 0.
-      !if (j == 1735) then
+      !if (j == 1662) then
       !  print *, "soil water at the beginning of the day"
       !endif
       do j1=1,soil(j)%nly
         sw_volume_begin = sw_volume_begin + soil(j)%phys(j1)%st
-        !if (j == 1735) then
+        !if (j == 1662) then
         !  print *, "soil layer ", j1, soil(j)%phys(j1)%st
         !endif
       enddo
@@ -133,7 +137,7 @@
       end if
       precip_eff = w%precip
       
-      !if (j == 1735) then
+      !if (j == 1662) then
       !  print *, "pcp, tmax, tmin, tave: ", precip_eff, w%tmax, w%tmin, w%tave
       !endif
       
@@ -261,7 +265,9 @@
 
         !! compute snow melt
         call sq_snom
-                  
+        !if (j == 1662) then
+        !  write(9003,*)  " route overflow, ob(icmd)%hin_sur%flo: ", ob(icmd)%hin_sur%flo
+        !end if          
         !!route overland flow across hru - add tile flow if not subirrigation or saturated buffer
         tile_fr_surf = 1.   !assume all tile goes overland until get saturated buffer dtbl
         if (ob(icmd)%hin_sur%flo > 1.e-6) then
@@ -275,6 +281,9 @@
             call rls_routesurf (icmd, tile_fr_surf)
           end if
         end if
+        !if (j == 1662) then
+        !  write(9003,*)  " after route overflow, wet_flo: ", wet(j)%flo
+        !end if 
         
         !!add lateral flow soil water
         if (ob(icmd)%hin_lat%flo > 0) then
@@ -358,8 +367,8 @@
         satexq_chan = bss_ex(1,j) * brt(j)
         bss_ex(1,j) = bss_ex(1,j) - satexq_chan
         
-        !if (j == 1735) then
-        !  print *, "   satexq(j),satexq_chan,bss_ex(1,j): ", satexq(j),satexq_chan,bss_ex(1,j)
+        !if (j == 1662) then
+        !  write(9003,*)  "   satexq(j),satexq_chan,bss_ex(1,j): ", satexq(j),satexq_chan,bss_ex(1,j)
         !end if
 
         !! compute peak rate similar to swat-deg using SCS triangular unit hydrograph
@@ -675,7 +684,7 @@
         qdr(j) = qday + latq(j) + qtile
 
         if (qdr(j) < 0.) qdr(j) = 0.
-        !if (j == 1735) then
+        !if (j == 1662) then
         !    print *, "water yield: ", qdr(j)
         !end if
 
@@ -906,8 +915,8 @@
         hls_d(j)%sedminp = sedminpa(j) + sedminps(j)
         hls_d(j)%tileno3 = tileno3(j)
         
-        !if (j == 1735) then
-        !    print *, "  percn: ", percn(j), ", gwflow_percsol: ", gwflow_percsol(j,1)
+        !if (j == 1662) then
+        !    write(9003,*) "  percn: ", percn(j), ", gwflow_percsol: ", gwflow_percsol(j,1)
         !endif
 
       !! set hydrographs for direct routing or landscape unit

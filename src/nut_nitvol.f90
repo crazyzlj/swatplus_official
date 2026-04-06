@@ -37,7 +37,7 @@
       j = 0
       j = ihru 
 
-      !if (j == 1735) then
+      !if (j == 1662) then
       !    print *, "nut_nitvol:"
       !end if
       do k = 1, soil(j)%nly
@@ -69,7 +69,7 @@
           rnv = soil1(j)%mn(k)%nh4 * (1. - Exp(-akn - akv))
           rnit = 1. - Exp(-akn)
           rvol = 1. - Exp(-akv)
-          !if (j == 1735) then
+          !if (j == 1662) then
           !  print *, "    layer, tf, swf, xx, rnit, rvol:", k, tf, swf, xx, rnit, rvol
           !end if
 
@@ -94,8 +94,8 @@
                rvol = rvol + soil1(j)%mn(k)%nh4
                soil1(j)%mn(k)%nh4 = 0.
              endif
-             !if (j == 1735) then
-             !    print *, "    after nitrification and volatilization, rnit, rvol, nh4:", rnit, rvol, soil1(j)%mn(k)%nh4
+             !if (j == 1662) then
+             !    write(9003,*) "    nut_nitvol, after, rnit: ", rnit, ", no3: ", soil1(j)%mn(k)%no3
              !end if
           end if
         end if

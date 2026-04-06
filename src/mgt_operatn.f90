@@ -41,7 +41,9 @@
       j = ihru
       isched = hru(j)%mgt_ops
       if (sched(isched)%num_ops < 1) return
-      
+      !if (j == 1662) then
+      !    write(9003,*) "mgt_operatn, cur_op: ", hru(j)%cur_op
+      !endif
         mgt = sched(isched)%mgt_ops(hru(j)%cur_op)
 
         do while(mgt%mon == time%mo .and. mgt%day == time%day_mo)
