@@ -27,7 +27,7 @@
       real :: gwet_volume = 0.              !m3     |actual ET for cell
       
       
-      
+      !write(9003,*) "gwet before: ", gw_state(923)%head, gw_state(923)%stor
       !check LSU-cell connection
       if (lsu_cells_link == 1) then 
       
@@ -114,6 +114,6 @@
       enddo
       
       endif !check for LSU-cell connection
-      
+      !write(9003,*) "gwet after: ", gw_state(923)%head, gw_state(923)%stor
       return
       end subroutine gwflow_gwet 
