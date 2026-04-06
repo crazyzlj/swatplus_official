@@ -59,7 +59,7 @@ RUN set -ex; \
         -B "$bdir" \
         -DCMAKE_BUILD_TYPE="$cfg" \
         -DTAG="${SWATPLUSVER}" \
-        -DCMAKE_INSTALL_PREFIX="${INSTALL_DIR}" \
+        -DINSTALL_PREFIX="${INSTALL_DIR}" \
         ${opt:+-DOPT_LEVEL="$opt"}; \
       cmake --build "$bdir" -j"$(nproc)"; \
       cmake --install "$bdir"; \

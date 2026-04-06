@@ -83,7 +83,7 @@ RUN set -exo pipefail; \
         -DCMAKE_Fortran_COMPILER="${fc}" \
         -DCMAKE_BUILD_TYPE="${cfg}" \
         -DTAG="${SWATPLUSVER}" \
-        -DCMAKE_INSTALL_PREFIX="${INSTALL_DIR}" \
+        -DINSTALL_PREFIX="${INSTALL_DIR}" \
       ); \
       if [[ "${cfg}" != "Debug" && -n "${opt}" ]]; then \
         cmake_args+=(-DOPT_LEVEL="${opt}"); \
@@ -96,7 +96,7 @@ RUN set -exo pipefail; \
       build_one "${fc}" Debug; \
       if [ -n "${RELEASE_OPT_LEVELS}" ]; then \
         for opt in ${RELEASE_OPT_LEVELS}; do \
-          build_one Release "$opt"; \
+          build_one "${fc}" Release "$opt"; \
         done; \
       fi; \
     done
