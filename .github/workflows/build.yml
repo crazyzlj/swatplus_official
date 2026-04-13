@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
      - name: Checkout
-       uses: actions/checkout@v4
+       uses: actions/checkout@v6
        with:
          ref: '${{ github.event.inputs.rev }}'
          fetch-tags: true
@@ -73,7 +73,7 @@ jobs:
           version: ${{ matrix.toolchain.version }}
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build SWAT+
         id: build_exe
@@ -160,7 +160,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: '${{ github.event.inputs.rev }}'
         #   fetch-tags: true
