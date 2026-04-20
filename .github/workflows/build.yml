@@ -45,7 +45,7 @@ jobs:
           echo ${{ github.event.release.tag_name }}
           echo ${GITHUB_REF#refs/*/}
      - name: upload
-       uses: actions/upload-artifact@v4
+       uses: actions/upload-artifact@v7
        with:
          name: release_tag
          path: v.txt
@@ -129,7 +129,7 @@ jobs:
           dest: ${{ steps.build_exe.outputs.exez }}
 
       - name: upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gnu-${{ steps.build_exe.outputs.os }}
           path: ${{ steps.build_exe.outputs.exez }}
@@ -244,7 +244,7 @@ jobs:
           dest: ${{ steps.build_exe.outputs.exez }}
 
       - name: upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: intel-${{ steps.build_exe.outputs.os }}
           path: ${{ steps.build_exe.outputs.exez }}
