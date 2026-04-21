@@ -112,6 +112,7 @@
         real :: tb_adj = 0.         !! adjustment factor for subdaily unit hydrograph basetime
         real :: cn_froz = 0.000862  !! parameter for frozen soil adjustment on infiltraion/runoff
         real :: dorm_hr = -1.       !! time threshold used to define dormant (hrs)
+        real :: tlag = 0.8          !! lag coefficient for soil temperature
         real :: plaps = 0.          !! mm/km        |precipitation lapse rate: mm per km of elevation difference
         real :: tlaps = 6.5         !! deg C/km     |temperature lapse rate: deg C per km of elevation difference
         real :: nfixmx = 20.0       !! max daily n-fixation (kg/ha)

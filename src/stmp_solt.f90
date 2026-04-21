@@ -23,7 +23,7 @@
 !!    Intrinsic: Exp, Log, Max, Min
 
 !!    ~ ~ ~ ~ ~ ~ END SPECIFICATIONS ~ ~ ~ ~ ~ ~
-
+      use basin_module
       use climate_module
       use septic_data_module
       use hru_module, only : hru, iseptic, ihru, i_sep, iwgen, albday, isep 
@@ -54,7 +54,8 @@
 
       j = ihru
 
-      tlag = 0.8
+      !tlag = 0.8
+      tlag = bsn_prm%tlag
 
 !! calculate damping depth
 

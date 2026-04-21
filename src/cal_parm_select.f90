@@ -464,7 +464,9 @@
       case ("dorm_hr")
         bsn_prm%dorm_hr = chg_par(bsn_prm%dorm_hr,                      &
                          chg_typ, chg_val, absmin, absmax)
-
+      case ("tlag")
+        bsn_prm%tlag = chg_par(bsn_prm%tlag,                      &
+                         chg_typ, chg_val, absmin, absmax)
 !!     SWQ
       case ("mumax")
           ch_nut(ielem)%mumax = chg_par(ch_nut(ielem)%mumax,                &

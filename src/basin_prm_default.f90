@@ -36,6 +36,7 @@
          if (bsn_prm%tb_adj < 1.e-6) bsn_prm%tb_adj = 0.          !! adjustment factor for subdaily unit hydrograph basetime
          if (bsn_prm%cn_froz < 1.e-6) bsn_prm%cn_froz = 0.000862  !! 
          !if (bsn_prm%dorm_hr < 1.e-6) bsn_prm%dorm_hr = -1.        !! time threshold used to define dormant (hrs)
+         if (bsn_prm%tlag < 0.01 .or. bsn_prm%tlag > 0.99) bsn_prm%tlag = 0.8        !! lag coefficient for soil temperature
          if (bsn_prm%nfixmx < 1.e-6) bsn_prm%nfixmx = 20.0        !! max daily n-fixation (kg/ha)
          if (bsn_prm%decr_min < 1.e-6) bsn_prm%decr_min = 0.01    !! 
          if (bsn_prm%rsd_covco < 1.e-6) bsn_prm%rsd_covco = 0.75  !! residue cover factor for computing C factor equation         
