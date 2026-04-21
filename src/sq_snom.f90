@@ -45,12 +45,13 @@
       real :: snotmp = 0.   !deg C      |temperature of snow pack
 
       snotmp = 0.
+      snotmp = hru(j)%sno_tmp
 
       j = ihru
-
+      if (hru(j)%sno_mm > 0.) then
         !! estimate snow pack temperature
         snotmp = snotmp * (1. - hru(j)%sno%timp) + w%tave * hru(j)%sno%timp
-
+        hru(j)%sno_tmp = snotmp
         if (w%tave <= hru(j)%sno%falltmp) then
           !! calculate snow fall
           hru(j)%sno_mm = hru(j)%sno_mm + precip_eff
@@ -75,7 +76,10 @@
           endif
           snomlt = snomlt * snocov
           if (snomlt < 0.) snomlt = 0.
-          if (snomlt > hru(j)%sno_mm) snomlt = hru(j)%sno_mm
+          if (snomlt > hru(j)%sno_mm) then
+            snomlt = hru(j)%sno_mm
+            hru(j)%sno_tmp = 0. ! when there is no snowpack, then reset the temp of snowpack
+          end if
           hru(j)%sno_mm = hru(j)%sno_mm - snomlt
           precip_eff = precip_eff + snomlt
           if (time%step > 1) then
@@ -85,6 +89,6 @@
         else
           snomlt = 0.
         end if
- 
+      end if
       return
       end subroutine sq_snom
