@@ -45,23 +45,25 @@
       real :: snotmp = 0.   !deg C      |temperature of snow pack
 
       snotmp = 0.
-      snotmp = hru(j)%sno_tmp
+      snofall = 0.
+      snomlt = 0.
 
       j = ihru
+      if (w%tave <= hru(j)%sno%falltmp) then
+        !! calculate snow fall
+        hru(j)%sno_mm = hru(j)%sno_mm + precip_eff
+        snofall = precip_eff
+        precip_eff = 0.
+        !! set subdaily effective precip to zero
+        if (time%step > 1) w%ts = 0.
+      endif
       if (hru(j)%sno_mm > 0.) then
+        snotmp = hru(j)%sno_tmp
         !! estimate snow pack temperature
         snotmp = snotmp * (1. - hru(j)%sno%timp) + w%tave * hru(j)%sno%timp
         hru(j)%sno_tmp = snotmp
-        if (w%tave <= hru(j)%sno%falltmp) then
-          !! calculate snow fall
-          hru(j)%sno_mm = hru(j)%sno_mm + precip_eff
-          snofall = precip_eff
-          precip_eff = 0.
-          !! set subdaily effective precip to zero
-          if (time%step > 1) w%ts = 0.
-        endif
  
-        if (w%tmax > hru(j)%sno%melttmp .and. hru(j)%sno_mm > 0.) then
+        if (w%tmax > hru(j)%sno%melttmp) then
           !! adjust melt factor for time of year
           smfac = (hru(j)%sno%meltmx + hru(j)%sno%meltmn) / 2. + Sin((time%day - 81) / 58.09) *     &
                         (hru(j)%sno%meltmx - hru(j)%sno%meltmn) / 2.        !! 365/2pi = 58.09
@@ -76,18 +78,14 @@
           endif
           snomlt = snomlt * snocov
           if (snomlt < 0.) snomlt = 0.
-          if (snomlt > hru(j)%sno_mm) then
-            snomlt = hru(j)%sno_mm
-            hru(j)%sno_tmp = 0. ! when there is no snowpack, then reset the temp of snowpack
-          end if
+          if (snomlt > hru(j)%sno_mm) snomlt = hru(j)%sno_mm
           hru(j)%sno_mm = hru(j)%sno_mm - snomlt
+          if (hru(j)%sno_mm < 1.e-6) hru(j)%sno_tmp = 0. ! when there is no snowpack, then reset the temp of snowpack
           precip_eff = precip_eff + snomlt
           if (time%step > 1) then
             w%ts(:) = w%ts(:) + snomlt / time%step
           end if
           if (precip_eff < 0.) precip_eff = 0.
-        else
-          snomlt = 0.
         end if
       end if
       return
