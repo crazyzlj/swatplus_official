@@ -195,7 +195,6 @@
       else !proceed with normal mapping routine
         ob_num = sp_ob1%hru  !object number of first HRU
         do k=1,sp_ob%hru
-          if (gw_rech(k) < 1.e-6) cycle   
           rech_volume = (gw_rech(k)/1000.) * (ob(ob_num)%area_ha * 10000.) !m * m2 = m3
           if (gw_solute_flag == 1) then
             do s=1,gw_nsolute !loop through the solutes
