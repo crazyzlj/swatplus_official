@@ -100,6 +100,7 @@
               endif  
               irr_mass(s) = irr_mass(s) - mass_diff
               if(irr_mass(s).lt.0) irr_mass(s) = 0.   
+              gwsol_state(cell_id)%solute(s)%mass = gwsol_state(cell_id)%solute(s)%mass - irr_mass(s) * 1000. !g
             enddo
             !add solute mass to soil profile of demand object (hru)
             wetland = hru(hru_id)%dbs%surf_stor !check if HRU is a wetland
@@ -108,6 +109,9 @@
               wet(hru_id)%no3 = wet(hru_id)%no3 + irr_mass(1) !kg
               wet(hru_id)%solp = wet(hru_id)%solp + irr_mass(2) !kg
               sol_index = 2
+              if (hru_id == 12797) then
+                 write(9003, *) "gwflow_ppag, line 113, irr_mass(1):", irr_mass(1), ", wet no3:", wet(hru_id)%no3
+              endif
               !salts
               if (gwsol_salt == 1) then
                 do isalt=1,cs_db%num_salts
@@ -148,7 +152,7 @@
             endif
             !add to mass balance arrays (to be used in gwflow_simulate)
             do s=1,gw_nsolute !loop through the solutes
-              gwsol_ss(cell_id)%solute(s)%ppag = (irr_mass(s)*1000.) * (-1) !g; negative = leaving the aquifer
+              gwsol_ss(cell_id)%solute(s)%ppag = gwsol_ss(cell_id)%solute(s)%ppag - (irr_mass(s)*1000.) !g; negative = leaving the aquifer
               gwsol_ss_sum(cell_id)%solute(s)%ppag = gwsol_ss_sum(cell_id)%solute(s)%ppag - (irr_mass(s)*1000.)
             enddo
           endif

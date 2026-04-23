@@ -70,9 +70,7 @@
                   Q = res(res_id)%flo
                 endif
               elseif(Q < 0) then !aquifer --> reservoir
-                !if((Q*-1 == 1).ge.gw_state(cell_id)%stor) then
                 if (-Q .ge.gw_state(cell_id)%stor) then
-                  !Q = gw_state(cell_id)%stor * (-1)
                   Q = -gw_state(cell_id)%stor   
                   gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q   
                 endif   
@@ -95,6 +93,7 @@
                     if(-solmass(s) > gwsol_state(cell_id)%solute(s)%mass) then !can only remove what is there
                       solmass(s) = -gwsol_state(cell_id)%solute(s)%mass
                     endif
+                    gwsol_state(cell_id)%solute(s)%mass = gwsol_state(cell_id)%solute(s)%mass + solmass(s)
                     gwsol_ss(cell_id)%solute(s)%resv = gwsol_ss(cell_id)%solute(s)%resv + solmass(s)
                     gwsol_ss_sum(cell_id)%solute(s)%resv = gwsol_ss_sum(cell_id)%solute(s)%resv + solmass(s)
                   enddo    

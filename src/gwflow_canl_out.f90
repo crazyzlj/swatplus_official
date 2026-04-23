@@ -68,9 +68,7 @@
               
               !store values in gwflow source/sink arrays
               if(Q < 0) then !groundwater --> canal
-                !if((Q*-1 == 1).ge.gw_state(cell_id)%stor) then !can only remove what is there
                 if (-Q .ge.gw_state(cell_id)%stor) then !can only remove what is there
-                  !Q = gw_state(cell_id)%stor * (-1)
                   Q = -gw_state(cell_id)%stor
                 endif
                 gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q !update available groundwater in the cell 
@@ -86,6 +84,7 @@
                     if(-solmass(s) > gwsol_state(cell_id)%solute(s)%mass) then !can only remove what is there
                       solmass(s) = -gwsol_state(cell_id)%solute(s)%mass
                     endif
+                    gwsol_state(cell_id)%solute(s)%mass = gwsol_state(cell_id)%solute(s)%mass + solmass(s)
                   enddo
                 else !mass entering the cell from the canal (i.e., from the channel that provides the canal water)
                   !calculate mass (g)

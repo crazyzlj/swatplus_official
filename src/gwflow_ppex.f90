@@ -50,6 +50,10 @@
                 if (gw_solute_flag == 1) then
                   do s=1,gw_nsolute !loop through the solutes
                     solmass(s) = Q * gwsol_state(cell_id)%solute(s)%conc !g
+                    if (solmass(s) .ge. gwsol_state(cell_id)%solute(s)%mass) then
+                        solmass(s) = gwsol_state(cell_id)%solute(s)%mass
+                    endif
+                    gwsol_state(cell_id)%solute(s)%mass = gwsol_state(cell_id)%solute(s)%mass - solmass(s)
                     gwsol_ss(cell_id)%solute(s)%ppex = gwsol_ss(cell_id)%solute(s)%ppex - solmass(s)
                     gwsol_ss_sum(cell_id)%solute(s)%ppex = gwsol_ss_sum(cell_id)%solute(s)%ppex - solmass(s)
                   enddo

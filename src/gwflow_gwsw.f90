@@ -106,6 +106,7 @@
                 if(-solmass(s) > gwsol_state(cell_id)%solute(s)%mass) then !can only remove what is there
                   solmass(s) = -gwsol_state(cell_id)%solute(s)%mass
                 endif
+                gwsol_state(cell_id)%solute(s)%mass = gwsol_state(cell_id)%solute(s)%mass + solmass(s)
                 gwsol_ss(cell_id)%solute(s)%gwsw = gwsol_ss(cell_id)%solute(s)%gwsw + solmass(s)
                 gwsol_ss_sum(cell_id)%solute(s)%gwsw = gwsol_ss_sum(cell_id)%solute(s)%gwsw + solmass(s)
               enddo  

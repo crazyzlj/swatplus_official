@@ -28,7 +28,7 @@
       real :: thick = 0.                 !m      |canal bed thickness
       real :: length = 0.                !m      |length of canal in the cell
       real :: stage = 0.                 !m      |stage of canal in the cell
-      real :: bed_K = 0.                  !m/day  |hydraulic conductivity of canal bed in the cell
+      real :: bed_K = 0.                 !m/day  |hydraulic conductivity of canal bed in the cell
       real :: flow_area = 0.             !m2     |groundwater flow area of water exchange, in cell
       real :: canal_bed = 0.             !m      |canal bed elevation in the cell
       real :: head_diff = 0.             !m      |head difference between canal stage and groundwater head
@@ -124,7 +124,6 @@
                 
                 !store values in gwflow source/sink arrays
                 if(Q < 0) then !groundwater --> canal
-                  !if ((Q*-1 == 1).ge.gw_state(cell_id)%stor) then !can only remove what is there
                   if (-Q .ge. gw_state(cell_id)%stor) then !can only remove what is there                  
                     Q = -gw_state(cell_id)%stor 
                   endif
@@ -149,6 +148,7 @@
                       if(-solmass(s) > gwsol_state(cell_id)%solute(s)%mass) then !can only remove what is there
                         solmass(s) = -gwsol_state(cell_id)%solute(s)%mass
                       endif
+                      gwsol_state(cell_id)%solute(s)%mass = gwsol_state(cell_id)%solute(s)%mass + solmass(s) !update gw storage that can be consumed
                     enddo
                   else !mass entering the cell from the canal (i.e., from the channel that provides the canal water)
                     !calculate mass (g)
