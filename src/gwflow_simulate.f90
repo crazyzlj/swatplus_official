@@ -328,23 +328,24 @@
       
       
       ! 4. calculate new groundwater storage and head for each grid cell ----------------------------------------------
-      
+      ! No need to re-calculate vbef and mbef, since we can update them after updating gw_state()stor
       !compute groundwater volume and solute mass at beginning of day
-      do i=1,ncell
-        if(gw_state(i)%stat == 1) then
-          gw_state(i)%vbef = (gw_state(i)%head-gw_state(i)%botm) * gw_state(i)%area * gw_state(i)%spyd !m3
-        endif
-      enddo
+      !do i=1,ncell
+      !  if(gw_state(i)%stat == 1) then
+      !    gw_state(i)%vbef = (gw_state(i)%head-gw_state(i)%botm) * gw_state(i)%area * gw_state(i)%spyd !m3
+      !  endif
+      !enddo
       !compute cell solute mass at the beginning of the day
-      if (gw_solute_flag == 1) then
-        do i=1,ncell
-          if(gw_state(i)%stat == 1) then
-            do s=1,gw_nsolute !loop through the solutes
-              gwsol_state(i)%solute(s)%mbef = gwsol_state(i)%solute(s)%mass
-            enddo
-          endif
-        enddo
-      endif
+      !if (gw_solute_flag == 1) then
+      !  do i=1,ncell
+      !    if(gw_state(i)%stat == 1) then
+      !      do s=1,gw_nsolute !loop through the solutes
+      !        !gwsol_state(i)%solute(s)%mbef = gwsol_state(i)%solute(s)%mass !should be computed by conc
+      !        gwsol_state(i)%solute(s)%mbef = gwsol_state(i)%solute(s)%conc * gw_state(i)%vbef
+      !      enddo
+      !    endif
+      !  enddo
+      !endif
       
       !determine number of flow time steps; determine size of transport time step
       num_ts = int(1./gw_time_step)
@@ -457,16 +458,18 @@
               if(gw_state(i)%stat == 1) then !interior cell
 
                 !calculate old and new groundwater volume in the cell (m3)
-                if(gw_state(i)%hold > gw_state(i)%botm) then
-                  gw_volume_old = gw_state(i)%area * (gw_state(i)%hold - gw_state(i)%botm) * gw_state(i)%spyd
-                else
-                  gw_volume_old = 0.
-                endif
-                if(gw_state(i)%head > gw_state(i)%botm) then
-                  gw_volume_new = gw_state(i)%area * (gw_state(i)%head - gw_state(i)%botm) * gw_state(i)%spyd
-                else
-                  gw_volume_new = 0.
-                endif
+                !if(gw_state(i)%hold > gw_state(i)%botm) then
+                !  gw_volume_old = gw_state(i)%area * (gw_state(i)%hold - gw_state(i)%botm) * gw_state(i)%spyd
+                !else
+                !  gw_volume_old = 0.
+                !endif
+                !if(gw_state(i)%head > gw_state(i)%botm) then
+                !  gw_volume_new = gw_state(i)%area * (gw_state(i)%head - gw_state(i)%botm) * gw_state(i)%spyd
+                !else
+                !  gw_volume_new = 0.
+                !endif
+                gw_volume_old = gw_state(i)%vbef
+                gw_volume_new = gw_state(i)%stor
                   
                 !calculate groundwater volume for the current transport time step (via interpolation)
                 time_fraction = real(t)/real(num_ts_transport)
@@ -591,8 +594,18 @@
         endif !check if solute transport is being simulated 
         
       enddo !next flow time step --------------------------------------------------------------------------------------
-
-      !write(9003,*) "simulation after routing: ", gw_state(923)%head, gw_state(923)%stor      
+      
+      !after updating the groundwater head, storage, and solute mass, assigning current storage to vbef and mbef
+      do i=1,ncell
+        gw_state(i)%vbef = gw_state(i)%stor
+      enddo
+      if (gw_solute_flag == 1) then
+        do i=1,ncell
+          do s=1,gw_nsolute !loop through the solutes
+            gwsol_state(i)%solute(s)%mbef = gwsol_state(i)%solute(s)%mass
+          enddo  
+        enddo
+      endif 
       
       !5. save/write out head and solute concentrations ---------------------------------------------------------------      
       
@@ -720,7 +733,8 @@
       !compute groundwater volumes at the end of the day
       do i=1,ncell
         if(gw_state(i)%stat == 1) then
-          gw_state(i)%vaft = ((gw_state(i)%head - gw_state(i)%botm) * gw_state(i)%area) * gw_state(i)%spyd  
+          !gw_state(i)%vaft = ((gw_state(i)%head - gw_state(i)%botm) * gw_state(i)%area) * gw_state(i)%spyd  
+          gw_state(i)%vaft = gw_state(i)%stor
         endif
       enddo
       !compute solute mass at the end of the day

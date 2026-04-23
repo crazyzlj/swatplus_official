@@ -2311,6 +2311,7 @@
             gw_state(i)%stor = 0.
           endif
         endif
+        gw_state(i)%vbef = gw_state(i)%stor ! initial gw storage at the day before
       enddo
       
       !set solute mass for each grid cell
@@ -2325,6 +2326,7 @@
             do s=1,gw_nsolute !loop through solutes
               !gwsol_state(i)%solute(s)%mass = gw_cell_volume * gwsol_state(i)%solute(s)%conc !m3 * g/m3 = g
               gwsol_state(i)%solute(s)%mass = gw_state(i)%stor * gwsol_state(i)%solute(s)%conc !m3 * g/m3 = g
+              gwsol_state(i)%solute(s)%mbef = gwsol_state(i)%solute(s)%mass !initial solute mass at the day before
             enddo
           endif
         enddo
