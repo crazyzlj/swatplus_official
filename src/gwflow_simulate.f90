@@ -527,7 +527,7 @@
                   
                 !calculate new mass in the cell (g)
                 do s=1,gw_nsolute !loop through the solutes
-                  gwsol_state(i)%solute(s)%mass = gwsol_state(i)%solute(s)%mass + m_change(s)
+                  gwsol_state(i)%solute(s)%mass = gwsol_state(i)%solute(s)%mbef + m_change(s)
                   if(gwsol_state(i)%solute(s)%mass < 0) then
                     gwsol_state(i)%solute(s)%mass = 0.
                   endif
@@ -587,25 +587,16 @@
             do i=1,ncell
               do s=1,gw_nsolute !loop through the solutes
                 gwsol_state(i)%solute(s)%conc = gwsol_state(i)%solute(s)%cnew
+                gwsol_state(i)%solute(s)%mbef = gwsol_state(i)%solute(s)%mass
               enddo
             enddo
 
           enddo !go to next transport time step
         endif !check if solute transport is being simulated 
-        
-      enddo !next flow time step --------------------------------------------------------------------------------------
-      
-      !after updating the groundwater head, storage, and solute mass, assigning current storage to vbef and mbef
-      do i=1,ncell
-        gw_state(i)%vbef = gw_state(i)%stor
-      enddo
-      if (gw_solute_flag == 1) then
         do i=1,ncell
-          do s=1,gw_nsolute !loop through the solutes
-            gwsol_state(i)%solute(s)%mbef = gwsol_state(i)%solute(s)%mass
-          enddo  
+          gw_state(i)%vbef = gw_state(i)%stor
         enddo
-      endif 
+      enddo !next flow time step --------------------------------------------------------------------------------------
       
       !5. save/write out head and solute concentrations ---------------------------------------------------------------      
       
