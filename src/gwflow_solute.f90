@@ -113,7 +113,7 @@
 
             !calculate new mass in the cell (g)
             do s=1,gw_nsolute !loop through the solutes
-              gwsol_state(i)%solute(s)%mass = gwsol_state(i)%solute(s)%mass + m_change(s)
+              gwsol_state(i)%solute(s)%mass = gwsol_state(i)%solute(s)%mbef + m_change(s)
               if(gwsol_state(i)%solute(s)%mass < 0) then
                 gwsol_state(i)%solute(s)%mass = 0.
               endif
@@ -182,6 +182,7 @@
         do i=1,ncell
           do s=1,gw_nsolute !loop through the solutes
             gwsol_state(i)%solute(s)%conc = gwsol_state(i)%solute(s)%cnew
+            gwsol_state(i)%solute(s)%mbef = gwsol_state(i)%solute(s)%mass
           enddo
         enddo
 

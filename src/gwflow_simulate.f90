@@ -595,6 +595,7 @@
             gwsol_ss(i)%solute(s)%totl = 0.
           enddo
         enddo
+        hru_soil = 0. !I think hru_soil should be set to zero for the next day, not sure its the right place. !ljzhu, 04/23/2026
         mass_rct = 0.
       endif
 

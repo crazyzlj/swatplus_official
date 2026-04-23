@@ -148,7 +148,7 @@
 
               !update storage and head for the cell
               stor_change = (Q + gw_hyd_ss(i)%totl) * gw_time_step !change in storage (m3)
-              gw_state(i)%stor = gw_state(i)%stor + stor_change !new storage (m3)
+              gw_state(i)%stor = gw_state(i)%vbef + stor_change !new storage (m3)
               sat_change = stor_change / (gw_state(i)%spyd * gw_state(i)%area) !change in saturated thickness (m3)
               gw_state(i)%hnew = gw_state(i)%head + sat_change !new groundwater head (m)
 
@@ -164,6 +164,7 @@
         do i=1,ncell
           gw_state(i)%hold = gw_state(i)%head
           gw_state(i)%head = gw_state(i)%hnew
+          gw_state(i)%vbef = gw_state(i)%stor
         enddo
 
         !heat transport (within each flow time step)

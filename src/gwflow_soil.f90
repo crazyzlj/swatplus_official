@@ -44,7 +44,7 @@
         hru_soilz = soil(hru_id)%phys(soil(hru_id)%nly)%d / 1000. !m
 
         !loop through the grid cells connected to the HRU -------------------------------------------------------------
-				hru_Q = 0.
+        hru_Q = 0.
         do k=1,hru_num_cells(hru_id)
 
           !cell in connection with the HRU
@@ -59,8 +59,7 @@
             !if water table is within the soil profile --> calculate groundwater volume (Q) to transfer; then transfer to soil layer
             hru_Q = 0.
             if(vadose_z < hru_soilz) then !water table is within the soil profile
-
-					    poly_area = gw_state(cell_id)%area * cells_fract(hru_id,k) !area of cell within HRU
+              poly_area = gw_state(cell_id)%area * cells_fract(hru_id,k) !area of cell within HRU
               hru_Q = (hru_soilz - vadose_z) * poly_area * gw_state(cell_id)%spyd !m3 of groundwater to transfer to the soil profile
 
               !store for water balance calculations (in gwflow_simulate)
