@@ -711,7 +711,7 @@
           endif
           write(obs_name,'(a4,i4.4)') 'obs_',k
           write(out_gwobs,8102) time%day,time%mo,time%day_mo,time%yrc, &
-            k,gw_obs_cells(k),obs_name, &
+            k,cell_id_init_list(gw_obs_cells(k)),obs_name, &
             gw_obs_head(k), &
             gw_state(gw_obs_cells(k))%elev - gw_obs_head(k), &
             obs_temp, obs_no3, obs_p
@@ -1398,7 +1398,7 @@
             endif
             write(obs_name,'(a4,i4.4)') 'obs_',k
             write(out_gwobs_mon,8102) time%day,time%mo,time%day_mo, &
-              time%yrc,k,gw_obs_cells(k),obs_name, &
+              time%yrc,k,cell_id_init_list(gw_obs_cells(k)),obs_name, &
               gw_state(i)%hdmo, gw_state(i)%elev - gw_state(i)%hdmo, &
               obs_temp, obs_no3, obs_p
           enddo
@@ -1685,7 +1685,7 @@
           endif
           write(obs_name,'(a4,i4.4)') 'obs_',k
           write(out_gwobs_yr,8102) time%day,time%mo,time%day_mo, &
-            time%yrc,k,gw_obs_cells(k),obs_name, &
+            time%yrc,k,cell_id_init_list(gw_obs_cells(k)),obs_name, &
             gw_state(i)%hdyr, gw_state(i)%elev - gw_state(i)%hdyr, &
             obs_temp, obs_no3, obs_p
         enddo
@@ -2018,7 +2018,7 @@
           endif
           write(obs_name,'(a4,i4.4)') 'obs_',k
           write(out_gwobs_aa,8102) time%day,time%mo,time%day_mo, &
-            time%yrc,k,gw_obs_cells(k),obs_name, &
+            time%yrc,k,cell_id_init_list(gw_obs_cells(k)),obs_name, &
             gw_head_sum_aa(i)/nbyr_r, &
             gw_state(i)%elev - gw_head_sum_aa(i)/nbyr_r, &
             obs_temp, obs_no3, obs_p
