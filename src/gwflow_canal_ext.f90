@@ -56,7 +56,7 @@
               thick = gw_canl_out_info(i)%thck
               length = gw_canl_out_info(i)%leng
               stage = gw_canl_out_info(i)%elev
-							bed_K = gw_canl_out_info(i)%hydc
+              bed_K = gw_canl_out_info(i)%hydc
 
               !calculate exchange rate Q (m3/day)
               flow_area = length * width !m2 = area of seepage
@@ -80,8 +80,9 @@
                 if (-Q .ge.gw_state(cell_id)%stor) then !can only remove what is there
                   Q = -gw_state(cell_id)%stor
                 endif
+                gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q !update available groundwater in the cell
               endif
-              gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q !update available groundwater in the cell
+              
               gw_hyd_ss(cell_id)%canl = gw_hyd_ss(cell_id)%canl + Q
               gw_hyd_ss_yr(cell_id)%canl = gw_hyd_ss_yr(cell_id)%canl + Q !store for annual water
               gw_hyd_ss_mo(cell_id)%canl = gw_hyd_ss_mo(cell_id)%canl + Q !store for monthly water
@@ -102,16 +103,17 @@
               if (gw_solute_flag == 1) then
                 if(Q < 0) then !mass is leaving the cell --> canal
                   do s=1,gw_nsolute !loop through the solutes
-                    solmass(s) = Q * gwsol_state(cell_id)%solute(s)%conc !g
-                    if(solmass(s) > gwsol_state(cell_id)%solute(s)%mass) then !can only remove what is there
-                      solmass(s) = gwsol_state(cell_id)%solute(s)%mass
+                    solmass(s) = Q * gwsol_state(cell_id)%solute(s)%conc !g, negative
+                    if(-solmass(s) > gwsol_state(cell_id)%solute(s)%mass) then !can only remove what is there
+                      solmass(s) = -gwsol_state(cell_id)%solute(s)%mass
                     endif
+                    gwsol_state(cell_id)%solute(s)%mass = gwsol_state(cell_id)%solute(s)%mass + solmass(s)
                   enddo
                 else !mass entering the cell from the canal (i.e., from the channel that provides the canal water)
                   !calculate mass (g)
-								  solmass(1) = Q * canal_out_conc(1) !no3
-									solmass(2) = Q * canal_out_conc(2) !p
-									sol_index = 2
+                    solmass(1) = Q * canal_out_conc(1) !no3
+                    solmass(2) = Q * canal_out_conc(2) !p
+                    sol_index = 2
                   !salts
                   if (gwsol_salt == 1) then
                     do isalt=1,cs_db%num_salts
@@ -131,7 +133,7 @@
                 do s=1,gw_nsolute !loop through the solutes
                   gwsol_ss(cell_id)%solute(s)%canl = gwsol_ss(cell_id)%solute(s)%canl + solmass(s)
                   gwsol_ss_sum(cell_id)%solute(s)%canl = gwsol_ss_sum(cell_id)%solute(s)%canl + solmass(s)
-									gwsol_ss_sum_mo(cell_id)%solute(s)%canl = gwsol_ss_sum_mo(cell_id)%solute(s)%canl + solmass(s)
+                  gwsol_ss_sum_mo(cell_id)%solute(s)%canl = gwsol_ss_sum_mo(cell_id)%solute(s)%canl + solmass(s)
                 enddo
               endif !end solutes
 

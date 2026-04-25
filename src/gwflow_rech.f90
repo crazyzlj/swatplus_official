@@ -112,7 +112,7 @@
                 cell_rech_solmass(s) = rech_solmass(s) * lsu_cells_fract(k,i)
                 gwsol_ss(cell_id)%solute(s)%rech = gwsol_ss(cell_id)%solute(s)%rech + cell_rech_solmass(s)
                 gwsol_ss_sum(cell_id)%solute(s)%rech = gwsol_ss_sum(cell_id)%solute(s)%rech + cell_rech_solmass(s)
-								gwsol_ss_sum_mo(cell_id)%solute(s)%rech = gwsol_ss_sum_mo(cell_id)%solute(s)%rech + cell_rech_solmass(s)
+                gwsol_ss_sum_mo(cell_id)%solute(s)%rech = gwsol_ss_sum_mo(cell_id)%solute(s)%rech + cell_rech_solmass(s)
               enddo
             endif
           enddo

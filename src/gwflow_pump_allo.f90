@@ -90,7 +90,8 @@
           endif
           extracted = extracted + gwvol_removed
           dmd_unmet = dmd_unmet + gwvol_unmet
-
+          
+          gw_state(cell_id)%stor = gw_state(cell_id)%stor - gwvol_removed !remove discharged groundwater
           !save the pumping volume (m3), for use in gwflow_simulate
           gw_hyd_ss(cell_id)%ppag = gw_hyd_ss(cell_id)%ppag + gwvol_removed * (-1) !m3 negative = leaving the aquifer
           gw_hyd_ss_yr(cell_id)%ppag = gw_hyd_ss_yr(cell_id)%ppag + (gwvol_removed * (-1)) !store for annual water
@@ -127,6 +128,7 @@
               endif
               irr_mass(s) = irr_mass(s) - mass_diff
               if(irr_mass(s).lt.0) irr_mass(s) = 0.
+              gwsol_state(cell_id)%solute(s)%mass = gwsol_state(cell_id)%solute(s)%mass - gw_mass
             enddo
             !add solute mass to soil profile of demand object (hru)
             wetland = hru(hru_id)%dbs%surf_stor !check if HRU is a wetland

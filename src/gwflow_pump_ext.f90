@@ -70,7 +70,7 @@
                     gwsol_state(cell_id)%solute(s)%mass = gwsol_state(cell_id)%solute(s)%mass - solmass(s)
                     gwsol_ss(cell_id)%solute(s)%ppex = gwsol_ss(cell_id)%solute(s)%ppex - solmass(s)
                     gwsol_ss_sum(cell_id)%solute(s)%ppex = gwsol_ss_sum(cell_id)%solute(s)%ppex - solmass(s)
-									gwsol_ss_sum_mo(cell_id)%solute(s)%ppex = gwsol_ss_sum_mo(cell_id)%solute(s)%ppex - solmass(s)
+                    gwsol_ss_sum_mo(cell_id)%solute(s)%ppex = gwsol_ss_sum_mo(cell_id)%solute(s)%ppex - solmass(s)
                   enddo
                 endif
 

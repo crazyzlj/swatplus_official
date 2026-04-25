@@ -32,7 +32,7 @@
                     do i=1,gw_phyt_npts-1
                       if(wt_depth >= gw_phyt_dep(i) .and. wt_depth <= gw_phyt_dep(i+1)) then
                           ratio = (wt_depth - gw_phyt_dep(i)) / (gw_phyt_dep(i+1)-gw_phyt_dep(i))
-                            et_rate = gw_phyt_rate(i) - (ratio*(gw_phyt_rate(i)-gw_phyt_rate(i+1)))
+                          et_rate = gw_phyt_rate(i) - (ratio*(gw_phyt_rate(i)-gw_phyt_rate(i+1)))
                           et_Q = et_rate * gw_phyt_area(k)
                         endif
                     enddo

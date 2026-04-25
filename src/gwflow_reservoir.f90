@@ -30,7 +30,7 @@
       real :: resv_csol(100) = 0.        !g/m3   |solute concentration in reservoir water
       real :: solmass(100) = 0.          !g      |solute mass transferred
       real :: heat_flux = 0.             !J      |heat removed from groundwater
-      real :: seep_total = 0.            !m3	 |total seepage from reservoir to gwflow cells
+      real :: seep_total = 0.            !m3     |total seepage from reservoir to gwflow cells
 
 
       !only proceed if reservoir-cell exchange is active
@@ -41,7 +41,7 @@
 
         !loop through the cells connected to the reservoir
         seep_total = 0.
-				do k=1,gw_resv_info(res_id)%ncon
+                do k=1,gw_resv_info(res_id)%ncon
           res_cell_id = gw_resv_info(res_id)%cells(k) !id of reservoir cell
 
           !loop through the cells connected to the cell
@@ -84,7 +84,7 @@
               gw_hyd_ss_mo(cell_id)%resv = gw_hyd_ss_mo(cell_id)%resv + Q !store for monthly water
 
               !store seepage value for reservoir object
-							seep_total = seep_total + Q
+              seep_total = seep_total + Q
 
               !heat transport
               if(gw_heat_flag == 1) then
@@ -111,7 +111,7 @@
                     gwsol_state(cell_id)%solute(s)%mass = gwsol_state(cell_id)%solute(s)%mass + solmass(s)
                     gwsol_ss(cell_id)%solute(s)%resv = gwsol_ss(cell_id)%solute(s)%resv + solmass(s)
                     gwsol_ss_sum(cell_id)%solute(s)%resv = gwsol_ss_sum(cell_id)%solute(s)%resv + solmass(s)
-									gwsol_ss_sum_mo(cell_id)%solute(s)%resv = gwsol_ss_sum_mo(cell_id)%solute(s)%resv + solmass(s)
+                    gwsol_ss_sum_mo(cell_id)%solute(s)%resv = gwsol_ss_sum_mo(cell_id)%solute(s)%resv + solmass(s)
                   enddo
                   !add solute to reservoir
                   res(res_id)%no3 = res(res_id)%no3 + (solmass(1)*(-1)/1000.) !kg
@@ -198,7 +198,7 @@
                   do s=1,gw_nsolute !loop through the solutes
                     gwsol_ss(cell_id)%solute(s)%resv = gwsol_ss(cell_id)%solute(s)%resv + solmass(s)
                     gwsol_ss_sum(cell_id)%solute(s)%resv = gwsol_ss_sum(cell_id)%solute(s)%resv + solmass(s)
-									gwsol_ss_sum_mo(cell_id)%solute(s)%resv = gwsol_ss_sum_mo(cell_id)%solute(s)%resv + solmass(s)
+                    gwsol_ss_sum_mo(cell_id)%solute(s)%resv = gwsol_ss_sum_mo(cell_id)%solute(s)%resv + solmass(s)
                   enddo
                 endif
 
@@ -210,8 +210,8 @@
 
         enddo !go to next reservoir cell
 
-				!store total exchange volume, for reservoir water balance in res_control
-				res_wat_d(res_id)%seep = seep_total
+        !store total exchange volume, for reservoir water balance in res_control
+        res_wat_d(res_id)%seep = seep_total
 
       endif !if reservoir-cell connection is active in the simulation
 

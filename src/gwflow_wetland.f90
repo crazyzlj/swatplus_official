@@ -57,18 +57,17 @@
             cell_id = hru_cells(hru_id,icell)
             wt = gw_state(cell_id)%head !water table elevation (m)
 
-			!calculate wetland stage = hru elevation + wetland depth
-			wet_depth = wet(hru_id)%flo / (wet_wat_d(hru_id)%area_ha * 10000.) !m
-			wet_stage = ob(sp_ob1%hru+hru_id-1)%elev + wet_depth !m
+            !calculate wetland stage = hru elevation + wetland depth
+            wet_depth = wet(hru_id)%flo / (wet_wat_d(hru_id)%area_ha * 10000.) !m
+            wet_stage = ob(sp_ob1%hru+hru_id-1)%elev + wet_depth !m
 
-			!wetland hydraulic conductivity and area
+            !wetland hydraulic conductivity and area
             wet_k = hru(hru_id)%wet_hc * 24 / 1000. !mm/hr --> m/day
             wet_area = hru_cells_fract(hru_id,icell) * (wet_wat_d(hru_id)%area_ha * 10000.) !m2
 
             !compute groundwater inflow to wetland, if water table > wetland stage (Darcy's law)
             gw_inflow = 0.
             if(wt > wet_stage) then !groundwater inflow to wetland
-
               gw_inflow = wet_area * wet_k * ((wt-wet_stage)/wet_thick(ires)) !m3/day
               !check against available groundwater storage (m3) in the grid cell
               if(gw_state(cell_id)%head > gw_state(cell_id)%botm) then !if water table is above bedrock
@@ -81,7 +80,7 @@
               !if storage is less than wetland inflow, remove all groundwater
               if(gw_inflow > gwvol_avail) then
                 gw_inflow = gwvol_avail
-							endif
+              endif
               !include in groundwater source-sink array (will be removed in gwflow_simulate)
               gw_state(cell_id)%stor = gw_state(cell_id)%stor + (gw_inflow*(-1))
               
@@ -126,12 +125,12 @@
                 !salts
                 !constituents
               endif
-						else !wetland seepage to soil layers (add for all connected cells)
+            else !wetland seepage to soil layers (add for all connected cells)
               if(wet_thick(ires) > 0) then
-						    wet_seep = wet_seep + (wet_area * wet_k * ((wet_stage-wt)/wet_thick(ires))) !m3/day
-							else
-							  wet_seep = wet_seep + (wet_area * wet_k * ((wet_stage-wt)/0.10)) !m3/day
-							endif
+                wet_seep = wet_seep + (wet_area * wet_k * ((wet_stage-wt)/wet_thick(ires))) !m3/day
+              else
+                wet_seep = wet_seep + (wet_area * wet_k * ((wet_stage-wt)/0.10)) !m3/day
+              endif
             endif
 
           enddo !go to next cell connected to the HRU
@@ -139,11 +138,11 @@
         endif !if hru is connected to gwflow grid cells
 
         !copy values into the wetland object
-				!add groundwater inflow to wetland water volume
-				wet(hru_id)%flo = wet(hru_id)%flo + wet_inflow !m3
-				wet_in_d(hru_id)%flo = wet_in_d(hru_id)%flo + wet_inflow
-				!store seepage volume
-				wet_wat_d(hru_id)%seep = min(wet(hru_id)%flo, wet_seep)
+        !add groundwater inflow to wetland water volume
+        wet(hru_id)%flo = wet(hru_id)%flo + wet_inflow !m3
+        wet_in_d(hru_id)%flo = wet_in_d(hru_id)%flo + wet_inflow
+        !store seepage volume
+        wet_wat_d(hru_id)%seep = min(wet(hru_id)%flo, wet_seep)
         if(gw_solute_flag == 1) then
           wet_in_d(hru_id)%no3 = wet_in_d(hru_id)%no3 + wet_inflow_no3
           wet_in_d(hru_id)%solp = wet_in_d(hru_id)%solp + wet_inflow_solp

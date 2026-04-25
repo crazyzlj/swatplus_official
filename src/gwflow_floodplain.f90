@@ -62,8 +62,8 @@
 
             !derived values
             chan_stage = bed_elev + chan_depth !stage of water in channel (m)
-
-						!adjust flow area, if necessary (if floodplain cell is also a river cell; exchange already calculated for main channel)
+            
+            !adjust flow area, if necessary (if floodplain cell is also a river cell; exchange already calculated for main channel)
             if(gw_fpln_info(chan_id)%mtch(k) > 0) then
               chan_cell = gw_fpln_info(chan_id)%mtch(k)
               riv_flow_area = sd_ch(chan_id)%chw * gw_chan_len(chan_cell) !width * length = river cell exchange flow area
@@ -91,7 +91,7 @@
               if(Q > ch_stor(chan_id)%flo) then !can only remove what is there
                 Q = ch_stor(chan_id)%flo
               endif
-              !when water flow to groundwater, do not update %stor, update %fpln instead.
+              !when water flow to groundwater, do not update %stor, update %fpln instead. -ljzhu
               !gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q !add seeped channel water
             endif
 
@@ -141,13 +141,13 @@
               solmass = 0.
               if(Q < 0) then !mass leaving the cell (aquifer --> channel)
                 do s=1,gw_nsolute !loop through the solutes
-                  solmass(s) = Q * gwsol_state(cell_id)%solute(s)%conc !g
-                  if(solmass(s) > gwsol_state(cell_id)%solute(s)%mass) then !can only remove what is there
-                    solmass(s) = gwsol_state(cell_id)%solute(s)%mass
+                  solmass(s) = Q * gwsol_state(cell_id)%solute(s)%conc !g, negative
+                  if(-solmass(s) > gwsol_state(cell_id)%solute(s)%mass) then !can only remove what is there
+                    solmass(s) = -gwsol_state(cell_id)%solute(s)%mass
                   endif
-                  gwsol_ss(cell_id)%solute(s)%fpln = solmass(s)
+                  gwsol_ss(cell_id)%solute(s)%fpln = gwsol_ss(cell_id)%solute(s)%fpln + solmass(s)
                   gwsol_ss_sum(cell_id)%solute(s)%fpln = gwsol_ss_sum(cell_id)%solute(s)%fpln + solmass(s)
-									gwsol_ss_sum_mo(cell_id)%solute(s)%fpln = gwsol_ss_sum_mo(cell_id)%solute(s)%fpln + solmass(s)
+                  gwsol_ss_sum_mo(cell_id)%solute(s)%fpln = gwsol_ss_sum_mo(cell_id)%solute(s)%fpln + solmass(s)
                 enddo
                 !add solute to channel
                 ch_stor(chan_id)%no3 = ch_stor(chan_id)%no3 + (solmass(1)*(-1)/1000.) !kg
@@ -226,9 +226,9 @@
                 endif
                 !store for mass balance calculations (in gwflow_simulate)
                 do s=1,gw_nsolute !loop through the solutes
-                  gwsol_ss(cell_id)%solute(s)%fpln = solmass(s)
+                  gwsol_ss(cell_id)%solute(s)%fpln = gwsol_ss(cell_id)%solute(s)%fpln + solmass(s)
                   gwsol_ss_sum(cell_id)%solute(s)%fpln = gwsol_ss_sum(cell_id)%solute(s)%fpln + solmass(s)
-									gwsol_ss_sum_mo(cell_id)%solute(s)%fpln = gwsol_ss_sum_mo(cell_id)%solute(s)%fpln + solmass(s)
+                  gwsol_ss_sum_mo(cell_id)%solute(s)%fpln = gwsol_ss_sum_mo(cell_id)%solute(s)%fpln + solmass(s)
                 enddo
               endif
 

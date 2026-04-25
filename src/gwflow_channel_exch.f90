@@ -39,7 +39,7 @@
       real :: chan_heat = 0.             !J      |current heat in channel
       real :: heat_flux = 0.             !J/day  |heat transferred between groundwater and channel
       real :: chan_flow = 0.
-			real :: chan_temp = 0.
+      real :: chan_temp = 0.
 
 
       !current channel storage (m3) and temperature (deg C)
@@ -65,10 +65,10 @@
           bed_thick = gw_chan_info(chan_id)%thck(k)
 
           !derived values
-					if(gw_chan_dep_flag == 1) then !depth zone for daily channel depth: specified in gwflow.chancells_depth
-					  chan_depth = gw_chan_dep(gw_chan_info(chan_id)%dpzn(k))
-					endif
-					chan_stage = bed_elev + chan_depth !stage of water in channel (m)
+          if(gw_chan_dep_flag == 1) then !depth zone for daily channel depth: specified in gwflow.chancells_depth
+            chan_depth = gw_chan_dep(gw_chan_info(chan_id)%dpzn(k))
+          endif
+          chan_stage = bed_elev + chan_depth !stage of water in channel (m)
           flow_area = chan_width * chan_length !water exchange flow area (m2)
 
           !calculate flow exchange rate (m3/day) using Darcy's Law
@@ -91,30 +91,41 @@
             if (-Q >= gw_state(cell_id)%stor) then !can only remove what is there
               Q = -gw_state(cell_id)%stor
             endif
+            gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q
             gw_hyd_ss(cell_id)%gwsw = gw_hyd_ss(cell_id)%gwsw + Q
+            gw_hyd_ss_yr(cell_id)%gwsw = gw_hyd_ss_yr(cell_id)%gwsw + Q
+            gw_hyd_ss_mo(cell_id)%gwsw = gw_hyd_ss_mo(cell_id)%gwsw + Q
           else !channel --> aquifer
             if(Q > ch_stor(chan_id)%flo) then !can only remove what is there
               Q = ch_stor(chan_id)%flo
             endif
             gw_hyd_ss(cell_id)%swgw = gw_hyd_ss(cell_id)%swgw + Q
+            gw_hyd_ss_yr(cell_id)%swgw = gw_hyd_ss_yr(cell_id)%swgw + Q
+            gw_hyd_ss_mo(cell_id)%swgw = gw_hyd_ss_mo(cell_id)%swgw + Q
           endif
-		  !remove groundwater from storage; calculate change in saturated thickness and new gw head
-          stor_change = Q !m3
-		  gw_state(cell_id)%stor = gw_state(cell_id)%stor + stor_change !m3
-          sat_change = stor_change / (gw_state(cell_id)%spyd * gw_state(cell_id)%area) !m
+          
+          !04/25/2026: For now, I just cannot understand why the head is updated here, 
+          !            and why gwsw and swgw are not included in calculating %totl in gwflow_simulation.
+          !            So, for my experiment, I would like to keep the consistent logic that do not update %head. -ljzhu
           !Do not update %head, which will be handled in gwflow_simulate.f90
+          
+          !remove groundwater from storage; calculate change in saturated thickness and new gw head
+          !stor_change = Q !m3
+          !gw_state(cell_id)%stor = gw_state(cell_id)%stor + stor_change !m3
+          !sat_change = stor_change / (gw_state(cell_id)%spyd * gw_state(cell_id)%area) !m
           !gw_state(cell_id)%head = gw_state(cell_id)%head + sat_change !m
-		  !annual and monthly values
-          gw_hyd_ss_yr(cell_id)%gwsw = gw_hyd_ss_yr(cell_id)%gwsw + Q
-          gw_hyd_ss_mo(cell_id)%gwsw = gw_hyd_ss_mo(cell_id)%gwsw + Q
+          !annual and monthly values
+          !gw_hyd_ss_yr(cell_id)%gwsw = gw_hyd_ss_yr(cell_id)%gwsw + Q
+          !gw_hyd_ss_mo(cell_id)%gwsw = gw_hyd_ss_mo(cell_id)%gwsw + Q
+          
           !store for channel object (positive value = water added to channel)
-					chan_flow = ch_stor(chan_id)%flo
+          chan_flow = ch_stor(chan_id)%flo
           ch_stor(chan_id)%flo = ch_stor(chan_id)%flo + (Q*(-1))
 
           !heat
           if(gw_heat_flag == 1) then
             !current heat in channel
-						chan_temp = ch_stor(chan_id)%temp
+            chan_temp = ch_stor(chan_id)%temp
             chan_heat = ch_stor(chan_id)%temp * gw_rho * gw_cp * chan_flow !J in channel
             if(Q < 0) then !leaving the cell (aquifer --> channel)
               heat_flux = gwheat_state(cell_id)%temp * gw_rho * gw_cp * Q !J
@@ -136,12 +147,12 @@
             !update channel heat and temperature
             chan_heat = chan_heat + (heat_flux*(-1))
             if(ch_stor(chan_id)%flo > 0) then
-							chan_temp = chan_heat / (gw_rho * gw_cp * ch_stor(chan_id)%flo)
+              chan_temp = chan_heat / (gw_rho * gw_cp * ch_stor(chan_id)%flo)
               ch_stor(chan_id)%temp = chan_heat / (gw_rho * gw_cp * ch_stor(chan_id)%flo)
             else
               ch_stor(chan_id)%temp = 0.
-						endif
-						ch_out_d(chan_id)%temp = ch_stor(chan_id)%temp
+            endif
+            ch_out_d(chan_id)%temp = ch_stor(chan_id)%temp
             !store for annual values
             gw_heat_ss_yr(cell_id)%gwsw = gw_heat_ss_yr(cell_id)%gwsw + heat_flux !J
           endif
@@ -159,7 +170,7 @@
                 gwsol_state(cell_id)%solute(s)%mass = gwsol_state(cell_id)%solute(s)%mass + solmass(s)
                 gwsol_ss(cell_id)%solute(s)%gwsw = gwsol_ss(cell_id)%solute(s)%gwsw + solmass(s)
                 gwsol_ss_sum(cell_id)%solute(s)%gwsw = gwsol_ss_sum(cell_id)%solute(s)%gwsw + solmass(s)
-								gwsol_ss_sum_mo(cell_id)%solute(s)%gwsw = gwsol_ss_sum_mo(cell_id)%solute(s)%gwsw + solmass(s)
+                gwsol_ss_sum_mo(cell_id)%solute(s)%gwsw = gwsol_ss_sum_mo(cell_id)%solute(s)%gwsw + solmass(s)
               enddo
               !add solute mass to channel
               ch_stor(chan_id)%no3 = ch_stor(chan_id)%no3 + (solmass(1)*(-1)/1000.) !kg
@@ -243,7 +254,7 @@
               do s=1,gw_nsolute !loop through the solutes
                 gwsol_ss(cell_id)%solute(s)%swgw = gwsol_ss(cell_id)%solute(s)%swgw + solmass(s)
                 gwsol_ss_sum(cell_id)%solute(s)%swgw = gwsol_ss_sum(cell_id)%solute(s)%swgw + solmass(s)
-								gwsol_ss_sum_mo(cell_id)%solute(s)%swgw = gwsol_ss_sum_mo(cell_id)%solute(s)%swgw + solmass(s)
+                gwsol_ss_sum_mo(cell_id)%solute(s)%swgw = gwsol_ss_sum_mo(cell_id)%solute(s)%swgw + solmass(s)
               enddo
             endif
 

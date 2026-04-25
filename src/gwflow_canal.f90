@@ -12,8 +12,8 @@
 
       implicit none
 
-      integer, intent (in) :: chan_id		 !       |channel number
-      integer :: c = 0											 !       |counter for canals connected to the channel
+      integer, intent (in) :: chan_id        !       |channel number
+      integer :: c = 0                       !       |counter for canals connected to the channel
       integer :: k = 0                       !       |counter for cells connected to a canal
       integer :: s = 0                       !       |counter of groundwater solutes
       integer :: canal_id = 0                !       |canal in connection with the channel
@@ -30,9 +30,9 @@
       real :: thick = 0.                      !m      |canal bed thickness
       real :: length = 0.                     !m      |length of canal in the cell
       real :: stage = 0.                      !m      |stage of canal in the cell
-      real :: bed_K = 0.											!m/day  |hydraulic conductivity of canal bed in the cell
-	    real :: reduc = 0.
-	    real :: daycount_real = 0.
+      real :: bed_K = 0.                      !m/day  |hydraulic conductivity of canal bed in the cell
+      real :: reduc = 0.
+      real :: daycount_real = 0.
       real :: flow_area = 0.                  !m2     |groundwater flow area of water exchange, in cell
       real :: canal_bed = 0.                  !m      |canal bed elevation in the cell
       real :: head_diff = 0.                  !m      |head difference between canal stage and groundwater head
@@ -112,7 +112,7 @@
                 !attributes of the cell
                 length = gw_canl_info(canal_id)%leng(k)
                 stage = gw_canl_info(canal_id)%elev(k)
-								bed_K = gw_canl_info(canal_id)%hydc(k)
+                bed_K = gw_canl_info(canal_id)%hydc(k)
 
                 !calculate exchange rate Q (m3/day)
                 flow_area = length * width !m2 = area of seepage
@@ -134,17 +134,16 @@
                   if (-Q .ge. gw_state(cell_id)%stor) then !can only remove what is there
                     Q = -gw_state(cell_id)%stor
                   endif
-                  gw_hyd_ss(cell_id)%canl = gw_hyd_ss(cell_id)%canl + Q
                   gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q !update available groundwater in the cell
                 else !canal --> groundwater (seepage)
                   if(Q > 0) then !canal seepage; remove water from channel
                     if(Q > ch_stor(chan_id)%flo) then !can only remove what is there
                       Q = ch_stor(chan_id)%flo
                     endif
-                    gw_hyd_ss(cell_id)%canl = gw_hyd_ss(cell_id)%canl + Q !store for water balance calculations
                     ch_stor(chan_id)%flo = ch_stor(chan_id)%flo - Q !remove water from channel
                   endif
                 endif
+                gw_hyd_ss(cell_id)%canl = gw_hyd_ss(cell_id)%canl + Q !store for water balance calculations
                 gw_hyd_ss_yr(cell_id)%canl = gw_hyd_ss_yr(cell_id)%canl + Q !store for annual water
                 gw_hyd_ss_mo(cell_id)%canl = gw_hyd_ss_mo(cell_id)%canl + Q !store for monthly water
 
@@ -173,8 +172,8 @@
                     ch_stor(chan_id)%temp = chan_heat / (gw_rho * gw_cp * ch_stor(chan_id)%flo)
                   else
                     ch_stor(chan_id)%temp = 0.
-									endif
-									ch_out_d(chan_id)%temp = ch_stor(chan_id)%temp
+                  endif
+                  ch_out_d(chan_id)%temp = ch_stor(chan_id)%temp
                   !store for heat balance
                   gw_heat_ss(cell_id)%canl = gw_heat_ss(cell_id)%canl + heat_flux
                   gw_heat_ss_yr(cell_id)%canl = gw_heat_ss_yr(cell_id)%canl + heat_flux !J
@@ -256,7 +255,7 @@
                   do s=1,gw_nsolute !loop through the solutes
                     gwsol_ss(cell_id)%solute(s)%canl = gwsol_ss(cell_id)%solute(s)%canl + solmass(s)
                     gwsol_ss_sum(cell_id)%solute(s)%canl = gwsol_ss_sum(cell_id)%solute(s)%canl + solmass(s)
-										gwsol_ss_sum_mo(cell_id)%solute(s)%canl = gwsol_ss_sum_mo(cell_id)%solute(s)%canl + solmass(s)
+                    gwsol_ss_sum_mo(cell_id)%solute(s)%canl = gwsol_ss_sum_mo(cell_id)%solute(s)%canl + solmass(s)
                   enddo
                 endif !end solutes
 

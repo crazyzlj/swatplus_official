@@ -66,7 +66,7 @@
             !store for mass balance output  
             gwupcs(j,ics) = gwupcs(j,ics) + hru_soil(j,jj,sol_index) !kg/ha
           enddo
-                enddo
+        enddo
       endif
       
       perccslyr = 0.

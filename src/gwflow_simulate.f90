@@ -218,8 +218,11 @@
       !m3 for water
       do i=1,ncell
         if(gw_state(i)%stat == 1) then
-          !do not include gwsw and swsw (already accounted for in gwflow_gwsw)
-          gw_hyd_ss(i)%totl = gw_hyd_ss(i)%rech + gw_hyd_ss(i)%gwet + & !gw_hyd_ss(i)%gwsw + gw_hyd_ss(i)%swgw
+          !do not include gwsw and swgw (already accounted for in gwflow_channel_exch)
+          !04/25/2026: For now, I cannot understand why gwsw and swgw are accounted in gwflow_channel_exch,
+          !            and I decided to keep consistent logic with other processes for my experiments. -ljzhu
+          gw_hyd_ss(i)%totl = gw_hyd_ss(i)%rech + gw_hyd_ss(i)%gwet + & 
+                               gw_hyd_ss(i)%gwsw + gw_hyd_ss(i)%swgw + &
                                gw_hyd_ss(i)%satx + gw_hyd_ss(i)%soil + &
                                gw_hyd_ss(i)%ppag + gw_hyd_ss(i)%ppex + gw_hyd_ss(i)%tile + &
                                gw_hyd_ss(i)%resv + gw_hyd_ss(i)%wetl + gw_hyd_ss(i)%canl + &

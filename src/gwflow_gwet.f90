@@ -87,15 +87,15 @@
       do k=1,sp_ob%hru
         max_gwet = etremain(k) !maximum ET rate from the water table (mm)
         do i=1,hru_num_cells(k)
-					max_gwet = max_gwet * hru_cells_fract(k,i) !mm
+          max_gwet = max_gwet * hru_cells_fract(k,i) !mm
           cell_id = hru_cells(k,i)
           et_surface = gw_state(cell_id)%elev !ground surface
           et_bottom = et_surface - gw_state(cell_id)%exdp !lower elevation bound for ET to occur
           gw_head = gw_state(cell_id)%head
           gwet = 0.
           if(et_surface == et_bottom) then
-					  gwet = 0.
-					elseif(gw_head < et_bottom) then
+            gwet = 0.
+          elseif(gw_head < et_bottom) then
             gwet = 0. !below the extinction depth
           elseif(gw_head > et_surface) then
             gwet = max_gwet

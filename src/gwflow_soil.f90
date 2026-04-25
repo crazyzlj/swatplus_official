@@ -34,8 +34,8 @@
 
 
 
-			!area of the HRU in m2
-			hru_area_m2 = ob(hru_id)%area_ha * 10000.
+      !area of the HRU in m2
+      hru_area_m2 = ob(hru_id)%area_ha * 10000.
 
       !only proceed if gw-->soil exchange is active
       if (gw_soil_flag == 1) then
@@ -61,11 +61,30 @@
             if(vadose_z < hru_soilz) then !water table is within the soil profile
               poly_area = gw_state(cell_id)%area * cells_fract(hru_id,k) !area of cell within HRU
               hru_Q = (hru_soilz - vadose_z) * poly_area * gw_state(cell_id)%spyd !m3 of groundwater to transfer to the soil profile
+              
+              if (hru_Q  >= gw_state(cell_id)%stor) then !can only remove what is there
+                hru_Q = gw_state(cell_id)%stor
+              endif
+              gw_state(cell_id)%stor = gw_state(cell_id)%stor - hru_Q !update available groundwater in the cell
 
               !store for water balance calculations (in gwflow_simulate)
               gw_hyd_ss(cell_id)%soil = gw_hyd_ss(cell_id)%soil + (hru_Q*(-1)) !negative = leaving the aquifer
               gw_hyd_ss_yr(cell_id)%soil = gw_hyd_ss_yr(cell_id)%soil + (hru_Q*(-1)) !store for annual water
               gw_hyd_ss_mo(cell_id)%soil = gw_hyd_ss_mo(cell_id)%soil + (hru_Q*(-1)) !store for monthly water
+              
+              !solutes
+              if (gw_solute_flag == 1) then
+                !solute mass transferred from aquifer to soil
+                do s=1,gw_nsolute
+                  solmass(s) = hru_Q * gwsol_state(cell_id)%solute(s)%conc !g
+                  if(solmass(s) > gwsol_state(cell_id)%solute(s)%mass) then !can only remove what is there
+                    solmass(s) = gwsol_state(cell_id)%solute(s)%mass
+                  endif
+                  gwsol_state(cell_id)%solute(s)%mass = gwsol_state(cell_id)%solute(s)%mass + (solmass(s)*(-1)) !remove from gw storage
+                  gwsol_ss(cell_id)%solute(s)%soil = gwsol_ss(cell_id)%solute(s)%soil + (solmass(s)*(-1)) !negative = leaving the aquifer
+                  gwsol_ss_sum(cell_id)%solute(s)%soil = gwsol_ss_sum(cell_id)%solute(s)%soil + (solmass(s)*(-1))
+                enddo  
+              endif !end solutes
 
               !heat
               if(gw_heat_flag == 1) then
@@ -96,7 +115,7 @@
                 endif
               enddo !next soil layer
 
-							!transfer the groundwater and the solute mass to the HRU soil layers
+              !transfer the groundwater and the solute mass to the HRU soil layers
               do jj=1,soil(hru_id)%nly
                 if(water_depth_tot > 0) then
                   layer_fraction = water_depth(jj) / water_depth_tot
