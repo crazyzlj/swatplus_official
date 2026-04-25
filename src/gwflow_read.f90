@@ -2485,7 +2485,7 @@
         gw_state(i)%head = gw_state(i)%init
         if(gw_state(i)%stat.gt.0) then
           if(gw_state(i)%head > gw_state(i)%botm) then
-            gw_state(i)%stor = ((gw_state(i)%head - gw_state(i)%botm) * gw_state(i)%area) * gw_state(i)%spyd
+            gw_state(i)%stor = ((gw_state(i)%head - gw_state(i)%botm) * gw_state(i)%area) * gw_state(i)%spyd !m3 of groundwater
           else
             gw_state(i)%stor = 0.
           endif
@@ -2497,13 +2497,7 @@
       if(gw_solute_flag == 1) then
         do i=1,ncell
           if(gw_state(i)%stat.gt.0) then
-            !if(gw_state(i)%head > gw_state(i)%botm) then
-            !  gw_cell_volume = gw_state(i)%area * (gw_state(i)%head-gw_state(i)%botm) * gw_state(i)%spyd !m3 of groundwater
-            !else
-            !  gw_cell_volume = 0.
-            !endif
             do s=1,gw_nsolute !loop through solutes
-              !gwsol_state(i)%solute(s)%mass = gw_cell_volume * gwsol_state(i)%solute(s)%conc !m3 * g/m3 = g
               gwsol_state(i)%solute(s)%mass = gw_state(i)%stor * gwsol_state(i)%solute(s)%conc !m3 * g/m3 = g
               gwsol_state(i)%solute(s)%mbef = gwsol_state(i)%solute(s)%mass !initial solute mass at the day before
             enddo

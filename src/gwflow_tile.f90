@@ -78,8 +78,8 @@
                   ch_stor(chan_id)%temp = chan_heat / (gw_rho * gw_cp * ch_stor(chan_id)%flo)
                 else
                   ch_stor(chan_id)%temp = 0.
-								endif
-								ch_out_d(chan_id)%temp = ch_stor(chan_id)%temp
+                endif
+                ch_out_d(chan_id)%temp = ch_stor(chan_id)%temp
               endif
 
               !transfer solute mass from groundwater to channel
@@ -92,7 +92,7 @@
                   gwsol_state(cell_id)%solute(s)%mass = gwsol_state(cell_id)%solute(s)%mass - solmass(s)
                   gwsol_ss(cell_id)%solute(s)%tile = gwsol_ss(cell_id)%solute(s)%tile + (solmass(s)*(-1)) !leaving aquifer
                   gwsol_ss_sum(cell_id)%solute(s)%tile = gwsol_ss_sum(cell_id)%solute(s)%tile + (solmass(s)*(-1)) !leaving aquifer
-									gwsol_ss_sum_mo(cell_id)%solute(s)%tile = gwsol_ss_sum_mo(cell_id)%solute(s)%tile + (solmass(s)*(-1)) !leaving aquifer
+                  gwsol_ss_sum_mo(cell_id)%solute(s)%tile = gwsol_ss_sum_mo(cell_id)%solute(s)%tile + (solmass(s)*(-1)) !leaving aquifer
                 enddo
                 !add solute to channel
                 ch_stor(chan_id)%no3 = ch_stor(chan_id)%no3 + (solmass(1)/1000.) !kg

@@ -91,7 +91,7 @@
             if (-Q >= gw_state(cell_id)%stor) then !can only remove what is there
               Q = -gw_state(cell_id)%stor
             endif
-						gw_hyd_ss(cell_id)%gwsw = gw_hyd_ss(cell_id)%gwsw + Q
+            gw_hyd_ss(cell_id)%gwsw = gw_hyd_ss(cell_id)%gwsw + Q
           else !channel --> aquifer
             if(Q > ch_stor(chan_id)%flo) then !can only remove what is there
               Q = ch_stor(chan_id)%flo
@@ -102,7 +102,8 @@
           stor_change = Q !m3
 		  gw_state(cell_id)%stor = gw_state(cell_id)%stor + stor_change !m3
           sat_change = stor_change / (gw_state(cell_id)%spyd * gw_state(cell_id)%area) !m
-          gw_state(cell_id)%head = gw_state(cell_id)%head + sat_change !m
+          !Do not update %head, which will be handled in gwflow_simulate.f90
+          !gw_state(cell_id)%head = gw_state(cell_id)%head + sat_change !m
 		  !annual and monthly values
           gw_hyd_ss_yr(cell_id)%gwsw = gw_hyd_ss_yr(cell_id)%gwsw + Q
           gw_hyd_ss_mo(cell_id)%gwsw = gw_hyd_ss_mo(cell_id)%gwsw + Q

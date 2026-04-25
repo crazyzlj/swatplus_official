@@ -91,7 +91,8 @@
               if(Q > ch_stor(chan_id)%flo) then !can only remove what is there
                 Q = ch_stor(chan_id)%flo
               endif
-              gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q !add seeped channel water
+              !when water flow to groundwater, do not update %stor, update %fpln instead.
+              !gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q !add seeped channel water
             endif
 
             !store for channel object (positive value = water added to channel)

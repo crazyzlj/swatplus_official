@@ -87,7 +87,7 @@
 						endif
 						gw_pond_info(r)%div_uns = div_specified - div_added !unsatisfied diversion
 						!remove from the channel --> add to the recharge pond
-	          ch_stor(chan_id)%flo = ch_stor(chan_id)%flo - div_added
+                        ch_stor(chan_id)%flo = ch_stor(chan_id)%flo - div_added
 						gw_pond_info(r)%stor = gw_pond_info(r)%stor + div_added
 						!remove salt mass from the channel --> add to the recharge pond
 						if (gw_solute_flag == 1) then
@@ -154,7 +154,7 @@
 							!remove from the canal diversion --> add to the recharge pond
 							gw_canl_div_info(canal_id)%stor = gw_canl_div_info(canal_id)%stor - div_added
 							gw_canl_div_info(canal_id)%out_pond = gw_canl_div_info(canal_id)%out_pond + div_added
-						  gw_pond_info(r)%stor = gw_pond_info(r)%stor + div_added
+                            gw_pond_info(r)%stor = gw_pond_info(r)%stor + div_added
 							if (gw_solute_flag == 1) then
 							  rec_id = gw_canl_div_info(canal_id)%divr
 								!salt

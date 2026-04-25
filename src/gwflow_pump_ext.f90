@@ -45,7 +45,7 @@
                 if(Q.ge.gw_state(cell_id)%stor) then
                   Q = gw_state(cell_id)%stor
                   gw_state(cell_id)%stor = gw_state(cell_id)%stor - Q
-							  endif
+                endif
                 gw_hyd_ss(cell_id)%ppex = gw_hyd_ss(cell_id)%ppex - Q !negative = leaving the aquifer
                 gw_hyd_ss_yr(cell_id)%ppex = gw_hyd_ss_yr(cell_id)%ppex - Q !store for annual water
                 gw_hyd_ss_mo(cell_id)%ppex = gw_hyd_ss_mo(cell_id)%ppex - Q !store for monthly water

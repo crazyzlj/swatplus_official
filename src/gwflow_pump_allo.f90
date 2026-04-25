@@ -60,7 +60,7 @@
       !only proceed if the HRU is connected (intersected with) gwflow grid cells
       sum_pump = 0.
       hru_id = ob_id_dmd
-			if(hru_num_cells(hru_id) > 0) then
+      if(hru_num_cells(hru_id) > 0) then
 
         !groundwater volume to remove from each cell connected to the HRU
         cell_demand = demand_vol / hru_num_cells(hru_id) !groundwater to remove from each cell connected to the HRU
@@ -73,8 +73,9 @@
 
           !check for available groundwater in the cell
           if(gw_state(cell_id)%head > gw_state(cell_id)%botm) then !if water table is above bedrock
-            gwvol_avail = ((gw_state(cell_id)%head-gw_state(cell_id)%botm) * gw_state(cell_id)%area) * gw_state(cell_id)%spyd !m3
-				  else
+            !gwvol_avail = ((gw_state(cell_id)%head-gw_state(cell_id)%botm) * gw_state(cell_id)%area) * gw_state(cell_id)%spyd !m3
+            gwvol_avail = gw_state(cell_id)%stor
+          else
             gwvol_avail = 0.
           endif
 
@@ -91,7 +92,7 @@
           dmd_unmet = dmd_unmet + gwvol_unmet
 
           !save the pumping volume (m3), for use in gwflow_simulate
-          gw_hyd_ss(cell_id)%ppag = gwvol_removed * (-1) !m3 negative = leaving the aquifer
+          gw_hyd_ss(cell_id)%ppag = gw_hyd_ss(cell_id)%ppag + gwvol_removed * (-1) !m3 negative = leaving the aquifer
           gw_hyd_ss_yr(cell_id)%ppag = gw_hyd_ss_yr(cell_id)%ppag + (gwvol_removed * (-1)) !store for annual water
           gw_hyd_ss_mo(cell_id)%ppag = gw_hyd_ss_mo(cell_id)%ppag + (gwvol_removed * (-1)) !store for monthly water
 
@@ -109,7 +110,7 @@
             if(heat_flux >= gwheat_state(cell_id)%stor) then
               heat_flux = gwheat_state(cell_id)%stor
             endif
-            gw_heat_ss(cell_id)%ppag = heat_flux * (-1)
+            gw_heat_ss(cell_id)%ppag = gw_heat_ss(cell_id)%ppag + heat_flux * (-1)
             gw_heat_ss_yr(cell_id)%ppag = gw_heat_ss_yr(cell_id)%ppag + heat_flux * (-1)
           endif
 
@@ -176,13 +177,12 @@
             do s=1,gw_nsolute !loop through the solutes
               gwsol_ss(cell_id)%solute(s)%ppag = (irr_mass(s)*1000.) * (-1) !g; negative = leaving the aquifer
               gwsol_ss_sum(cell_id)%solute(s)%ppag = gwsol_ss_sum(cell_id)%solute(s)%ppag - (irr_mass(s)*1000.)
-							gwsol_ss_sum_mo(cell_id)%solute(s)%ppag = gwsol_ss_sum_mo(cell_id)%solute(s)%ppag - (irr_mass(s)*1000.)
+              gwsol_ss_sum_mo(cell_id)%solute(s)%ppag = gwsol_ss_sum_mo(cell_id)%solute(s)%ppag - (irr_mass(s)*1000.)
             enddo
           endif
 
         enddo !go to next gwflow cell
-
-			endif
+      endif
       hru_pump(hru_id) = sum_pump !store pumping (m3) for the HRU
 
 
@@ -199,8 +199,9 @@
 
         !check for available groundwater in the cell
         if(gw_state(cell_id)%head > gw_state(cell_id)%botm) then !if water table is above bedrock
-          gwvol_avail = ((gw_state(cell_id)%head-gw_state(cell_id)%botm) * gw_state(cell_id)%area) * gw_state(cell_id)%spyd !m3
-				else
+          !gwvol_avail = ((gw_state(cell_id)%head-gw_state(cell_id)%botm) * gw_state(cell_id)%area) * gw_state(cell_id)%spyd !m3
+          gwvol_avail = gw_state(cell_id)%stor
+        else
           gwvol_avail = 0.
         endif
 
@@ -326,8 +327,9 @@
 
           !check for available groundwater in the cell
           if(gw_state(cell_id)%head > gw_state(cell_id)%botm) then !if water table is above bedrock
-            gwvol_avail = ((gw_state(cell_id)%head-gw_state(cell_id)%botm) * gw_state(cell_id)%area) * gw_state(cell_id)%spyd !m3
-				  else
+            !gwvol_avail = ((gw_state(cell_id)%head-gw_state(cell_id)%botm) * gw_state(cell_id)%area) * gw_state(cell_id)%spyd !m3
+            gwvol_avail = gw_state(cell_id)%stor
+          else
             gwvol_avail = 0.
           endif
 
@@ -399,8 +401,9 @@
 
         !check for available groundwater in the cell
         if(gw_state(cell_id)%head > gw_state(cell_id)%botm) then !if water table is above bedrock
-          gwvol_avail = ((gw_state(cell_id)%head-gw_state(cell_id)%botm) * gw_state(cell_id)%area) * gw_state(cell_id)%spyd !m3
-				else
+          !gwvol_avail = ((gw_state(cell_id)%head-gw_state(cell_id)%botm) * gw_state(cell_id)%area) * gw_state(cell_id)%spyd !m3
+          gwvol_avail = gw_state(cell_id)%stor
+        else
           gwvol_avail = 0.
         endif
 
