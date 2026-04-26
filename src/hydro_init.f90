@@ -99,8 +99,11 @@
       do k = 1, nly
         soil(j)%phys(k)%tmp = tsoil
         soil(j)%phys(k)%st = sffc * soil(j)%phys(k)%fc
+        soil(j)%phys(k)%stpwt = soil(j)%phys(k)%st
         soil(j)%sw = soil(j)%sw + soil(j)%phys(k)%st
       end do
+      soil(j)%swpwt = soil(j)%sw
+      
      
       !! set day length threshold for dormancy and initial dormancy
       dormhr(j) = wgn_pms(iwgn)%daylth

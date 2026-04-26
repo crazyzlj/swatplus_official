@@ -397,6 +397,7 @@
       case ("ffcb")
         bsn_prm%ffcb = chg_par(bsn_prm%ffcb,                            &
                          chg_typ, chg_val, absmin, absmax)
+        call hydro_init
         
       case ("cmn")
         bsn_prm%cmn = chg_par(bsn_prm%cmn,                              &

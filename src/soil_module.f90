@@ -44,6 +44,7 @@
         real :: hk = 0.             !! none         ! beta coefficient to calculate hydraulic conductivity
         real :: por = 0.            !! none         ! total porosity of soil layer expressed as a fraction of the total volume, Index:(layer,HRU)
         real :: st = 0.             !! mm H2O       ! amount of water stored in the soil layer on any given day (less wp water)
+        real :: stpwt = 0.          !! mm H2O       ! amount of water stored in the soil layer on previous day
         real :: tmp = 0.            !! deg C        ! daily average temperature of second soil layer
         real :: ul = 0.             !! mm H2O       ! amount of water held in the soil layer at saturation (sat - wp water)
         real :: up = 0.             !! mm H2O/mm    ! soil water content of soil at -0.033 MPa (field capacity)
@@ -88,7 +89,7 @@
         real :: sw = 0.                    !! mm H2O         amount of water stored in soil profile
         real :: sw_300 = 0.                !! mm H2O         amount of water stored to 300 mm
         real :: sumwp = 0.                 !!
-        real :: swpwt = 0.                 !!
+        real :: swpwt = 0.                 !! mm H2O         amount of previous sw in the profile
         real :: ffc = 0.                   !! none           initial HRU soil water content expressed as fraction of field capacity
         real :: wat_tbl = 0.               !! 
         real :: avpor = 0.                 !! none           average porosity for entire soil profile
