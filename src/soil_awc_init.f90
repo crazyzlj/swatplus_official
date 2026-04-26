@@ -91,13 +91,26 @@
         depth_prev = soil(isol)%phys(ly)%d
       end do
       !! initialize water table depth and soil water for Daniel
-      soil(isol)%swpwt = soil(isol)%sw
-      if (soil(isol)%ffc > 1.) then
-        soil(isol)%wat_tbl = (soil(isol)%det_lag - soil(isol)%ffc *   &
-          soil(isol)%sumfc) / soil(isol)%phys(nly)%d
-      else
-        soil(isol)%wat_tbl = 0.
-      end if
+      !soil(isol)%swpwt = soil(isol)%sw
+      !if (soil(isol)%ffc > 1.) then
+      !  soil(isol)%wat_tbl = (soil(isol)%sumul - soil(isol)%ffc *   &
+      !    soil(isol)%sumfc) / soil(isol)%phys(nly)%d
+      !else
+      !  soil(isol)%wat_tbl = 0.
+      !end if
+      
+      !!Initializing water table depth and soil water revised by D. Moriasi 4/8/2014
+      do ly = 1, nly
+        sol(isol)%phys(ly)%stpwt = sol(isol)%phys(ly)%st
+      end do      
+      sol(isol)%s%swpwt = sol(isol)%s%sw
+      sol(isol)%s%wat_tbl = sol(isol)%s%zmx - sol(isol)%s%zmx / sol(isol)%phys(nly)%por
+      if (sol(isol)%s%wat_tbl > sol(isol)%s%zmx) sol(isol)%s%wat_tbl = sol(isol)%s%zmx
+      if (sol(isol)%s%wat_tbl < 1.e-6) sol(isol)%s%wat_tbl = 0.
+      
+      sol(isol)%s%avpor = sumpor / sol(isol)%phys(nly)%d
+      sol(isol)%s%avbd = 2.65 * (1. - sol(isol)%s%avpor)
+      
       soil(isol)%avpor = sumpor / soil(isol)%phys(nly)%d
       soil(isol)%avbd = 2.65 * (1. - soil(isol)%avpor)
 
