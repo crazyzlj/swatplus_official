@@ -10,7 +10,7 @@
 !!    iop(:,:,:)  |julian date   |date of tillage operation
 !!    mgt_op      |none          |operation code number
 !!    ranrns_hru(:)|mm           |random roughness for a given HRU
-!!  sol_ori(:)  |mm            |oriented roughness (ridges) at time of a given tillage operation
+!!    sol_ori(:)  |mm            |oriented roughness (ridges) at time of a given tillage operation
 !!    usle_ei     |100(ft-tn in)/(acre-hr)|USLE rainfall erosion index
 !!    ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
@@ -93,6 +93,9 @@
 !   else 
 !   stmaxd(j)= 0.112*sol_orr+0.031*sol_orr**2-0.012*sol_orr*hru_slpp 
 !   endif
+    
+    !! update according to soil frozen state
+    stmaxd(j) = stmaxd(j) * (1.0 - soil(j)%frz_state)
    
     return
-        end subroutine swr_depstor
+    end subroutine swr_depstor

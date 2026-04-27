@@ -94,6 +94,7 @@
         real :: wat_tbl = 0.               !! 
         real :: avpor = 0.                 !! none           average porosity for entire soil profile
         real :: avbd = 0.                  !! Mg/m^3         average bulk density for soil profile
+        real :: frz_state = 0.             !! none           frozen state, 0 means thrawy, 1 means frozen
       end type soil_profile
       type (soil_profile), dimension(:), allocatable :: soil
       type (soil_profile), dimension(:), allocatable :: soil_init

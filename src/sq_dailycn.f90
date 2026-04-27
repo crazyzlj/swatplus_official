@@ -32,9 +32,11 @@
       
       implicit none
  
-      integer :: j = 0   !none          |HRU number
-      real :: r2 = 0.    !none          |retention parameter in CN equation
-      real :: sw_fac = 0.  !none          |variable used to store intermediate value of soil water factor
+      integer :: j = 0       !none        |HRU number
+      real :: r2 = 0.        !none        |retention parameter in CN equation
+      real :: r2_unfroz = 0. !none        |retention parameter for unfrozen soil state
+      real :: r2_froz = 0.   !none        |retention parameter for frozen soil state
+      real :: sw_fac = 0.    !none        |variable used to store intermediate value of soil water factor
 
       j = ihru
 
@@ -44,12 +46,15 @@
 
       !! traditional CN method (function of soil water)
       if ((soil(j)%sw + Exp(sw_fac)) > 0.001) then
-        r2 = smx(j) * (1. - soil(j)%sw / (soil(j)%sw + Exp(sw_fac)))
+        r2_unfroz = smx(j) * (1. - soil(j)%sw / (soil(j)%sw + Exp(sw_fac)))
       else
-        r2 = smx(j)
+        r2_unfroz = smx(j)
       end if
 
-      if (soil(j)%phys(2)%tmp <= 0.) r2 = smx(j) * (1. - Exp(- bsn_prm%cn_froz * r2))
+      !if (soil(j)%phys(2)%tmp <= 0.) r2 = smx(j) * (1. - Exp(- bsn_prm%cn_froz * r2))
+      r2_froz = smx(j) * (1. - Exp(- bsn_prm%cn_froz * r2_unfroz))
+      r2 = r2_unfroz * (1.0 - soil(j)%frz_state) + r2_froz * soil(j)%frz_state
+      
       r2 = Max(3.,r2)
 
       cnday(j) = 25400. / (r2 + 254.)

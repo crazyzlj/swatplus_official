@@ -51,6 +51,9 @@
       real :: tcov = 0.          !deg C         |temperature of soil surface corrected for cover
       real :: tmp_srf = 0.       !deg C         |temperature of soil surface
       real :: cover = 0.         !kg/ha         |soil cover
+      real :: t_start = 0.0      !deg C         |max temperature for frozen soil
+      real :: t_end = -2.0       !deg C         |min temperature for frozen soil
+      real :: t_lyr2 = 0.        !deg C         |soil temperature of the second layer
 
       j = ihru
 
@@ -140,5 +143,24 @@
 
       end do
 
+      t_start = 0.0
+      t_end = -2.0
+      if (soil(j)%nly >= 2) then
+          t_lyr2 = soil(j)%phys(2)%tmp
+          if (t_lyr2 >= t_start) then
+            soil(j)%frz_state = 0.0
+          else if (t_lyr2 <= t_end) then
+            soil(j)%frz_state = 1.0
+          else
+            soil(j)%frz_state = (t_start - t_lyr2) / (t_start - t_end)
+          end if
+      else
+          if (soil(j)%phys(1)%tmp <= 0.0) then
+              soil(j)%frz_state = 1.0
+          else
+              soil(j)%frz_state = 0.0
+          end if
+      endif
+      
       return
       end subroutine stmp_solt

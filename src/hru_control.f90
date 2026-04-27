@@ -260,6 +260,9 @@
         !! calculate soil temperature for soil layers
         call stmp_solt
         
+        !! update concentration time for hru routing
+        call time_conc_upd(j)
+        
         !!compute canopy interception
         call sq_canopyint
 

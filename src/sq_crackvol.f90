@@ -33,6 +33,8 @@
         crlag = 0.
         volcrnew = soil(j)%phys(l)%crdep * (soil(j)%phys(l)%fc -      &
                    soil(j)%phys(l)%st) / (soil(j)%phys(l)%fc)
+        !! modify according to soil frozen state
+        volcrnew = volcrnew * (1.0 - soil(j)%frz_state)
         if (soil(j)%sw < .90 * soil(j)%sumfc) then
           if (volcrnew > soil(j)%ly(l)%volcr) then
             crlag = crlagdry
@@ -50,6 +52,9 @@
         !    print *, "sq_crackvol, layer: ", l, ": crdep: ", soil(j)%phys(l)%crdep, ",st:",soil(j)%phys(l)%st,",fc:",soil(j)%phys(l)%fc,",volcrnew:",volcrnew,",sw:",soil(j)%sw,",volcr:",soil(j)%ly(l)%volcr,",voltot:",voltot
         !endif
       end do
-
+      
+      !!modify according to soil frozen state
+      voltot = voltot * (1.0 - soil(j)%frz_state)
+      
       return
       end subroutine sq_crackvol
