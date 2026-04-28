@@ -49,6 +49,16 @@
       real :: aqu_inflo = 0.          !m3            |aquifer inflow if using geomorphic baseflow
       integer :: iw = 0               !              |counter for water allocation object
       integer :: iwallo = 0           !              |variable to pass to wallo_control
+      real :: ice_tmp_thr = -1.5      !deg C         |critical air temperature threshold for freezing
+      real :: ice_frz_coeff = 0.05    !1/deg C       |ice formation (freezing) rate coefficient
+      real :: ice_mlt_coeff = 0.25    !1/deg C       |ice melting rate coefficient
+      real :: ice_max_frac = 0.85     !none          |maximum allowable fraction of flow to freeze
+      real :: ice_gen = 0.0           !m3            |ice volume froze
+      real :: ice_melt = 0.0          !m3            |ice volume melt
+      real :: ch_vol_cap = 0.         !m3            |volume capacity for ice
+      real :: ch_ice_max_frac = 0.9   !m3            |maximum allowable fraction of channel volume capacity for ice
+      real :: ch_avail_wat = 0.       !m3            |available water in the channel
+      real :: freeze_ratio = 0.       !none          |fraction
       
       ich = isdch
       isd_db = sd_dat(ich)%hyd
@@ -160,6 +170,41 @@
   
       !! compute flood plain deposition and channel erosion   
       call sd_channel_sediment3
+      
+      !! ====================================================================
+      !! Channel ice storage interception and release logic
+      !! ====================================================================
+      !! Use ch_stor()%tmp_prx (physical true water temp) from yesterday's ch_temp as criteria
+      ch_vol_cap = sd_ch(ich)%chl * 1000. * sd_ch(ich)%chw * sd_ch(ich)%chd
+      !Freezing phase transition
+      if (ch_stor(ich)%tmp_prx < ice_tmp_thr) then
+          ch_avail_wat = ht1%flo + ch_stor(ich)%flo
+          if (ch_avail_wat > 0.) then
+              !Calculate generated ice: based on negative temperature energy deficit
+              ice_gen = ch_avail_wat * ice_frz_coeff * (ice_tmp_thr - ch_stor(ich)%tmp_prx)
+              !Physical constraint: ensure the river is not completely frozen dry
+              ice_gen = Min(ice_gen, ch_avail_wat * ice_max_frac)
+              if (ch_stor(ich)%ice + ice_gen > ch_ice_max_frac * ch_vol_cap) then
+                  ice_gen = ch_ice_max_frac * ch_vol_cap - ch_stor(ich)%ice 
+                  ice_gen = Max(0., ice_gen)
+              end if
+              freeze_ratio = ice_gen / ch_avail_wat
+              
+              ch_stor(ich)%ice = ch_stor(ich)%ice + ice_gen
+              ht1%flo = ht1%flo * (1.0 - freeze_ratio)
+              ch_stor(ich)%flo = ch_stor(ich)%flo * (1.0 - freeze_ratio)
+          end if
+      end if
+      !Ice melting and ice jam release, use today's max temperature (tmax) to capture instantaneous energy input
+      if (wst(iwst)%weat%tmax > 0.0 .and. ch_stor(ich)%ice > 0.0) then
+          ice_melt = ch_stor(ich)%ice * ice_mlt_coeff * wst(iwst)%weat%tmax
+          ice_melt = Min(ice_melt, ch_stor(ich)%ice)
+          ch_stor(ich)%ice = ch_stor(ich)%ice - ice_melt
+          ht1%flo = ht1%flo + ice_melt
+          !reset proxy temp to prevent melting ice multiple times with the same energy
+          ch_stor(ich)%tmp_prx = 0.001
+      end if
+      !! ====================================================================
         
       !! call Muskingum and variable storage coefficient flood routing method
       call ch_rtmusk

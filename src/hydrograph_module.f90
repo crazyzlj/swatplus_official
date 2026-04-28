@@ -46,7 +46,9 @@
         real :: sag = 0.               !! tons          |detached small ag
         real :: lag = 0.               !! tons          |detached large ag
         real :: grv = 0.               !! tons          |gravel
-        real :: temp = 0.              !! deg c         |temperature
+        real :: temp = 0.              !! deg C         |temperature
+        real :: ice = 0.               !! m^3           |volume of solid ice stored in current reach
+        real :: tmp_prx = 0.0          !! deg C         |parallel physical water temporature derived from subroutine ch_temp, allow negative value
       end type hyd_output
       
       !rtb gwflow - hydrograph separation
