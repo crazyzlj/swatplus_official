@@ -317,6 +317,7 @@
             
           case ("ru")   ! subbasin
             iru = ob(icmd)%num
+            call ru_tc_upd(iru)
             call ru_control
             if (ob(icmd)%rcv_tot > 0) call hyddep_output
 

@@ -9,55 +9,85 @@
       
       implicit none 
       
-      integer :: ii = 0            !none         |counter
-      integer :: ielem = 0         !none         |counter
-      integer :: iob = 0           !             | 
-      integer :: ith = 0           !             | 
-      !integer :: ifld = 0          !             |
-      real :: tov = 0.             !             |
-      real :: ch_slope = 0.        !             |
-      real :: ch_n = 0.            !             |
-      real :: ch_l = 0.            !             | 
-      real :: t_ch = 0.            !hr           |time for flow entering the farthest upstream 
-                                   !             |channel to reach the subbasin outlet
-
-     ! compute weighted Mannings n for each subbasin
+      !!compute time of concentration for routing units
       do iru = 1, sp_ob%ru
-        ru_n(iru) = 0.
-        do ii = 1, ru_def(iru)%num_tot
-          ielem = ru_def(iru)%num(ii)
-          if (ru_elem(ielem)%obtyp == "hru") then
-            ihru = ru_elem(ielem)%obtypno 
-            ru_n(iru) = ru_n(iru) + hru(ihru)%luse%ovn * hru(ihru)%km
-          else
-            ru_n(iru) = 0.1
-          end if
-        end do
-      end do
-            
-      do iru = 1, sp_ob%ru
-        iob = sp_ob1%ru + iru - 1
-        ru(iru)%da_km2 = ob(iob)%area_ha / 100.
-        ru_n(iru) = ru_n(iru) / ru(iru)%da_km2
-        ith = ru(iru)%dbs%toposub_db
-        !if (ith > 0 .and. ichan > 0) then                  
-        ! compute tc for the subbasin
-          tov = .0556 * (topo_db(ith)%slope_len * ru_n(iru)) ** .6 /     &
-                                              (topo_db(ith)%slope + .001) ** .3
-          ch_slope = .5 * (topo_db(ith)%slope + .001)
-          ch_n = ru_n(iru)
-          ch_l = ru(iru)%field%length / 1000.
-          t_ch = .62 * ch_l * ch_n**.75 / (ru(iru)%da_km2**.125 * ch_slope**.375)
-          ru_tc(iru) = tov + t_ch
-        !end if                                             
-      end do
+          call ru_tc_upd(iru)
+      enddo
       
-      !!compute time of concentration (sum of overland and channel times)
+      !!compute time of concentration (sum of overland and channel times) for hru
       do ihru = 1, sp_ob%hru
           call compute_hru_routing(ihru, hru(ihru)%luse%ovn, bsn_prm%surlag)
       enddo    
       return
       end subroutine time_conc_init
+      
+      subroutine ru_tc_upd(j) 
+      use ru_module
+      use hru_module, only : hru, ihru
+      use hydrograph_module, only : sp_ob, ru_def, ru_elem, sp_ob1, ob
+      use soil_module, only : soil
+    
+      implicit none 
+      
+      integer, intent(in) :: j
+      
+      integer :: ii = 0            !none         |counter
+      integer :: ielem = 0         !none         |counter
+      integer :: iob = 0           !             | 
+      real :: current_ovn_hru = 0. !none        |manning's roughness coefficient of hru
+    
+     ! compute weighted Mannings n for each subbasin
+      !do iru = 1, sp_ob%ru
+        iru = j
+        ru_n(iru) = 0.
+        do ii = 1, ru_def(iru)%num_tot
+          ielem = ru_def(iru)%num(ii)
+          if (ru_elem(ielem)%obtyp == "hru") then
+            ihru = ru_elem(ielem)%obtypno 
+            current_ovn_hru = hru(ihru)%luse%ovn * (1.0 - soil(ihru)%frz_state) + (0.01 * soil(ihru)%frz_state)
+            ru_n(iru) = ru_n(iru) + current_ovn_hru * hru(ihru)%km
+          else
+            ru_n(iru) = 0.1
+          end if
+        end do
+        iob = sp_ob1%ru + iru - 1
+        ru(iru)%da_km2 = ob(iob)%area_ha / 100.
+        ru_n(iru) = ru_n(iru) / ru(iru)%da_km2
+        
+        call compute_ru_routing(iru, ru_n(iru))
+      !end do
+      end subroutine ru_tc_upd
+            
+      subroutine compute_ru_routing(j, run)
+        use ru_module
+        use topography_data_module
+        
+        implicit none
+        
+        integer, intent(in) :: j
+        real, intent(in) :: run
+        
+        integer :: ith = 0           !             |
+        integer :: ifld = 0          !             |
+        real :: tov = 0.             !             |
+        real :: ch_slope = 0.        !             |
+        real :: ch_n = 0.            !             |
+        real :: ch_l = 0.            !             | 
+        real :: t_ch = 0.            !hr           |time for flow entering the farthest upstream 
+                                     !             |channel to reach the subbasin outlet
+        ith = ru(j)%dbs%toposub_db
+        !if (ith > 0 .and. ichan > 0) then                  
+        ! compute tc for the subbasin
+          tov = .0556 * (topo_db(ith)%slope_len * run) ** .6 /     &
+                                              (topo_db(ith)%slope + .001) ** .3
+          ch_slope = .5 * (topo_db(ith)%slope + .001)
+          ch_n = run
+          ch_l = ru(iru)%field%length / 1000.
+          t_ch = .62 * ch_l * ch_n**.75 / (ru(j)%da_km2**.125 * ch_slope**.375)
+          ru_tc(j) = tov + t_ch
+        !end if                                             
+      end subroutine compute_ru_routing
+      
     
       subroutine time_conc_upd(j) 
     
