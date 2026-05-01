@@ -63,7 +63,7 @@
           ch_wat_m(ichan) = ch_wat_m(ichan) // const            !! // only divides area (daily average values)
           
           if (pco%sd_chan%m == "y") then
-          write (2501,100) time%day, time%mo, time%day_mo, time%yrc, ichan, ob(iob)%gis_id, ob(iob)%name,  &
+          write (2501,102) time%day, time%mo, time%day_mo, time%yrc, ichan, ob(iob)%gis_id, ob(iob)%name,  &
             ch_wat_m(ichan)%area_ha, ch_wat_m(ichan)%precip, ch_wat_m(ichan)%evap, ch_wat_m(ichan)%seep,   &
             ch_stor(ichan), ch_in_m(ichan), ch_out_m(ichan), wtemp
 
@@ -93,7 +93,7 @@
         ch_wat_y(ichan) = ch_wat_y(ichan) // const      !! // only divides area (daily average values)
           
         if (pco%sd_chan%y == "y") then 
-          write (2502,100) time%day, time%mo, time%day_mo, time%yrc, ichan, ob(iob)%gis_id, ob(iob)%name,   &
+          write (2502,102) time%day, time%mo, time%day_mo, time%yrc, ichan, ob(iob)%gis_id, ob(iob)%name,   &
             ch_wat_y(ichan)%area_ha, ch_wat_y(ichan)%precip, ch_wat_y(ichan)%evap, ch_wat_y(ichan)%seep,    &
             ch_stor(ichan), ch_in_y(ichan), ch_out_y(ichan), wtemp
           if (pco%csvout == "y") then
@@ -113,7 +113,7 @@
         ch_wat_a(ichan) = ch_wat_a(ichan) // time%yrs_prt       !! all averaged variables divided by years
         
         if (pco%sd_chan%a == "y") then
-        write (2503,100) time%day, time%mo, time%day_mo, time%yrc, ichan, ob(iob)%gis_id, ob(iob)%name,  &
+        write (2503,102) time%day, time%mo, time%day_mo, time%yrc, ichan, ob(iob)%gis_id, ob(iob)%name,  &
           ch_wat_a(ichan)%area_ha, ch_wat_a(ichan)%precip, ch_wat_a(ichan)%evap, ch_wat_a(ichan)%seep,   &
           ch_stor(ichan), ch_in_a(ichan), ch_out_a(ichan), wtemp
         if (pco%csvout == "y") then
@@ -126,7 +126,8 @@
       
       return
 
-100   format (4i6,2i8,2x,a,83e15.4,i6)
+100   format (4i6,2i8,2x,a,69e15.4,i6)
+102   format (4i6,2i8,2x,a,59e15.4)
 101   format (4i6,3i8,2x,a,e15.4)  
        
       end subroutine sd_channel_output
