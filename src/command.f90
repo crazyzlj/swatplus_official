@@ -317,7 +317,8 @@
             
           case ("ru")   ! subbasin
             iru = ob(icmd)%num
-            call ru_tc_upd(iru)
+            call ru_tc_upd(iru) !update RU concentration time using current HRU conditions
+            call dr_ru_upd(iru) !update delivery ratios after ru_tc has changed
             call ru_control
             if (ob(icmd)%rcv_tot > 0) call hyddep_output
 

@@ -82,7 +82,7 @@
                                               (topo_db(ith)%slope + .001) ** .3
           ch_slope = .5 * (topo_db(ith)%slope + .001)
           ch_n = run
-          ch_l = ru(iru)%field%length / 1000.
+          ch_l = ru(j)%field%length / 1000.
           t_ch = .62 * ch_l * ch_n**.75 / (ru(j)%da_km2**.125 * ch_slope**.375)
           ru_tc(j) = tov + t_ch
         !end if                                             
