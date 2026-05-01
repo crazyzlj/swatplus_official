@@ -47,8 +47,6 @@
         real :: lag = 0.               !! tons          |detached large ag
         real :: grv = 0.               !! tons          |gravel
         real :: temp = 0.              !! deg C         |temperature
-        real :: ice = 0.               !! m^3           |volume of solid ice stored in current reach
-        real :: tmp_prx = 0.0          !! deg C         |parallel physical water temporature derived from subroutine ch_temp, allow negative value
       end type hyd_output
       
       !rtb gwflow - hydrograph separation
@@ -554,7 +552,7 @@
         character (len=15) :: sag  =    "            sag"        !! tons         |detached small ag
         character (len=15) :: lag  =    "            lag"        !! tons         |detached large ag
         character (len=15) :: grv  =    "            grv"        !! tons         |gravel
-        character (len=15) :: temp =    "           null"        !! deg c        |temperature
+        character (len=15) :: temp =    "           temp"        !! deg c        |temperature
       end type hyd_header
       type (hyd_header) :: hyd_hdr
       
@@ -576,7 +574,7 @@
         character (len=15) :: sag_stor  =    "       sag_stor"        !! tons         |detached small ag stored at end of time period
         character (len=15) :: lag_stor  =    "       lag_stor"        !! tons         |detached large ag stored at end of time period
         character (len=15) :: grv_stor  =    "       grv_stor"        !! tons         |gravel stored at end of time period
-        character (len=15) :: temp_stor =    "           null"        !! deg c        |water temperature
+        character (len=15) :: temp_stor =    "           temp"        !! deg c        |water temperature
       end type hyd_stor_header
       type (hyd_stor_header) :: hyd_stor_hdr
       
@@ -598,7 +596,7 @@
         character (len=15) :: sag_in  =    "         sag_in"        !! tons         |detached small ag in
         character (len=15) :: lag_in  =    "         lag_in"        !! tons         |detached large ag in
         character (len=15) :: grv_in  =    "         grv_in"        !! tons         |gravel in
-        character (len=15) :: temp_in =    "           null"        !! deg c        |temperature in
+        character (len=15) :: temp_in =    "           temp"        !! deg c        |temperature in
       end type hyd_in_header
       type (hyd_in_header) :: hyd_in_hdr
       
@@ -620,7 +618,7 @@
         character (len=15) :: sag_out  =    "        sag_out"        !! tons         |detached small ag out
         character (len=15) :: lag_out  =    "        lag_out"        !! tons         |detached large ag out
         character (len=15) :: grv_out  =    "        grv_out"        !! tons         |gravel out
-        character (len=15) :: temp_out =    "           null"        !! deg c        |temperature out
+        character (len=15) :: temp_out =    "           temp"        !! deg c        |temperature out
       end type hyd_out_header
       type (hyd_out_header) :: hyd_out_hdr
       
@@ -654,6 +652,21 @@
         character (len=15) :: water_temp =    "     water_temp"        !! deg c        |temperature
         end type wtmp_out_header
       type (wtmp_out_header) :: wtmp_hdr
+      
+      type ice_out_header
+        character (len=15) :: wtmp_prx   =    " water_temp_prx"        !! deg c        |temperature
+        character (len=15) :: icej_cover =    "     icej_cover"        !! m^3          |ice jam cover volume
+        character (len=15) :: icej_stor  =    "      icej_stor"        !! m^3          |ice jam stored water volume
+        character (len=15) :: icej_block =    "     icej_block"        !! m^3          |ice jam blocked water volume
+        character (len=15) :: icej_rel   =    "   icej_release"        !! m^3          |ice jam released water volume
+        character (len=15) :: icej_qraw  =    "      icej_qraw"        !! m^3/s        |raw flowin rate
+        character (len=15) :: icej_qadj  =    "      icej_qadj"        !! m^3/s        |adjusted flowin rate 
+        character (len=15) :: icej_qratio=    "    icej_qratio"        !! frac         |raw inflow / bankfull flow
+        character (len=15) :: icej_qrise =    "     icej_qrise"        !! frac         |relative daily rise in raw inflow
+        character (len=15) :: icej_susc  =    "      icej_susc"        !! none         |ice-jam susceptibility
+        character (len=15) :: icej_flag  =    "      icej_flag"        !! none         |ice jam flag
+        end type ice_out_header
+      type (ice_out_header) :: ch_ice_hdr
          
       type sed_hyd_header        
         character (len=15) :: flo_in  =    "         flo_in"        !! m^3/s        |volume of water 
@@ -829,7 +842,7 @@
         character (len=15) :: sag    =  "           tons"        !! tons         |detached small ag
         character (len=15) :: lag    =  "           tons"        !! tons         |detached large ag
         character (len=15) :: grv    =  "           tons"        !! tons         |gravel
-        character (len=15) :: temp   =  "               "        !! deg c        |temperature
+        character (len=15) :: temp   =  "           degc"        !! deg c        |temperature
         !Jaehak 2023
         !character (len=15) :: salt   =  "             kg"        !! deg c        |temperature
         !character (len=15) :: pest   =  "             mg"        !! deg c        |temperature
@@ -888,9 +901,24 @@
       type (hydinout_header_units1) :: hydinout_hdr_units1 
  
       type wtmp_header_units
-        character (len=15) :: wtmp   =  "           degc"        !! deg c        |temperature
+        character (len=15) :: wtmp   =  "           degc"           !! deg c        |temperature
       end type wtmp_header_units
       type (wtmp_header_units) :: wtmp_units 
+      
+      type ice_header_units
+        character (len=15) :: wtmp_prx   =  "           degc"       !! deg c        |temperature
+        character (len=15) :: icej_cover =  "           m^3"        !! m^3          |ice jam cover volume
+        character (len=15) :: icej_stor  =  "           m^3"        !! m^3          |ice jam stored water volume
+        character (len=15) :: icej_block =  "           m^3"        !! m^3          |ice jam blocked water volume
+        character (len=15) :: icej_rel   =  "           m^3"        !! m^3          |ice jam released water volume
+        character (len=15) :: icej_qraw  =  "         m^3/s"        !! m^3/s        |raw flowin rate
+        character (len=15) :: icej_qadj  =  "         m^3/s"        !! m^3/s        |adjusted flowin rate 
+        character (len=15) :: icej_qratio=  "          frac"        !! frac         |raw inflow / bankfull flow
+        character (len=15) :: icej_qrise =  "          frac"        !! frac         |relative daily rise in raw inflow
+        character (len=15) :: icej_susc  =  "          none"        !! none         |ice-jam susceptibility
+        character (len=15) :: icej_flag  =  "          none"        !! none         |ice jam flag
+      end type ice_header_units
+      type (ice_header_units) :: ch_ice_units 
       
        type hyd_header_units  !pts (point source)/deposition/ru (routing_unit) files output uses this units header
         character (len=11) :: day    =  "           "

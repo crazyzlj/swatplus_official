@@ -28,8 +28,8 @@
 
           call open_output_file(2500, "channel_sd_day.txt", 1500)
           write (2500,*) bsn%name, prog
-          write (2500,*) ch_wbod_hdr, hyd_stor_hdr, hyd_in_hdr, hyd_out_hdr, wtmp_hdr
-          write (2500,*) ch_wbod_hdr_units, hyd_hdr_units3, hyd_hdr_units1, hyd_hdr_units1, wtmp_units 
+          write (2500,*) ch_wbod_hdr, hyd_stor_hdr, hyd_in_hdr, hyd_out_hdr, wtmp_hdr, ch_ice_hdr
+          write (2500,*) ch_wbod_hdr_units, hyd_hdr_units3, hyd_hdr_units1, hyd_hdr_units1, wtmp_units, ch_ice_units 
           write (9000,*) "SWAT-DEG_CHANNEL          channel_sd_day.txt"
           
           !call open_output_file(2509, "channel_sd_day_new.txt", 1500)
@@ -40,8 +40,8 @@
           if (pco%csvout == "y") then
             call open_output_file(2504, "channel_sd_day.csv", 1500)
             write (2504,*) bsn%name, prog
-            write (2504,'(*(G0.3,:,","))') ch_wbod_hdr, hyd_stor_hdr, hyd_in_hdr, hyd_out_hdr, wtmp_hdr
-            write (2504,'(*(G0.3,:,","))') ch_wbod_hdr_units, hyd_hdr_units3, hyd_hdr_units1, hyd_hdr_units1, wtmp_units 
+            write (2504,'(*(G0.3,:,","))') ch_wbod_hdr, hyd_stor_hdr, hyd_in_hdr, hyd_out_hdr, wtmp_hdr, ch_ice_hdr
+            write (2504,'(*(G0.3,:,","))') ch_wbod_hdr_units, hyd_hdr_units3, hyd_hdr_units1, hyd_hdr_units1, wtmp_units, ch_ice_units 
             write (9000,*) "SWAT-DEG_CHANNEL          channel_sd_day.csv"
             
             !call open_output_file(2510, "channel_sd_day_new.csv", 1500)

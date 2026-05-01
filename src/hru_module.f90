@@ -275,7 +275,10 @@
 
       
       real :: precip_eff = 0.   !! mm   |daily effective precip for runoff calculations = precipday + ls_overq + snomlt - canstor
-                                !!      |precip_eff = precipday + ls_overq - snofall + snomlt - canstor
+                                !!      |original snow routine: precip_eff = precipday + ls_overq - snofall + snomlt - canstor
+                                !!      |modified snow routine with sno_liq by ljzhu 04/28/2026:
+                                !!      | precip_eff includes rainfall bypassing snow cover plus liquid water
+                                !!      | actually released from snowpack; gross snowmelt may be retained/refrozen
       real :: qday = 0.         !! mm   |surface runoff that reaches main channel during day in HRU
       real :: satexq_chan = 0.  !! mm   |saturation excess runoff that reaches main channel during day in HRU
 
@@ -311,7 +314,7 @@
       real :: albday = 0.
       real :: wt_shall = 0.
       real :: sq_rto = 0.
-      real :: snomlt = 0.
+      real :: snomlt = 0.            !! mm           |gross snowmelt generated from solid snow; not necessarily equal to snowpack liquid outflow
       real :: snofall = 0.
       real :: fixn = 0.
       real :: qtile = 0.
