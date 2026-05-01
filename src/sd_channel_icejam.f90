@@ -121,6 +121,12 @@ real :: q_rise_bf_floor = 0.02         !none | minimum previous-day flow as frac
       sd_ch(ich)%icejam_qratio = 0.
       sd_ch(ich)%icejam_qrise = 0.
       sd_ch(ich)%icejam_susc = 0.
+      
+      minor_breakup = .false.
+      major_breakup = .false.
+      force_flush = .false.
+      minor_jam_possible = .false.
+      major_jam_possible = .false.
 
       blocked = 0.
       released = 0.
@@ -155,9 +161,9 @@ real :: q_rise_bf_floor = 0.02         !none | minimum previous-day flow as frac
       endif
       !sinuous reaches can promote local ice accumulation and constriction.
       !keep the adjustment modest to avoid over-triggering in small streams.
-      if (sd_ch(ich)%sinu > 1.5) then
-        jam_susc = min(1.0, jam_susc + 0.10)
-      endif
+      !if (sd_ch(ich)%sinu > 1.5) then
+      !  jam_susc = min(1.0, jam_susc + 0.10)
+      !endif
       sd_ch(ich)%icejam_susc = jam_susc
 
 
@@ -173,11 +179,10 @@ real :: q_rise_bf_floor = 0.02         !none | minimum previous-day flow as frac
       ice_cover_max = max(ice_cover_max, 1.e-6)
 
       !bankfull flow rate
-      if (sd_ch(ich)%bankfull_flo > 1.e-6) then
-        q_bank_rate = sd_ch(ich)%bankfull_flo * ch_rcurv(ich)%elev(2)%flo_rate
-      else
-        q_bank_rate = ch_rcurv(ich)%elev(2)%flo_rate
-      endif
+      !Use an ice-jam trigger reference flow rather than the full open-water
+      !bankfull flow. Breakup ice jams can occur below bankfull discharge.
+      q_bank_rate = sqrt(max(ch_rcurv(ich)%elev(1)%flo_rate, 1.e-6) * &
+                       max(ch_rcurv(ich)%elev(2)%flo_rate, 1.e-6))
       q_bank_rate = max(q_bank_rate, 0.05)
       q_ratio = q_in_rate_raw / q_bank_rate
       sd_ch(ich)%icejam_qratio = q_ratio
@@ -395,6 +400,22 @@ real :: q_rise_bf_floor = 0.02         !none | minimum previous-day flow as frac
       !! Important:
       !! q_prev must store raw inflow before ice-jam adjustment.
       sd_ch(ich)%q_prev = q_in_rate_raw
+      
+      if (ich == 68) then
+          write(9003,*) time%yrc, time%day, ich, &
+            "ice_ratio", ice_ratio, &
+            "t_ice_decay", t_ice_decay, &
+            "qraw", q_in_rate_raw, &
+            "qbank", q_bank_rate, &
+            "qratio", q_ratio, &
+            "qrise", q_rise_rate, &
+            "susc", jam_susc, &
+            "major", major_jam_possible, &
+            "minor", minor_jam_possible, &
+            "block_frac", block_frac, &
+            "stor_max", jam_stor_max, &
+            "block", blocked
+      endif
 
       return 
 
