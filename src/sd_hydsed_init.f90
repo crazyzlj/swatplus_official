@@ -307,7 +307,12 @@
             ch_water(ich)%cs(ics) = (cs_cha_ini(ics_ini)%conc(ics)/1000.) * tot_stor(ich)%flo !kg
           enddo
         enddo
-            endif
+      endif
+      
+      !do ich = 1, sp_ob%chandeg
+      !    write(9003, *) ich, sd_ch(ich)%sinu, ch_rcurv(ich)%elev(1)%flo_rate, ch_rcurv(ich)%elev(2)%flo_rate,  &
+      !    ch_rcurv(ich)%elev(3)%flo_rate, ch_rcurv(ich)%elev(4)%flo_rate
+      !enddo    
       
       return
       end subroutine sd_hydsed_init
