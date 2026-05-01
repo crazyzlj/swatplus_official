@@ -430,7 +430,7 @@
       
       ! Store the physical water temp (with full heat exchange info) 
       !  to the proxy variable before the 0.001 truncation.
-      ch_stor(ich)%tmp_prx = tw_final
+      sd_ch(ich)%tmp_prx = tw_final
       
       !prevent negative temperatures
       if (tw_final < 0.001) then

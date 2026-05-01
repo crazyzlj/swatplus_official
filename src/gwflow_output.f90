@@ -1265,7 +1265,7 @@
 140   format(i8,i6,i6,i8,i8,i10,4x,a4,i4.4,2f13.3,16e13.4)
 8100  format(4i6,2a,2x,a16,f10.3,50e13.4)
 8101  format(4i6,2i8,a18,e13.4)
-8102  format(4i6,2i8,a18,5e13.4)
+8102  format(4i6,2i8,a18,2f13.3,3e13.4)
 
       return
       end subroutine gwflow_output_day

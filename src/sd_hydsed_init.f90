@@ -73,6 +73,7 @@
         sd_ch(i)%name = sd_chd(idb)%name
         sd_ch(i)%obj_no = icmd
         sd_ch(i)%order = sd_chd(idb)%order
+        if (sd_ch(i)%order > max_order) max_order = sd_ch(i)%order
         sd_ch(i)%chw = sd_chd(idb)%chw
         sd_ch(i)%chd = sd_chd(idb)%chd
         sd_ch(i)%chs = sd_chd(idb)%chs
@@ -95,7 +96,7 @@
         sd_ch(i)%p_conc = sd_chd(idb)%p_conc
         sd_ch(i)%p_bio = sd_chd(idb)%p_bio
         sd_ch(i)%bankfull_flo = sd_chd(idb)%bankfull_flo
-        if (sd_ch(i)%bankfull_flo <= 1.e-6) sd_ch(i)%bankfull_flo = 0.
+        if (sd_ch(i)%bankfull_flo <= 1.e-6) sd_ch(i)%bankfull_flo = 0.5
         sd_ch(i)%fps = sd_chd(idb)%fps
         if (sd_ch(i)%fps > sd_ch(i)%chs) sd_ch(i)%fps = sd_ch(i)%chs
         if (sd_ch(i)%fps <= 1.e-6) sd_ch(i)%fps = .00001       !!! nbs 1/24/22

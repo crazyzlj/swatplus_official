@@ -32,11 +32,19 @@
         if (pco%sd_chan%d == "y") then
           write (2500,100) time%day, time%mo, time%day_mo, time%yrc, ichan, ob(iob)%gis_id, ob(iob)%name,       &
             ch_wat_d(ichan)%area_ha, ch_wat_d(ichan)%precip, ch_wat_d(ichan)%evap, ch_wat_d(ichan)%seep,        &                
-            ch_stor(ichan), ch_in_d(ichan), ch_out_d(ichan), wtemp
+            ch_stor(ichan), ch_in_d(ichan), ch_out_d(ichan), wtemp,                                             &
+            sd_ch(ichan)%tmp_prx, sd_ch(ichan)%ice, sd_ch(ichan)%ice_jam_stor,                                  &
+            sd_ch(ichan)%icejam_block, sd_ch(ichan)%icejam_release,                                             &
+            sd_ch(ichan)%icejam_qraw, sd_ch(ichan)%icejam_qadj, sd_ch(ichan)%icejam_qratio,                     &
+            sd_ch(ichan)%icejam_qrise, sd_ch(ichan)%icejam_susc, sd_ch(ichan)%ice_jam_flag
            if (pco%csvout == "y") then
              write (2504,'(*(G0.3,:","))') time%day, time%mo, time%day_mo, time%yrc, ichan, ob(iob)%gis_id, ob(iob)%name,  &
                ch_wat_d(ichan)%area_ha, ch_wat_d(ichan)%precip, ch_wat_d(ichan)%evap, ch_wat_d(ichan)%seep,     &
-               ch_stor(ichan), ch_in_d(ichan), ch_out_d(ichan), wtemp
+               ch_stor(ichan), ch_in_d(ichan), ch_out_d(ichan), wtemp,                                          &
+               sd_ch(ichan)%tmp_prx, sd_ch(ichan)%ice, sd_ch(ichan)%ice_jam_stor,                               &
+               sd_ch(ichan)%icejam_block, sd_ch(ichan)%icejam_release,                                          &
+               sd_ch(ichan)%icejam_qraw, sd_ch(ichan)%icejam_qadj, sd_ch(ichan)%icejam_qratio,                  &
+               sd_ch(ichan)%icejam_qrise, sd_ch(ichan)%icejam_susc, sd_ch(ichan)%ice_jam_flag
            end if
         end if
       end if
@@ -118,7 +126,7 @@
       
       return
 
-100   format (4i6,2i8,2x,a,73e15.4)
+100   format (4i6,2i8,2x,a,83e15.4,i6)
 101   format (4i6,3i8,2x,a,e15.4)  
        
       end subroutine sd_channel_output

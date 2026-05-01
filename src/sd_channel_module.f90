@@ -3,7 +3,8 @@
       implicit none
 
       integer :: maxint = 0                       !number of intervals in hydrograph for degradation
-      real :: wtemp = 0.                        !stream water temperature C
+      integer :: max_order = 1                    !maximum channel order 
+      real :: wtemp = 0.                          !stream water temperature C
       real :: peakrate = 0.
       real :: sed_reduc_t = 0.
       real :: no3_reduc_kg = 0.
@@ -214,6 +215,19 @@
         real :: out1_vol = 0.   !m3         |outflow during previous time step for Muskingum
         real :: stor_dis_01bf = 0.      !hr         |storage time constant at 0.1*bankfull
         real :: stor_dis_bf = 0.        !hr         |storage time constant at bankfull
+        real :: tmp_prx = 0.            !deg C      |parallel physical water temperature
+        real :: ice = 0.0               !m3         |ice cover conditiom
+        real :: ice_jam_stor = 0.0      !m3         |water temporarily stored behind ice jam
+        integer :: ice_jam_flag = 0     !none       |0=no jam, 1=minor jam, 2=major jam
+        real :: q_prev = 0.             !m3/s       |previous-day raw inflow rate before ice-jam adjustment
+        real :: icejam_block = 0.       !m3/day     |water blocked into jam storage today
+        real :: icejam_release = 0.     !m3/day     |water released from jam storage today
+        real :: icejam_qraw = 0.        !m3/s       |raw inflow before ice-jam adjustment
+        real :: icejam_qadj = 0.        !m3/s       |adjusted inflow after ice-jam adjustment
+        real :: icejam_qratio = 0.      !none       |raw inflow / bankfull flow
+        real :: icejam_qrise = 0.       !none       |relative daily rise in raw inflow
+        real :: icejam_susc = 0.        !none       |ice-jam susceptibility
+
         type (muskingum_parameters) :: msk
         type (floodplain_parameters) :: fp
         real, dimension (:), allocatable :: kd      !           |aquatic mixing velocity (diffusion/dispersion)-using mol_wt
@@ -496,7 +510,7 @@
         character (len=16)  :: carbon       = 'carbon'          !%          |carbon percent of bank and bed
         character (len=16)  :: ch_bd        = 'ch_bd'           !g/cm^3     |channel bank density
         character (len=16)  :: chss         = 'chss'            !           |channel sediment supply
-        character (len=16)  :: bankfull_flo = 'bankfull_flo'    !m^3/s |bankfull flow
+        character (len=16)  :: bankfull_flo = 'bankfull_flo'    !m^3/s      |bankfull flow
         character (len=16)  :: fps          = 'fps'             !           |flood plain slope
         character (len=16)  :: fpn          = 'fpn'             !           |flood plain Manning's n
         character (len=16)  :: n_conc       = 'n_conc'          !mg/kg      |nitrogen concentration in channel bank
