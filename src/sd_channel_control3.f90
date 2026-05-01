@@ -163,8 +163,10 @@
 
       !!conceptual ice-jam storage/release
       !!modifies ht1%flo by blocking or releasing jam-stored water
-      call sd_channel_icejam(ich)
-      
+      if(bsn_cc%icejam.eq.1) then
+        call sd_channel_icejam(ich)
+      end if
+            
       !! set inflow hyds for printing
       chsd_d(ich)%flo_in = ht1%flo / 86400.     !flow for morphology output - m3/s
       chsd_d(ich)%flo_in_mm = ht1%flo / (10. * ob(icmd)%area_ha)   !flow in mm

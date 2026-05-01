@@ -70,6 +70,7 @@
                                  !! 2 = Use epic tillage method to use if cswat = 2
                                  !! 3 = Use Kemanian tillage method to use if cswat = 2
                                  !! 4 = Use dndc tillage method to use if cswat = 2
+        integer :: icejam = 0    !! 0 = ice-jam conceptural model not active; 1 = ice-jam conceptural model active
 
       end type basin_control_codes
       type (basin_control_codes) :: bsn_cc

@@ -4,10 +4,9 @@ subroutine sd_channel_icejam(j)
 !!    Conceptual daily minor/major ice-jam storage-release module.
 !!
 !!    Concept:
-!!      1. Ice cover represents blockage potential, not the main water source.
-!!      2. Minor jams occur more frequently but only weakly obstruct flow.
-!!      3. Major jams occur under stronger breakup forcing and can store/release
-!!         a larger amount of incoming snowmelt/rain-on-snow flood water.
+!!      1. Ice cover is treated as a seasonal blockage-potential state.
+!!      2. Ice jams temporaily store incoming water behind a blocakge.
+!!      3. Jam release is controlled by current breakup forcing.
 !!      4. Water balance is preserved through:
 !!            blocked  : ht1%flo -> ice_jam_stor
 !!            released : ice_jam_stor -> ht1%flo
@@ -23,25 +22,29 @@ subroutine sd_channel_icejam(j)
 
       integer, intent(in) :: j
 
-      !integer :: iwst = 0
-      integer :: ord = 1
+      integer, parameter :: JAM_NONE  = 0
+      integer, parameter :: JAM_MINOR = 1
+      integer, parameter :: JAM_MAJOR = 2
+
+      integer :: ord = 1               !none    |stream (channel) order
 
       real :: ch_vol_cap = 0.          !m3      |approximate bankfull channel volume
       real :: ice_cover_max = 0.       !m3      |maximum ice-cover condition state
-      real :: ice_cover_min = 0.       !m3      |minimum ice cover needed for jam formation
-      real :: ice_cover_major_min = 0. !m3      |minimum ice cover needed for major jam formation
 
       real :: q_in_rate_raw = 0.       !m3/s    |raw inflow rate before ice-jam adjustment
       real :: q_bank_rate = 0.         !m3/s    |bankfull flow rate
       real :: q_ratio = 0.             !none    |q_in_rate_raw / q_bank_rate
       real :: q_rise_rate = 0.         !none    |relative daily rise in raw inflow
+      real :: q_rise_floor = 0.        !m3/s    |minimum previous flow for robust rise calculation
+      real :: q_rise_abs_floor = 0.05  !m3/s | minimum previous-day flow for rise-rate calculation
+real :: q_rise_bf_floor = 0.02         !none | minimum previous-day flow as fraction of bankfull flow
 
       real :: tw_ice = 0.              !deg C   |water temperature proxy for ice processes
       real :: t_air = 0.               !deg C   |daily mean air temperature
-      real :: tmax = 0.                !deg C   |daily maximum air temperature
       real :: t_ice_growth = 0.        !deg C   |temperature driver for ice growth
       real :: t_ice_decay = 0.         !deg C   |temperature driver for ice decay / breakup
 
+      real :: ice_ratio = 0.           !none    |ice / ice_cover_max
       real :: ice_growth = 0.          !m3/day  |growth of ice-cover condition state
       real :: ice_decay = 0.           !m3/day  |thermal decay of ice-cover condition state
 
@@ -49,8 +52,6 @@ subroutine sd_channel_icejam(j)
       real :: block_frac = 0.          !none    |fraction of incoming water blocked by jam
       real :: stor_max_frac = 0.       !none    |maximum jam storage as fraction of channel volume
       real :: jam_stor_max = 0.        !m3      |maximum water storage behind ice jam
-      real :: release_frac = 0.        !none    |fast release fraction during breakup
-      real :: leak_frac = 0.           !none    |slow leakage fraction while jam persists
 
       real :: blocked = 0.             !m3/day  |water blocked into ice-jam storage
       real :: released = 0.            !m3/day  |water released from ice-jam storage
@@ -60,7 +61,9 @@ subroutine sd_channel_icejam(j)
 
       logical :: minor_jam_possible = .false.
       logical :: major_jam_possible = .false.
-      logical :: breakup_condition = .false.
+      logical :: minor_breakup = .false.
+      logical :: major_breakup = .false.
+      logical :: force_flush = .false.
 
       !! ------------------------------------------------------------------
       !! Parameters for first diagnostic implementation.
@@ -70,20 +73,25 @@ subroutine sd_channel_icejam(j)
       real :: ice_frz_tmp = -1.0       !deg C   |ice-cover growth threshold
       real :: ice_melt_tmp = 0.0       !deg C   |breakup temperature threshold
       real :: ice_growth_coeff = 0.03  !1/degC/day |ice-cover growth coefficient
-      real :: ice_decay_coeff = 0.15   !1/degC/day |ice-cover decay coefficient
-      real :: ice_max_frac = 0.20      !none       |
+      real :: ice_decay_coeff = 0.04   !1/degC/day |ice-cover decay coefficient
+      real :: ice_max_frac = 0.20      !none       |max ice-cover state / channel volume
+
+      !ice-cover thresholds expressed as ice-cover ratios
+      real :: minor_ice_ratio = 0.10         !none       |minimum ice condition for minor jam
+      real :: major_ice_ratio = 0.50         !none       |minimum ice condition for major jam
 
       !minor ice jam parameters: frequent, weak obstruction
       real :: minor_q_ratio = 0.10
-      real :: minor_q_rise = 0.15
-      real :: minor_block_frac = 0.07
-      real :: minor_stor_max_frac = 0.40
+      real :: minor_q_rise = 0.20
+      real :: minor_block_frac = 0.04
+      real :: minor_stor_max_frac = 0.20
       real :: minor_release_frac = 0.30
-      real :: minor_leak_frac = 0.04
+      real :: minor_leak_frac = 0.10
 
       !major jam parameters: less frequent, stronger flood-wave storage/release
-      real :: major_q_ratio = 0.20
-      real :: major_q_rise = 0.30
+      real :: major_q_ratio = 0.25
+      real :: major_q_ratio_high = 0.40
+      real :: major_q_rise = 0.20
       real :: major_block_frac = 0.25
       real :: major_stor_max_frac = 2.50
       real :: major_release_frac = 0.75
@@ -93,12 +101,19 @@ subroutine sd_channel_icejam(j)
       real :: minor_block_frac_max = 0.30
       real :: major_block_frac_max = 0.80
 
+      !warm-season / no-ice cleanup parameters
+      real :: noice_flush_tmp = 1.0          !deg C |flush jam storage if nearly no ice and warm
+      real :: warm_flush_tmp = 5.0           !deg C |flush all jam storage under clearly warm no-ice condition
+      integer :: spring_clear_day = 120      !day   |no channel ice after late April
+      integer :: early_clear_day = 105       !day   |earlier clearing if warm enough
+      real :: early_clear_tmp = 3.0          !deg C |thermal threshold for early spring clearing
+
       
       ich = j
       iwst = ob(icmd)%wst
       t_air = wst(iwst)%weat%tave
-      tmax = wst(iwst)%weat%tmax
 
+      sd_ch(ich)%ice_jam_flag = JAM_NONE
       sd_ch(ich)%icejam_block = 0.
       sd_ch(ich)%icejam_release = 0.
       sd_ch(ich)%icejam_qraw = 0.
@@ -107,8 +122,12 @@ subroutine sd_channel_icejam(j)
       sd_ch(ich)%icejam_qrise = 0.
       sd_ch(ich)%icejam_susc = 0.
 
+      blocked = 0.
+      released = 0.
+
       !! ------------------------------------------------------------
       !! Channel-order-based ice-jam susceptibility
+      !!   High-order, low-slope, and more sinuous channels are more jam-prone.
       !! ------------------------------------------------------------
       ord = sd_ch(ich)%order
 
@@ -130,8 +149,14 @@ subroutine sd_channel_icejam(j)
       case default
         jam_susc = 1.00
       end select
+      !low-slope reaches are more likely to accumulate ice and backwater.
       if (sd_ch(ich)%chs > 1.e-9 .and. sd_ch(ich)%chs < 0.001) then
         jam_susc = min(1.0, jam_susc + 0.15)
+      endif
+      !sinuous reaches can promote local ice accumulation and constriction.
+      !keep the adjustment modest to avoid over-triggering in small streams.
+      if (sd_ch(ich)%sinu > 1.5) then
+        jam_susc = min(1.0, jam_susc + 0.10)
       endif
       sd_ch(ich)%icejam_susc = jam_susc
 
@@ -145,8 +170,7 @@ subroutine sd_channel_icejam(j)
       ch_vol_cap = max(ch_vol_cap, 1.)
 
       ice_cover_max = ice_max_frac * ch_vol_cap
-      ice_cover_min = 0.05 * ice_cover_max
-      ice_cover_major_min = 0.20 * ice_cover_max
+      ice_cover_max = max(ice_cover_max, 1.e-6)
 
       !bankfull flow rate
       if (sd_ch(ich)%bankfull_flo > 1.e-6) then
@@ -154,13 +178,14 @@ subroutine sd_channel_icejam(j)
       else
         q_bank_rate = ch_rcurv(ich)%elev(2)%flo_rate
       endif
-      q_bank_rate = max(q_bank_rate, 1.e-6)
+      q_bank_rate = max(q_bank_rate, 0.05)
       q_ratio = q_in_rate_raw / q_bank_rate
       sd_ch(ich)%icejam_qratio = q_ratio
 
       !relative flow rise based on raw inflow
+      q_rise_floor = max(q_rise_abs_floor, q_rise_bf_floor * q_bank_rate)
       q_rise_rate = 0.
-      if (sd_ch(ich)%q_prev > 1.e-6) then
+      if (sd_ch(ich)%q_prev > q_rise_floor) then
         q_rise_rate = (q_in_rate_raw - sd_ch(ich)%q_prev) / sd_ch(ich)%q_prev
       endif
       q_rise_rate = max(0., q_rise_rate)
@@ -168,7 +193,6 @@ subroutine sd_channel_icejam(j)
 
       !water temperature for ice processes
       tw_ice = sd_ch(ich)%tmp_prx
-
       if (tw_ice < -20. .or. tw_ice > 40.) then
         tw_ice = t_air
       endif
@@ -202,79 +226,113 @@ subroutine sd_channel_icejam(j)
         sd_ch(ich)%ice = sd_ch(ich)%ice - ice_decay
       endif
 
+      !by late spring, the channel should be ice-free
+      if (time%day >= spring_clear_day .and. t_air > 0.) then
+        sd_ch(ich)%ice = 0.
+      endif
+      if (time%day >= early_clear_day .and. t_ice_decay > early_clear_tmp) then
+        sd_ch(ich)%ice = 0.
+      endif
+
+      sd_ch(ich)%ice = max(0., min(sd_ch(ich)%ice, ice_cover_max))
+      ice_ratio = sd_ch(ich)%ice / ice_cover_max
+      ice_ratio = max(0., min(1., ice_ratio))
+
       !! ------------------------------------------------------------------
       !! 3. Release existing jam-stored water during breakup.
       !! This is done before forming a new jam to avoid same-day block-release
       !! cancellation.
       !! ------------------------------------------------------------------
-      breakup_condition = .false.
-
       if (sd_ch(ich)%ice_jam_stor > 0.) then
-        !major break condition: warming plus moderate/high flow or rapid rise
-        if (t_ice_decay > 0.) then
-          if (q_ratio > major_q_ratio .or. q_rise_rate > major_q_rise) then
-            breakup_condition = .true.
-          endif
-        end if
-        select case (sd_ch(ich)%ice_jam_flag)
-        case (2)
-          release_frac = major_release_frac
-          leak_frac = major_leak_frac
-        case (1)
-          release_frac = minor_release_frac
-          leak_frac = minor_leak_frac
-        case default
-          release_frac = minor_release_frac
-          leak_frac = minor_leak_frac
-        end select
+        minor_breakup = .false.
+        major_breakup = .false.
+        force_flush = .false.
 
-        if (breakup_condition) then
-          released = release_frac * sd_ch(ich)%ice_jam_stor
-        else
-          released = leak_frac * sd_ch(ich)%ice_jam_stor
+        !! Major breakup release: warming plus sufficiently strong hydraulic forcing.
+        if (t_ice_decay > ice_melt_tmp .and. jam_susc >= 0.50 .and. &
+            q_ratio >= major_q_ratio .and. &
+            (q_rise_rate >= major_q_rise .or. q_ratio >= major_q_ratio_high)) then
+          major_breakup = .true.
         endif
 
+        !! Minor breakup release: warming plus weaker hydraulic forcing.
+        if (t_ice_decay > ice_melt_tmp .and. &
+            (q_ratio >= minor_q_ratio .or. q_rise_rate >= minor_q_rise)) then
+          minor_breakup = .true.
+        endif
+
+        !no-ice / warm-condition cleanup. This prevents warm-season residual release.
+        if (ice_ratio < minor_ice_ratio .and. t_ice_decay > noice_flush_tmp) force_flush = .true.
+        if (ice_ratio < 1.e-6 .and. t_air > warm_flush_tmp) force_flush = .true.
+        if (time%day >= spring_clear_day .and. t_air > 0.) force_flush = .true.
+
+        if (force_flush) then
+          released = sd_ch(ich)%ice_jam_stor
+          !a force flush is a cleanup of residual jam storage under no-ice/warm
+          ! conditions, not necessarily a major ice-jam event.
+          sd_ch(ich)%ice_jam_flag = max(sd_ch(ich)%ice_jam_flag, JAM_MINOR)
+
+        else if (major_breakup) then
+          released = major_release_frac * sd_ch(ich)%ice_jam_stor
+          sd_ch(ich)%ice_jam_flag = JAM_MAJOR
+
+        else if (minor_breakup) then
+          released = minor_release_frac * sd_ch(ich)%ice_jam_stor
+          sd_ch(ich)%ice_jam_flag = JAM_MINOR
+
+        else
+          !still jammed. Leakage is allowed only if ice condition remains.
+          if (ice_ratio >= minor_ice_ratio) then
+            if (ice_ratio >= major_ice_ratio) then
+              released = major_leak_frac * sd_ch(ich)%ice_jam_stor
+            else
+              released = minor_leak_frac * sd_ch(ich)%ice_jam_stor
+            endif
+          else
+            released = 0.
+          endif
+        endif
+        
         released = max(0., released)
         released = min(released, sd_ch(ich)%ice_jam_stor)
 
         sd_ch(ich)%ice_jam_stor = sd_ch(ich)%ice_jam_stor - released
         ht1%flo = ht1%flo + released
-
         sd_ch(ich)%icejam_release = released
 
         if (sd_ch(ich)%ice_jam_stor < 1.e-6) then
           sd_ch(ich)%ice_jam_stor = 0.
-          sd_ch(ich)%ice_jam_flag = 0.
         endif
 
       endif
 
       !! ------------------------------------------------------------------
-      !! 4. Determine whether a new ice jam can form.
-      !! Ice jam formation requires existing ice cover, warming condition,
-      !! and either moderate/high flow or rapid daily flow rise.
+      !! 4. Determine whether a new breakup ice jam can form today.
+      !! A new jam is allowed only under breakup thermal forcing and
+      !! sufficient hydraulic forcing. Freeze-up jams are not represented here.
       !! ------------------------------------------------------------------
       major_jam_possible = .false.
       minor_jam_possible = .false.
+      
+      !do not form a new jam on the same day as an active breakup/flush release.
+      if (.not. force_flush .and. .not. major_breakup .and. .not. minor_breakup) then
+        !major jam: strong ice cover, susceptible reach, nontrivial flow level,
+        ! and either rapid flow rise or already high relative flow.
+        if (t_ice_decay > ice_melt_tmp .and. jam_susc >= 0.50 .and. &
+            ice_ratio >= major_ice_ratio .and. q_ratio >= major_q_ratio .and. &
+            (q_rise_rate >= major_q_rise .or. q_ratio >= major_q_ratio_high)) then
+          major_jam_possible = .true.
+        endif
 
-      if (jam_susc >= 0.50) then
-        if (sd_ch(ich)%ice > ice_cover_major_min) then
-          if (t_ice_decay > 0.) then
-            if (q_ratio > major_q_ratio .or. q_rise_rate > major_q_rise) then
-              major_jam_possible = .true.
-            endif
+        if (.not. major_jam_possible) then
+          !minor jam: weaker ice condition and weaker hydraulic forcing.
+          !evaluated only if a major jam has not been triggered.
+          if (t_ice_decay > ice_melt_tmp .and. ice_ratio >= minor_ice_ratio .and. &
+              (q_ratio >= minor_q_ratio .or. q_rise_rate >= minor_q_rise)) then
+            minor_jam_possible = .true.
           endif
         endif
-      endif
 
-      if (.not. major_jam_possible) then
-        if (sd_ch(ich)%ice > ice_cover_min) then
-          if (t_ice_decay > 0.) then
-            if (q_ratio > minor_q_ratio .or. q_rise_rate > minor_q_rise) then
-              minor_jam_possible = .true.
-            endif
-          endif
-        endif
       endif
 
       !! ------------------------------------------------------------------
@@ -285,19 +343,15 @@ subroutine sd_channel_icejam(j)
       jam_stor_max = 0.
 
       if (major_jam_possible) then
-
         block_frac = major_block_frac * jam_susc
         block_frac = max(0., min(major_block_frac_max, block_frac))
         stor_max_frac = major_stor_max_frac * jam_susc
-        sd_ch(ich)%ice_jam_flag = 2.
-
+        sd_ch(ich)%ice_jam_flag = JAM_MAJOR
       else if (minor_jam_possible) then
-
         block_frac = minor_block_frac * jam_susc
         block_frac = max(0., min(minor_block_frac_max, block_frac))
         stor_max_frac = minor_stor_max_frac * jam_susc
-        if (sd_ch(ich)%ice_jam_flag < 1.) sd_ch(ich)%ice_jam_flag = 1.
-
+        sd_ch(ich)%ice_jam_flag = max(sd_ch(ich)%ice_jam_flag, JAM_MINOR)
       endif
 
       jam_stor_max = stor_max_frac * ch_vol_cap

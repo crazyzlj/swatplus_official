@@ -216,7 +216,7 @@
         real :: stor_dis_01bf = 0.      !hr         |storage time constant at 0.1*bankfull
         real :: stor_dis_bf = 0.        !hr         |storage time constant at bankfull
         real :: tmp_prx = 0.            !deg C      |parallel physical water temperature
-        real :: ice = 0.0               !m3         |ice cover conditiom
+        real :: ice = 0.0               !m3         |ice cover condition state
         real :: ice_jam_stor = 0.0      !m3         |water temporarily stored behind ice jam
         integer :: ice_jam_flag = 0     !none       |0=no jam, 1=minor jam, 2=major jam
         real :: q_prev = 0.             !m3/s       |previous-day raw inflow rate before ice-jam adjustment
