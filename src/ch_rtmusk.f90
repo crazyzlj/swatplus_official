@@ -190,20 +190,20 @@
       end do    ! end of sub-daily loop
       
       !! compute water balance - evap and seep
-      !! calculate transmission losses (seepage)
-      if (ch_stor(jrch)%flo > 1.e-6) then
-        !! mm/hr * km * m * 24. = m3
-        trans_loss = sd_ch(jrch)%chk * sd_ch(jrch)%chl * rcurv%wet_perim * 24.
-        trans_loss = sd_ch(jrch)%chk * sd_ch(jrch)%chl * sd_ch(jrch)%chw * 24.
-        trans_loss = Min(trans_loss, ch_stor(jrch)%flo)
-        !! subtract transmission loses from outflow
-        rto = trans_loss / ch_stor(jrch)%flo
-        ch_stor(jrch) = (1. - rto) * ch_stor(jrch)
-      end if
-      !if gwflow active, seepage computed in gwflow routine
+      !! calculate transmission losses (seepage), only when gwflow is not activated
       if(bsn_cc%gwflow == 0) then
+        if (ch_stor(jrch)%flo > 1.e-6) then
+          !! mm/hr * km * m * 24. = m3
+          trans_loss = sd_ch(jrch)%chk * sd_ch(jrch)%chl * rcurv%wet_perim * 24.
+          !trans_loss = sd_ch(jrch)%chk * sd_ch(jrch)%chl * sd_ch(jrch)%chw * 24.
+          trans_loss = Min(trans_loss, ch_stor(jrch)%flo)
+          !! subtract transmission loses from outflow
+          rto = trans_loss / ch_stor(jrch)%flo
+          ch_stor(jrch) = (1. - rto) * ch_stor(jrch)
+        end if
         ch_wat_d(ich)%seep = trans_loss
       else
+        !if gwflow active, seepage computed in gwflow routine
         ch_wat_d(ich)%seep = 0.
       endif
 
