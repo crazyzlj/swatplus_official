@@ -218,8 +218,18 @@
         real :: tmp_prx = 0.            !deg C      |parallel physical water temperature
         real :: ice = 0.0               !m3         |ice cover condition state
         real :: ice_jam_stor = 0.0      !m3         |water temporarily stored behind ice jam
-        integer :: ice_jam_flag = 0     !none       |0=no jam, 1=minor jam, 2=major jam
+        real :: ice_cover_stor = 0.0    !m3         |water temporarily retented by stable ice cover
+        real :: ice_mobile = 0.         !m3         |mobile ice to be advected downstream
+        real :: ice_mobile_pass = 0.0   !m3         |pass-through mobile ice to be routed downstream next daily step
         real :: q_prev = 0.             !m3/s       |previous-day raw inflow rate before ice-jam adjustment
+        real :: ice_thaw_dd = 0.        !degC-day   |thaw-memory index for breakup logic
+        real :: ice_freeze_dd = 0.      !degC-day   |freeze-memory index for freeze-up logic
+        integer :: ice_phase = 0        !           |0=warm, 1=freezeup, 2=deepwinter, 3=breakup
+        integer :: ice_phase_days = 0   !           |
+        integer :: ice_release_days = 0 !days       |duration of the current ice-jam release episode
+        integer :: ice_block_days = 0
+        integer :: ice_jam_flag = 0     !none       |0=no jam, 1=minor release event, 2=major release event
+        integer :: ice_release_active = 0 !none     |0=no active jam, 1=minor release episode active, 2=major release episode active
         real :: icejam_block = 0.       !m3/day     |water blocked into jam storage today
         real :: icejam_release = 0.     !m3/day     |water released from jam storage today
         real :: icejam_qraw = 0.        !m3/s       |raw inflow before ice-jam adjustment
