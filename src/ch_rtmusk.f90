@@ -124,7 +124,7 @@
           tot_stor(jrch) = tot_stor(jrch) + rto * ht1
         else
           inflo = 0.
-        end if
+        end if    ! ht1%flo > 1.e-6
         
         !! interpolate rating curve using inflow rate for this substep
         icha = jrch
@@ -252,6 +252,6 @@
       ch_fp_wb(jrch)%tot_stor = tot_stor(jrch)%flo
       ch_fp_wb(jrch)%wet_stor_init = wet_stor_init
       ch_fp_wb(jrch)%wet_stor = wet_stor(jrch)%flo
-      
+
       return
       end subroutine ch_rtmusk
