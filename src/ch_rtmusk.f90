@@ -16,6 +16,7 @@
       use time_module
       use channel_velocity_module
       use sd_channel_module
+      use sd_channel_icejam_module
       use climate_module
       use reservoir_module
       use reservoir_data_module
@@ -252,6 +253,11 @@
       ch_fp_wb(jrch)%tot_stor = tot_stor(jrch)%flo
       ch_fp_wb(jrch)%wet_stor_init = wet_stor_init
       ch_fp_wb(jrch)%wet_stor = wet_stor(jrch)%flo
+
+      !!conceptual ice-jam: transport downstream
+      if(bsn_cc%icejam.eq.1) then
+          call sd_channel_ice_advect(ich)
+      end if
 
       return
       end subroutine ch_rtmusk
