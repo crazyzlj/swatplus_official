@@ -215,6 +215,8 @@
         real :: out1_vol = 0.   !m3         |outflow during previous time step for Muskingum
         real :: stor_dis_01bf = 0.      !hr         |storage time constant at 0.1*bankfull
         real :: stor_dis_bf = 0.        !hr         |storage time constant at bankfull
+        logical :: ros = .false.        !0/1        |whether rain-on-snow occurs on one of the upstream HRUs 
+        real :: snow_melt = 0.          !mm         |snow melt, used for identifying ice jam trigger
         real :: tmp_prx = 0.            !deg C      |parallel physical water temperature
         real :: ice = 0.0               !m3         |ice cover condition state
         real :: ice_jam_stor = 0.0      !m3         |water temporarily stored behind ice jam

@@ -33,12 +33,15 @@
       use time_module
       use hydrograph_module
       use hru_module, only : hru, ihru, precip_eff, snofall, snomlt 
+      use sd_channel_module
       use climate_module, only:  w
       use output_landscape_module
       
       implicit none
 
       integer :: j = 0      !none       |HRU number
+      integer :: iru = 0    !           |ru number contains the hru
+      integer :: icha = 0   !           |channel number 
       real :: smfac = 0.    !           |
       real :: rto_sno  = 0. !none       |ratio of current day's snow water to minimum amount needed to
                             !           |cover ground completely 
@@ -78,6 +81,7 @@
       real :: cold_content = 0.      !mm  |snowpack cold content expressed as melt-equivalent water depth
       real :: heat_excess = 0.       !mm  |rain heat remaining for melt after satisfying cold content
       logical :: snow_process = .false.
+      logical :: ros = .false.
       
       j = ihru
 
@@ -98,6 +102,7 @@
       frac_snow = 0.
       train_ros = 0.
       snow_process = .false.
+      ros = .false.
       
       precip_day = precip_eff
       precip_eff = 0.
@@ -202,6 +207,7 @@
           if (heat_excess > 0.) then
             melt_ros = heat_excess
             hru(j)%sno_tmp = 0.0
+            ros = .true.
           else
             melt_ros = 0.0
             !optional: warm the pack toward 0 C if rain heat partly satisfies cold content.
@@ -269,6 +275,20 @@
           hru(j)%sno_tmp = 0.
           hru(j)%sno_liq = 0.
       endif  
+      
+      !!update ros and snow melt for the downstream channel
+      if (ob(j)%ru_tot > 0) then
+          iru = ob(j)%ru(1) !lsu number
+          iru = iru + sp_ob1%ru - 1
+          if (ob(iru)%src_tot > 0) then
+            if (ob(iru)%obtyp_out(1) == 'sdc') then
+              icha = ob(iru)%obj_out(1) !channel index
+              icha = icha - sp_ob1%chandeg + 1
+              sd_ch(icha)%ros = ros
+              sd_ch(icha)%snow_melt = snomlt
+            endif
+          endif  
+      endif    
       
       if (time%step > 1 .and. snow_process) then
         w%ts(:) = precip_eff / time%step
