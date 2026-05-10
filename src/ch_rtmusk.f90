@@ -87,11 +87,14 @@
       fp_stor_init = fp_stor(jrch)%flo
       tot_stor_init = ch_stor_init + fp_stor_init
       
+      !! keep Muskingum substeps computed in sd_hydsed_init
+      !! For daily simulations, substeps may be greater than 1 to satisfy
+      !! the Muskingum stability criterion. Do not reset them here.
       !! set for daily time step
-      if (time%step == 1) then
-        sd_ch(jrch)%msk%nsteps = 1
-        sd_ch(jrch)%msk%substeps = 1
-      end if
+      !if (time%step == 1) then
+      !  sd_ch(jrch)%msk%nsteps = 1
+      !  sd_ch(jrch)%msk%substeps = 1
+      !end if
       irtstep = 1
       isubstep = 0
       dts = time%dtm / sd_ch(jrch)%msk%substeps * 60.
@@ -106,26 +109,26 @@
           isubstep = 1
         end if
         
-        !! add inflow to total storage
+        !! inflow for the current Muskingum substep
+        !! ob(icmd)%tsin(irtstep) is the inflow volume for the routing step;
+        !! divide it by substeps to obtain the volume entering this substep.
+        !!inflo = ob(icmd)%tsin(irtstep) / sd_ch(jrch)%msk%substeps
+        
+        !! add inflow and associated constituents to total storage
         if (ht1%flo > 1.e-6) then
-          if (sd_ch(jrch)%msk%nsteps > 1) then
-            !! subdaily inflow
-            inflo = ob(icmd)%tsin(irtstep) / sd_ch(jrch)%msk%substeps
-          else
-            inflo = ht1%flo
-          end if
+          inflo = ht1%flo / sd_ch(jrch)%msk%substeps
           
-          !! subdaily inflow
-          inflo = ob(icmd)%tsin(irtstep) / sd_ch(jrch)%msk%substeps
           rto = inflo / ht1%flo
           rto = Max(0., rto)
           rto = Min(1., rto)
           tot_stor(jrch) = tot_stor(jrch) + rto * ht1
-        end if    ! ht1%flo > 1.e-6
+        else
+          inflo = 0.
+        end if
         
-        !! interpolate rating curve using inflow rates
+        !! interpolate rating curve using inflow rate for this substep
         icha = jrch
-        inflo_rate = inflo / 86400.
+        inflo_rate = inflo / dts
         call rcurv_interp_flo (icha, inflo_rate)
         ch_rcurv(jrch)%in2 = rcurv
         
