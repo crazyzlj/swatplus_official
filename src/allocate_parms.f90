@@ -116,6 +116,8 @@
 
 
       allocate (satexn(mhru), source = 0.)  !rtb gwflow
+      
+      allocate (gwholeq(mhru), source = 0.)  !ljzhu gwflow sinkhole
 
 
       

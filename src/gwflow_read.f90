@@ -75,6 +75,7 @@
       real :: min_dist = 0.
       real :: distance = 0.
       real :: gw_cell_volume = 0.
+      real :: min_chan_elev = 0.
       !input file numbers
       integer :: in_gw = 0
       integer :: in_wtdepth = 0
@@ -104,6 +105,11 @@
       real :: tile_depth_val = 0.
       real :: tile_drain_area_val = 0.
       real :: tile_K_val = 0.
+      !conduit information
+      real :: conduit_relative_depth = 0.
+      real :: conduit_cond_depth = 0.
+      real :: conduit_exp = 0.
+      real :: conduit_qmx = 0.
       !reservoir information
       integer :: res_cell = 0
       integer :: res_id = 0
@@ -223,6 +229,8 @@
       read(in_gw,*) gw_satx_flag                    !flag to simulate saturation excess routing
       read(in_gw,*) gw_pumpex_flag                  !flag to simulate specified groundwater pumping
       read(in_gw,*) gw_tile_flag                    !flag to simulate tile drainage outflow
+      read(in_gw,*) gw_sinkhole_flag                !flag to simulate sinkhole inflow
+      read(in_gw,*) gw_conduit_flag                 !flag to simulate conduit outflow
       read(in_gw,*) gw_res_flag                     !flag to simulate groundwater-reservoir exchange
       read(in_gw,*) gw_wet_flag                     !flag to simulate groundwater-wetland exchange
       read(in_gw,*) gw_fp_flag                      !flag to simulate groundwater-floodplain exchange
@@ -864,6 +872,8 @@
         gw_hyd_ss(i)%ppdf = 0.
         gw_hyd_ss(i)%ppex = 0.
         gw_hyd_ss(i)%tile = 0.
+        gw_hyd_ss(i)%hole = 0.
+        gw_hyd_ss(i)%cdut = 0.
         gw_hyd_ss(i)%resv = 0.
         gw_hyd_ss(i)%wetl = 0.
         gw_hyd_ss(i)%fpln = 0.
@@ -889,6 +899,8 @@
         gw_hyd_ss_yr(i)%ppdf = 0.
         gw_hyd_ss_yr(i)%ppex = 0.
         gw_hyd_ss_yr(i)%tile = 0.
+        gw_hyd_ss_yr(i)%hole = 0.
+        gw_hyd_ss_yr(i)%cdut = 0.
         gw_hyd_ss_yr(i)%resv = 0.
         gw_hyd_ss_yr(i)%wetl = 0.
         gw_hyd_ss_yr(i)%fpln = 0.
@@ -912,6 +924,8 @@
         gw_hyd_ss_aa(i)%ppdf = 0.
         gw_hyd_ss_aa(i)%ppex = 0.
         gw_hyd_ss_aa(i)%tile = 0.
+        gw_hyd_ss_aa(i)%hole = 0.
+        gw_hyd_ss_aa(i)%cdut = 0.
         gw_hyd_ss_aa(i)%resv = 0.
         gw_hyd_ss_aa(i)%wetl = 0.
         gw_hyd_ss_aa(i)%fpln = 0.
@@ -935,6 +949,8 @@
         gw_hyd_ss_mo(i)%ppdf = 0.
         gw_hyd_ss_mo(i)%ppex = 0.
         gw_hyd_ss_mo(i)%tile = 0.
+        gw_hyd_ss_mo(i)%hole = 0.
+        gw_hyd_ss_mo(i)%cdut = 0.
         gw_hyd_ss_mo(i)%resv = 0.
         gw_hyd_ss_mo(i)%wetl = 0.
         gw_hyd_ss_mo(i)%fpln = 0.
@@ -1274,6 +1290,142 @@
         gw_tile_flag = 0.
       endif
       endif !end tile drainage
+
+      !sinkholes inflow ----------------------------------------------------------------------
+      !sinkhole cell information
+      if(gw_sinkhole_flag == 1) then
+      inquire(file='gwflow.sinkholes',exist=i_exist)
+      if(i_exist) then
+        write(out_gw,*) '          groundwater-sinkhole inflow (gwflow.sinkholes found)'
+        open(in_gw,file='gwflow.sinkholes')
+        read(in_gw,*) header
+        !read in sinkhole parameters
+        read(in_gw,*) gw_hole_bypass
+        !read in sinkhole cell flag (0=no sinkhole; 1=sinkholes are present)
+        read(in_gw,*) header
+        if(grid_type == "structured") then
+          do i=1,grid_nrow
+            read(in_gw,*) (grid_int(i,j),j=1,grid_ncol)
+          enddo
+          do i=1,grid_nrow
+            do j=1,grid_ncol
+              if(cell_id_usg(i,j) > 0) then
+                gw_state(cell_id_usg(i,j))%hole = grid_int(i,j)
+              endif
+            enddo
+          enddo
+        elseif(grid_type == "unstructured") then
+          do i=1,ncell
+            read(in_gw,*) gw_state(i)%hole
+          enddo
+        endif
+        close(in_gw)
+        !determine the hrus and area fractions that flow into sinkholes
+        allocate(gw_sinkhole_hruflag(num_hru))
+        allocate(gw_sinkhole_hruarea(num_hru))
+        gw_sinkhole_hruflag = 0
+        gw_sinkhole_hruarea = 0.
+      else
+        write(out_gw,*) '          gwflow.sinkholes not found; sinkhole inflow not simulated'
+        gw_tile_flag = 0.
+      endif
+      !do i=1,ncell
+      !  if(gw_state(i)%hole > 0) then
+      !      print *, i, cell_id_init_list(i)
+      !  endif    
+      !enddo    
+      endif !end sinkholes
+
+      !conduits inflow ----------------------------------------------------------------------
+      !conduit cell information
+      if(gw_conduit_flag == 1) then
+      inquire(file='gwflow.conduits',exist=i_exist)
+      if(i_exist) then
+        write(out_gw,*) '          groundwater-conduit inflow (gwflow.conduits found)'
+        open(in_gw,file='gwflow.conduits')
+        read(in_gw,*) header
+        !read in conduit parameters
+        allocate(gw_cdut_depth(ncell))
+        allocate(gw_cdut_conddepth(ncell))
+        allocate(gw_cdut_exp(ncell))
+        allocate(gw_cdut_qmax(ncell))
+        gw_cdut_depth = 0.
+        gw_cdut_conddepth = 0.
+        gw_cdut_exp = 0.
+        gw_cdut_qmax = 0.
+        read(in_gw,*) conduit_relative_depth
+        read(in_gw,*) conduit_cond_depth
+        read(in_gw,*) conduit_exp
+        read(in_gw,*) conduit_qmx
+        !read in conduit cell flag (0=no conduit; 1=conduits are present)
+        read(in_gw,*) header
+        if(grid_type == "structured") then
+          do i=1,grid_nrow
+            read(in_gw,*) (grid_int(i,j),j=1,grid_ncol)
+          enddo
+          do i=1,grid_nrow
+            do j=1,grid_ncol
+              if(cell_id_usg(i,j) > 0) then
+                gw_state(cell_id_usg(i,j))%cdut = grid_int(i,j)
+              endif
+            enddo
+          enddo
+        elseif(grid_type == "unstructured") then
+          do i=1,ncell
+            read(in_gw,*) gw_state(i)%cdut
+          enddo
+        endif
+        close(in_gw)
+        !calculate conduit elevation
+        do i=1,ncell
+          if (gw_state(i)%cdut > 0) then
+            gw_cdut_depth(i) = conduit_relative_depth
+            gw_cdut_conddepth(i) = conduit_cond_depth
+            gw_cdut_exp(i) = conduit_exp
+            gw_cdut_qmax(i) = conduit_qmx
+          endif  
+        enddo
+        !determine the number of conduit cells that are linked to each channel
+        allocate(gw_conduit_info(sp_ob%chandeg))
+        do i=1,ncell
+          if(gw_state(i)%stat.eq.1 .and. gw_state(i)%cdut.eq.1) then
+            channel = cell_channel(i) !channel connected to cell
+            gw_conduit_info(channel)%ncon = gw_conduit_info(channel)%ncon + 1
+          endif
+        enddo
+        !allocate array for cell information
+        do i=1,sp_ob%chandeg
+          allocate(gw_conduit_info(i)%cells(gw_conduit_info(i)%ncon))
+          !allocate(gw_conduit_info(i)%elev(gw_conduit_info(i)%ncon))
+          gw_conduit_info(i)%ncon = 0
+          !gw_conduit_info(i)%elev = 0.
+        enddo
+        !populate the array holding the cell numbers for each channel
+        do i=1,ncell
+          if(gw_state(i)%stat == 1 .and. gw_state(i)%cdut == 1) then
+            channel = cell_channel(i) !channel connected to cell
+            gw_conduit_info(channel)%ncon = gw_conduit_info(channel)%ncon + 1
+            j = gw_conduit_info(channel)%ncon
+            gw_conduit_info(channel)%cells(j) = i
+            !min_chan_elev = 99999.
+            !do k=1,gw_chan_info(channel)%ncon
+            !    if(min_chan_elev > gw_chan_info(channel)%elev(k)) then
+            !        min_chan_elev = gw_chan_info(channel)%elev(k)
+            !    endif  
+            !enddo
+            !min_chan_elev = min_chan_elev - gw_bed_change
+            !gw_conduit_info(channel)%elev(j) = gw_state(i)%botm - gw_cdut_depth(i)
+            !if (gw_conduit_info(channel)%elev(j) < gw_state(i)%botm) then
+            !  gw_conduit_info(channel)%elev(j) = gw_conduit_info(channel)%elev(j) + 0.5
+            !endif
+          endif
+        enddo
+        !flux output file
+      else
+        write(out_gw,*) '          gwflow.conduits not found; conduit inflow not simulated'
+        gw_tile_flag = 0.
+      endif
+      endif !end conduits
 
       !aquifer-reservoir exchange -----------------------------------------------------------------
       if(gw_res_flag == 1) then
@@ -2406,7 +2558,7 @@
           endif
           backspace(in_cell_hru)
         enddo
-31      cell_num_hrus(cell_num) = hru_count
+31      cell_num_hrus(hru_cell) = hru_count
       enddo
       max_hrus = maxval(cell_num_hrus(1:ncell))
       !rewind and re-read headers
@@ -2441,7 +2593,7 @@
           endif
           backspace(in_cell_hru)
         enddo
-30      cell_num_hrus(cell_num) = hru_count
+30      cell_num_hrus(hru_cell) = hru_count
       enddo
       else
         write(out_gw,*) '          gwflow.cellhru not found; cell-HRU reverse mapping not available'
@@ -2449,8 +2601,25 @@
 
       endif !check for LSU-cell connection
 
-
-
+      !!markk hrus that flow into sinkholes and the corresponding area fraction 
+      if (gw_sinkhole_flag > 0) then
+      do i=1,ncell
+        if(gw_state(i)%stat.eq.1 .and. gw_state(i)%hole.eq.1) then
+          if (cell_num_hrus(i) > 0) then
+            do j=1,cell_num_hrus(i)
+              gw_sinkhole_hruflag(cell_hrus(i, j)) = 1
+              gw_sinkhole_hruarea(cell_hrus(i, j)) = gw_sinkhole_hruarea(cell_hrus(i, j)) + &
+                                                     cell_hrus_fract(i, j)
+            enddo
+          endif
+        endif
+      enddo
+      !do i=1,sp_ob%hru
+      !    if (gw_sinkhole_hruflag(i)>0) then
+      !        print *, "hru id: ", i, ", area fraction to sinkholes: ", gw_sinkhole_hruarea(i)
+      !    endif    
+      !enddo    
+      endif
 
       !output file initialization (extracted to gwflow_output.f90)
       call gwflow_output_init

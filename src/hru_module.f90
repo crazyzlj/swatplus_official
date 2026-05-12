@@ -493,6 +493,8 @@
       real, dimension (:), allocatable :: satexn                 !rtb gwflow
       real, dimension (:), allocatable :: irrn      !rtb irrig (irrigation nutrient mass)
       real, dimension (:), allocatable :: irrp      !rtb irrig (irrigation nutrient mass)
+      
+      real, dimension (:), allocatable :: gwholeq   !mm   |water directly flow into sinkholes from a hru, ljzhu 05/11/2026
 
 !!     gsm added for sdr (drainage) 7/24/08
       integer, dimension (:,:), allocatable :: mgt_ops
