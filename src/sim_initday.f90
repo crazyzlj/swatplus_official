@@ -24,6 +24,7 @@
          sedminps,sedorgn,sedorgp,sedyld,sepbtm,silyld,sol_sumno3,sol_sumsolp, surfq,   &
          surqno3,surqsolp,tileno3,ubnrunoff,ubntss,                                     &
          gwsoilq, satexq, gwsoiln, gwsoilp, satexn, surqsalt,latqsalt,tilesalt,percsalt,& !rtb gwflow; rtb salt
+         gwholeq,                                                                       & !ljzhu gwflow sinkhole
          urbqsalt,wetqsalt,wtspsalt,gwupsalt,                                           &
          surqcs,latqcs,tilecs,perccs,gwupcs,urbqcs,sedmcs,irswcs,irgwcs,wetqcs,wtspcs !rtb cs
       use soil_module
@@ -108,6 +109,8 @@
       gwsoilp = 0.
       satexq = 0.
       satexn = 0.
+      
+      gwholeq = 0.
 
 !----------------------------------------------------        
 ! added by J.Jeong for urban modeling 4/29/2008

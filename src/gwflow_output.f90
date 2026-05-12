@@ -82,10 +82,10 @@
         write(out_gwbal,8000) 'jday','mon','day','yr','unit','gis_id', &
           'name','ts','vbef','vaft','recharge','gw_et','gw_sw','sw_gw', &
           'sat_excess','soil','lateral','boundary','pump_allo','pump_ext', &
-          'tile','reservoir','wetland','canal','floodplain','pond', &
+          'tile','sinkhole','conduit','reservoir','wetland','canal','floodplain','pond', &
           'phytorem','error','sat_frac','wt_depth','pump_def'
         write(out_gwbal,8000) '','','','','','','','---','mm','mm', &
-          'mm','mm','mm','mm','mm','mm','mm','mm','mm','mm', &
+          'mm','mm','mm','mm','mm','mm','mm','mm','mm','mm','mm','mm', &
           'mm','mm','mm','mm','mm','mm','mm','%','frac','m','mm'
       endif
 
@@ -96,11 +96,11 @@
         write(out_gwbal_mon,8000) 'jday','mon','day','yr','unit','gis_id', &
           'name','dvol','recharge','gw_et','gw_sw','sw_gw', &
           'sat_excess','soil','lateral','boundary','pump_allo','pump_ext', &
-          'tile','reservoir','wetland','canal','floodplain','pond', &
+          'tile','sinkhole','conduit','reservoir','wetland','canal','floodplain','pond', &
           'phytorem','pump_def'
         write(out_gwbal_mon,8000) '','','','','','','','mm','mm','mm', &
           'mm','mm','mm','mm','mm','mm','mm','mm','mm','mm', &
-          'mm','mm','mm','mm','mm','mm'
+          'mm','mm','mm','mm','mm','mm','mm','mm'
       endif
 
       !open file to track yearly groundwater water balance
@@ -110,11 +110,11 @@
         write(out_gwbal_yr,8000) 'jday','mon','day','yr','unit','gis_id', &
           'name','dvol','recharge','gw_et','gw_sw','sw_gw', &
           'sat_excess','soil','lateral','boundary','pump_allo','pump_ext', &
-          'tile','reservoir','wetland','canal','floodplain','pond', &
+          'tile','sinkhole','conduit','reservoir','wetland','canal','floodplain','pond', &
           'phytorem','pump_def'
         write(out_gwbal_yr,8000) '','','','','','','','mm','mm','mm', &
           'mm','mm','mm','mm','mm','mm','mm','mm','mm','mm', &
-          'mm','mm','mm','mm','mm','mm'
+          'mm','mm','mm','mm','mm','mm','mm','mm'
       endif
 
       !open file to write out average annual groundwater water balance
@@ -124,11 +124,11 @@
         write(out_gwbal_aa,8000) 'jday','mon','day','yr','unit','gis_id', &
           'name','dvol','recharge','gw_et','gw_sw','sw_gw', &
           'sat_excess','soil','lateral','boundary','pump_allo','pump_ext', &
-          'tile','reservoir','wetland','canal','floodplain','pond', &
+          'tile','sinkhole','conduit','reservoir','wetland','canal','floodplain','pond', &
           'phytorem','pump_def'
         write(out_gwbal_aa,8000) '','','','','','','','mm','mm','mm', &
           'mm','mm','mm','mm','mm','mm','mm','mm','mm','mm', &
-          'mm','mm','mm','mm','mm','mm'
+          'mm','mm','mm','mm','mm','mm','mm','mm'
         endif
 
       !open files to track daily groundwater water balance for selected groups of cells
@@ -168,11 +168,11 @@
           write(out_gwbal_grp+i,8000) 'jday','mon','day','yr','unit', &
             'gis_id','name','ts','vbef','vaft','recharge','gw_et', &
             'gw_sw','sw_gw','sat_excess','soil','lateral','boundary', &
-            'pump_allo','pump_ext','tile','reservoir','wetland','canal', &
+            'pump_allo','pump_ext','tile','sinkhole','conduit','reservoir','wetland','canal', &
             'floodplain','pond','phytorem','error','wt_depth','pump_def'
           write(out_gwbal_grp+i,8000) '','','','','','','','---', &
-            'm3','m3','m3','m3','m3','m3','m3','m3','m3','m3', &
-            'm3','m3','m3','m3','m3','m3','m3','m3','m3','%', &
+            'm3','m3','m3','m3','m3','m3','m3','m3','m3','m3','m3', &
+            'm3','m3','m3','m3','m3','m3','m3','m3','m3','m3','%', &
             'm','m3'
         enddo !go to next cell group
         close(in_gw)
@@ -193,10 +193,10 @@
         write(out_heatbal_dy,8000) 'jday','mon','day','yr','unit','gis_id', &
           'name','ts','hbef','haft','recharge','gw_et','gw_sw','sw_gw', &
           'sat_excess','soil','lateral','dispersion','boundary', &
-          'pump_allo','pump_ext','tile','reservoir','wetland','canal', &
+          'pump_allo','pump_ext','tile','sinkhole','conduit','reservoir','wetland','canal', &
           'floodplain','pond','error','tavg'
         write(out_heatbal_dy,8000) '','','','','','','','---', &
-          'MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ', &
+          'MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ', &
           'MJ','MJ','MJ','MJ','MJ','MJ','MJ','%','degC'
       endif
 
@@ -207,11 +207,11 @@
         write(out_heatbal_yr,8000) 'jday','mon','day','yr','unit','gis_id', &
           'name','hdel','recharge','gw_et','gw_sw','sw_gw', &
           'sat_excess','soil','lateral','dispersion','boundary', &
-          'pump_allo','pump_ext','tile','reservoir','wetland','canal', &
+          'pump_allo','pump_ext','tile','sinkhole','conduit','reservoir','wetland','canal', &
           'floodplain','pond'
         write(out_heatbal_yr,8000) '','','','','','','','MJ','MJ','MJ', &
           'MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ', &
-          'MJ','MJ','MJ'
+          'MJ','MJ','MJ','MJ','MJ'
       endif
 
       !open file to write out average annual groundwater heat balance
@@ -221,11 +221,11 @@
         write(out_heatbal_aa,8000) 'jday','mon','day','yr','unit','gis_id', &
           'name','hdel','recharge','gw_et','gw_sw','sw_gw', &
           'sat_excess','soil','lateral','dispersion','boundary', &
-          'pump_allo','pump_ext','tile','reservoir','wetland','canal', &
+          'pump_allo','pump_ext','tile','sinkhole','conduit','reservoir','wetland','canal', &
           'floodplain','pond'
         write(out_heatbal_aa,8000) '','','','','','','','MJ','MJ','MJ', &
           'MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ','MJ', &
-          'MJ','MJ','MJ'
+          'MJ','MJ','MJ','MJ','MJ'
       endif
 
       endif
@@ -251,6 +251,8 @@
         allocate(sol_grid_ppag_mo(gw_nsolute))
         allocate(sol_grid_ppex_mo(gw_nsolute))
         allocate(sol_grid_tile_mo(gw_nsolute))
+        allocate(sol_grid_hole_mo(gw_nsolute))
+        allocate(sol_grid_cdut_mo(gw_nsolute))
         allocate(sol_grid_soil_mo(gw_nsolute))
         allocate(sol_grid_resv_mo(gw_nsolute))
         allocate(sol_grid_wetl_mo(gw_nsolute))
@@ -272,6 +274,8 @@
         allocate(sol_grid_ppag_yr(gw_nsolute))
         allocate(sol_grid_ppex_yr(gw_nsolute))
         allocate(sol_grid_tile_yr(gw_nsolute))
+        allocate(sol_grid_hole_yr(gw_nsolute))
+        allocate(sol_grid_cdut_yr(gw_nsolute))
         allocate(sol_grid_soil_yr(gw_nsolute))
         allocate(sol_grid_resv_yr(gw_nsolute))
         allocate(sol_grid_wetl_yr(gw_nsolute))
@@ -293,6 +297,8 @@
         allocate(sol_grid_ppag_tt(gw_nsolute))
         allocate(sol_grid_ppex_tt(gw_nsolute))
         allocate(sol_grid_tile_tt(gw_nsolute))
+        allocate(sol_grid_hole_tt(gw_nsolute))
+        allocate(sol_grid_cdut_tt(gw_nsolute))
         allocate(sol_grid_soil_tt(gw_nsolute))
         allocate(sol_grid_resv_tt(gw_nsolute))
         allocate(sol_grid_wetl_tt(gw_nsolute))
@@ -328,11 +334,11 @@
               'gis_id','name','ts','mbef','maft','recharge','gw_sw', &
               'sw_gw','sat_excess','soil','advection','dispersion', &
               'react_in','react_out','mineral','sorption','pump_allo', &
-              'pump_ext','tile','reservoir','wetland','canal', &
+              'pump_ext','tile','sinkhole','conduit','reservoir','wetland','canal', &
               'floodplain','pond','error'
             write(out_solbal_dy+n,8000) '','','','','','','','---', &
               'kg','kg','kg','kg','kg','kg','kg','kg','kg','kg','kg', &
-              'kg','kg','kg','kg','kg','kg','kg','kg','kg','kg','%'
+              'kg','kg','kg','kg','kg','kg','kg','kg','kg','kg','kg','kg','%'
           endif
 
           !monthly solute mass balance
@@ -360,10 +366,10 @@
               'gis_id','name','delm','recharge','gw_sw','sw_gw', &
               'sat_excess','soil','advection','dispersion','react_in', &
               'react_out','mineral','sorption','pump_allo','pump_ext', &
-              'tile','reservoir','wetland','canal','floodplain','pond'
+              'tile','sinkhole','conduit','reservoir','wetland','canal','floodplain','pond'
             write(out_solbal_mo+n,8000) '','','','','','','','kg','kg', &
               'kg','kg','kg','kg','kg','kg','kg','kg','kg','kg','kg', &
-              'kg','kg','kg','kg','kg','kg','kg'
+              'kg','kg','kg','kg','kg','kg','kg','kg','kg'
             !zero out monthly arrays
             sol_grid_chng_mo(n) = 0.
             sol_grid_rech_mo(n) = 0.
@@ -379,6 +385,9 @@
             sol_grid_ppag_mo(n) = 0.
             sol_grid_ppex_mo(n) = 0.
             sol_grid_tile_mo(n) = 0.
+            sol_grid_tile_mo(n) = 0.
+            sol_grid_hole_mo(n) = 0.
+            sol_grid_cdut_mo(n) = 0.
             sol_grid_soil_mo(n) = 0.
             sol_grid_resv_mo(n) = 0.
             sol_grid_wetl_mo(n) = 0.
@@ -412,10 +421,10 @@
               'gis_id','name','delm','recharge','gw_sw','sw_gw', &
               'sat_excess','soil','advection','dispersion','react_in', &
               'react_out','mineral','sorption','pump_allo','pump_ext', &
-              'tile','reservoir','wetland','canal','floodplain','pond'
+              'tile','sinkhole','conduit','reservoir','wetland','canal','floodplain','pond'
             write(out_solbal_yr+n,8000) '','','','','','','','kg','kg', &
               'kg','kg','kg','kg','kg','kg','kg','kg','kg','kg','kg', &
-              'kg','kg','kg','kg','kg','kg','kg'
+              'kg','kg','kg','kg','kg','kg','kg','kg','kg'
             !zero out yearly arrays
             sol_grid_chng_yr(n) = 0.
             sol_grid_rech_yr(n) = 0.
@@ -431,6 +440,8 @@
             sol_grid_ppag_yr(n) = 0.
             sol_grid_ppex_yr(n) = 0.
             sol_grid_tile_yr(n) = 0.
+            sol_grid_hole_yr(n) = 0.
+            sol_grid_cdut_yr(n) = 0.
             sol_grid_soil_yr(n) = 0.
             sol_grid_resv_yr(n) = 0.
             sol_grid_wetl_yr(n) = 0.
@@ -464,10 +475,10 @@
               'gis_id','name','delm','recharge','gw_sw','sw_gw', &
               'sat_excess','soil','advection','dispersion','react_in', &
               'react_out','mineral','sorption','pump_allo','pump_ext', &
-              'tile','reservoir','wetland','canal','floodplain','pond'
+              'tile','sinkhole','conduit','reservoir','wetland','canal','floodplain','pond'
             write(out_solbal_aa+n,8000) '','','','','','','','kg','kg', &
               'kg','kg','kg','kg','kg','kg','kg','kg','kg','kg','kg', &
-              'kg','kg','kg','kg','kg','kg','kg'
+              'kg','kg','kg','kg','kg','kg','kg','kg','kg'
             !zero out yearly arrays
             sol_grid_chng_tt(n) = 0.
             sol_grid_rech_tt(n) = 0.
@@ -483,6 +494,8 @@
             sol_grid_ppag_tt(n) = 0.
             sol_grid_ppex_tt(n) = 0.
             sol_grid_tile_tt(n) = 0.
+            sol_grid_hole_tt(n) = 0.
+            sol_grid_cdut_tt(n) = 0.
             sol_grid_soil_tt(n) = 0.
             sol_grid_resv_tt(n) = 0.
             sol_grid_wetl_tt(n) = 0.
@@ -505,7 +518,7 @@
           'jday','mon','day','yr','unit','gis_id','name', &
           'head','wt_depth','recharge','gw_et','gw_sw','sw_gw', &
           'sat_excess','soil','lateral', &
-          'pump_allo','pump_ext','tile','reservoir','wetland', &
+          'pump_allo','pump_ext','tile','sinkhole','conduit','reservoir','wetland', &
           'floodplain','canal','pond','phytorem'
       endif
       if(gwflag_mon.eq.1) then
@@ -517,7 +530,7 @@
           'jday','mon','day','yr','unit','gis_id','name', &
           'head','wt_depth','recharge','gw_et','gw_sw','sw_gw', &
           'sat_excess','soil','lateral', &
-          'pump_allo','pump_ext','tile','reservoir','wetland', &
+          'pump_allo','pump_ext','tile','sinkhole','conduit','reservoir','wetland', &
           'floodplain','canal','pond','phytorem'
       endif
       if(gwflag_yr.eq.1) then
@@ -529,7 +542,7 @@
           'jday','mon','day','yr','unit','gis_id','name', &
           'head','wt_depth','recharge','gw_et','gw_sw','sw_gw', &
           'sat_excess','soil','lateral', &
-          'pump_allo','pump_ext','tile','reservoir','wetland', &
+          'pump_allo','pump_ext','tile','sinkhole','conduit','reservoir','wetland', &
           'floodplain','canal','pond','phytorem'
       endif
       if(gwflag_aa.eq.1) then
@@ -541,7 +554,7 @@
           'jday','mon','day','yr','unit','gis_id','name', &
           'head','wt_depth','recharge','gw_et','gw_sw','sw_gw', &
           'sat_excess','soil','lateral', &
-          'pump_allo','pump_ext','tile','reservoir','wetland', &
+          'pump_allo','pump_ext','tile','sinkhole','conduit','reservoir','wetland', &
           'floodplain','canal','pond','phytorem'
       endif
 
@@ -592,6 +605,8 @@
       real*8 :: ppdf_grid
       real*8 :: ppex_grid
       real*8 :: tile_grid
+      real*8 :: hole_grid
+      real*8 :: cdut_grid
       real*8 :: resv_grid
       real*8 :: wetl_grid
       real*8 :: canl_grid
@@ -613,6 +628,8 @@
       real*8 :: ppdf_grp
       real*8 :: ppex_grp
       real*8 :: tile_grp
+      real*8 :: hole_grp
+      real*8 :: cdut_grp
       real*8 :: resv_grp
       real*8 :: wetl_grp
       real*8 :: canl_grp
@@ -633,6 +650,8 @@
       real*8 :: heat_ppag_grid
       real*8 :: heat_ppex_grid
       real*8 :: heat_tile_grid
+      real*8 :: heat_hole_grid
+      real*8 :: heat_cdut_grid
       real*8 :: heat_resv_grid
       real*8 :: heat_wetl_grid
       real*8 :: heat_canl_grid
@@ -653,6 +672,8 @@
       real :: sol_grid_ppag
       real :: sol_grid_ppex
       real :: sol_grid_tile
+      real :: sol_grid_hole
+      real :: sol_grid_cdut
       real :: sol_grid_soil
       real :: sol_grid_resv
       real :: sol_grid_wetl
@@ -763,6 +784,8 @@
           ppdf_grp = 0.
           ppex_grp = 0.
           tile_grp = 0.
+          hole_grp = 0.
+          cdut_grp = 0.
           resv_grp = 0.
           wetl_grp = 0.
           canl_grp = 0.
@@ -788,6 +811,8 @@
               ppdf_grp = ppdf_grp + gw_hyd_ss(cell_id)%ppdf
               ppex_grp = ppex_grp + gw_hyd_ss(cell_id)%ppex
               tile_grp = tile_grp + gw_hyd_ss(cell_id)%tile
+              hole_grp = hole_grp + gw_hyd_ss(cell_id)%hole
+              cdut_grp = cdut_grp + gw_hyd_ss(cell_id)%cdut
               resv_grp = resv_grp + gw_hyd_ss(cell_id)%resv
               wetl_grp = wetl_grp + gw_hyd_ss(cell_id)%wetl
               canl_grp = canl_grp + gw_hyd_ss(cell_id)%canl
@@ -802,15 +827,15 @@
           !calculate mass error
           mass_error = 0.
           mass_error = (1-((vbef_grp + rech_grp + gwet_grp + gwsw_grp + swgw_grp + satx_grp + soil_grp + &
-                            latl_grp + bndr_grp + ppag_grp + ppex_grp + tile_grp + resv_grp + wetl_grp + &
-                            canl_grp + fpln_grp + pond_grp + phyt_grp) &
+                            latl_grp + bndr_grp + ppag_grp + ppex_grp + tile_grp + hole_grp + cdut_grp + &
+                            resv_grp + wetl_grp + canl_grp + fpln_grp + pond_grp + phyt_grp) &
                            /vaft_grp)) * 100
           !print out daily information
           write(out_gwbal_grp+i,8100) time%day,time%mo,time%day_mo, &
             time%yrc,"       1","       1",bsn%name,gw_time_step, &
             vbef_grp,vaft_grp,rech_grp,gwet_grp,gwsw_grp,swgw_grp, &
             satx_grp,soil_grp,latl_grp,bndr_grp,ppag_grp,ppex_grp, &
-            tile_grp,resv_grp,wetl_grp,canl_grp,fpln_grp,pond_grp,phyt_grp, &
+            tile_grp,hole_grp,cdut_grp,resv_grp,wetl_grp,canl_grp,fpln_grp,pond_grp,phyt_grp, &
             mass_error,depth_wt_avg_grp,ppdf_grp
         enddo !go to next cell group
       endif
@@ -830,6 +855,8 @@
       ppdf_grid = 0.
       ppex_grid = 0.
       tile_grid = 0.
+      hole_grid = 0.
+      cdut_grid = 0.
       resv_grid = 0.
       wetl_grid = 0.
       canl_grid = 0.
@@ -852,6 +879,8 @@
           ppdf_grid = ppdf_grid + gw_hyd_ss(i)%ppdf
           ppex_grid = ppex_grid + gw_hyd_ss(i)%ppex
           tile_grid = tile_grid + gw_hyd_ss(i)%tile
+          hole_grid = hole_grid + gw_hyd_ss(i)%hole
+          cdut_grid = cdut_grid + gw_hyd_ss(i)%cdut
           resv_grid = resv_grid + gw_hyd_ss(i)%resv
           wetl_grid = wetl_grid + gw_hyd_ss(i)%wetl
           canl_grid = canl_grid + gw_hyd_ss(i)%canl
@@ -861,8 +890,8 @@
         endif
       enddo
       mass_error = (1-((vbef_grid + rech_grid + gwet_grid + gwsw_grid + swgw_grid + satx_grid + soil_grid + &
-                        latl_grid + bndr_grid + ppag_grid + ppex_grid + tile_grid + resv_grid + wetl_grid + &
-                        canl_grid + fpln_grid + pond_grid + phyt_grid) &
+                        latl_grid + bndr_grid + ppag_grid + ppex_grid + tile_grid + hole_grid + cdut_grid + &
+                        resv_grid + wetl_grid + canl_grid + fpln_grid + pond_grid + phyt_grid) &
                        /vaft_grid)) * 100
 
       !print out daily information
@@ -881,6 +910,8 @@
       ppdf_grid = (ppdf_grid / (bsn%area_tot_ha*10000.)) * 1000.
       ppex_grid = (ppex_grid / (bsn%area_tot_ha*10000.)) * 1000.
       tile_grid = (tile_grid / (bsn%area_tot_ha*10000.)) * 1000.
+      hole_grid = (tile_grid / (bsn%area_tot_ha*10000.)) * 1000.
+      cdut_grid = (tile_grid / (bsn%area_tot_ha*10000.)) * 1000.
       resv_grid = (resv_grid / (bsn%area_tot_ha*10000.)) * 1000.
       wetl_grid = (wetl_grid / (bsn%area_tot_ha*10000.)) * 1000.
       canl_grid = (canl_grid / (bsn%area_tot_ha*10000.)) * 1000.
@@ -893,8 +924,8 @@
           "       1","       1",bsn%name,gw_time_step, &
           vbef_grid,vaft_grid,rech_grid,gwet_grid,gwsw_grid,swgw_grid, &
           satx_grid,soil_grid,latl_grid,bndr_grid,ppag_grid,ppex_grid, &
-          tile_grid,resv_grid,wetl_grid,canl_grid,fpln_grid,pond_grid, &
-          phyt_grid,mass_error,frac_sat,depth_wt_avg,ppdf_grid
+          tile_grid,hole_grid,cdut_grid,resv_grid,wetl_grid,canl_grid, &
+          fpln_grid,pond_grid,phyt_grid,mass_error,frac_sat,depth_wt_avg,ppdf_grid
       endif
 
       !add daily water balance volumes to monthly values
@@ -911,6 +942,8 @@
       gw_hyd_grid_mo%ppdf = gw_hyd_grid_mo%ppdf + ppdf_grid
       gw_hyd_grid_mo%ppex = gw_hyd_grid_mo%ppex + ppex_grid
       gw_hyd_grid_mo%tile = gw_hyd_grid_mo%tile + tile_grid
+      gw_hyd_grid_mo%hole = gw_hyd_grid_mo%hole + hole_grid
+      gw_hyd_grid_mo%cdut = gw_hyd_grid_mo%cdut + cdut_grid
       gw_hyd_grid_mo%resv = gw_hyd_grid_mo%resv + resv_grid
       gw_hyd_grid_mo%wetl = gw_hyd_grid_mo%wetl + wetl_grid
       gw_hyd_grid_mo%canl = gw_hyd_grid_mo%canl + canl_grid
@@ -931,6 +964,8 @@
       gw_hyd_grid_yr%ppdf = gw_hyd_grid_yr%ppdf + ppdf_grid
       gw_hyd_grid_yr%ppex = gw_hyd_grid_yr%ppex + ppex_grid
       gw_hyd_grid_yr%tile = gw_hyd_grid_yr%tile + tile_grid
+      gw_hyd_grid_yr%hole = gw_hyd_grid_yr%hole + hole_grid
+      gw_hyd_grid_yr%cdut = gw_hyd_grid_yr%cdut + cdut_grid
       gw_hyd_grid_yr%resv = gw_hyd_grid_yr%resv + resv_grid
       gw_hyd_grid_yr%wetl = gw_hyd_grid_yr%wetl + wetl_grid
       gw_hyd_grid_yr%canl = gw_hyd_grid_yr%canl + canl_grid
@@ -951,6 +986,8 @@
       gw_hyd_grid_aa%ppdf = gw_hyd_grid_aa%ppdf + ppdf_grid
       gw_hyd_grid_aa%ppex = gw_hyd_grid_aa%ppex + ppex_grid
       gw_hyd_grid_aa%tile = gw_hyd_grid_aa%tile + tile_grid
+      gw_hyd_grid_aa%hole = gw_hyd_grid_aa%hole + hole_grid
+      gw_hyd_grid_aa%cdut = gw_hyd_grid_aa%cdut + cdut_grid
       gw_hyd_grid_aa%resv = gw_hyd_grid_aa%resv + resv_grid
       gw_hyd_grid_aa%wetl = gw_hyd_grid_aa%wetl + wetl_grid
       gw_hyd_grid_aa%canl = gw_hyd_grid_aa%canl + canl_grid
@@ -975,6 +1012,8 @@
         heat_ppag_grid = 0.
         heat_ppex_grid = 0.
         heat_tile_grid = 0.
+        heat_hole_grid = 0.
+        heat_cdut_grid = 0.
         heat_resv_grid = 0.
         heat_wetl_grid = 0.
         heat_canl_grid = 0.
@@ -996,6 +1035,8 @@
             heat_ppag_grid = heat_ppag_grid + gw_heat_ss(i)%ppag
             heat_ppex_grid = heat_ppex_grid + gw_heat_ss(i)%ppex
             heat_tile_grid = heat_tile_grid + gw_heat_ss(i)%tile
+            heat_hole_grid = heat_hole_grid + gw_heat_ss(i)%hole
+            heat_cdut_grid = heat_cdut_grid + gw_heat_ss(i)%cdut
             heat_resv_grid = heat_resv_grid + gw_heat_ss(i)%resv
             heat_wetl_grid = heat_wetl_grid + gw_heat_ss(i)%wetl
             heat_canl_grid = heat_canl_grid + gw_heat_ss(i)%canl
@@ -1006,8 +1047,8 @@
         mass_error = (1-((heat_hbef_grid + heat_rech_grid + heat_gwet_grid + heat_gwsw_grid + &
                           heat_swgw_grid + heat_satx_grid + heat_soil_grid + heat_latl_grid + &
                           heat_disp_grid + heat_bndr_grid + heat_ppag_grid + heat_ppex_grid + &
-                          heat_tile_grid + heat_resv_grid + heat_wetl_grid + heat_canl_grid + &
-                          heat_fpln_grid + heat_pond_grid) / heat_haft_grid)) * 100
+                          heat_tile_grid + heat_hole_grid + heat_cdut_grid + heat_resv_grid + &
+                          heat_wetl_grid + heat_canl_grid + heat_fpln_grid + heat_pond_grid) / heat_haft_grid)) * 100
         !print out daily information
         !first, divide by 1,000,000 to get MJ
         heat_hbef_grid = heat_hbef_grid / 1000000.
@@ -1024,6 +1065,8 @@
         heat_ppag_grid = heat_ppag_grid / 1000000.
         heat_ppex_grid = heat_ppex_grid / 1000000.
         heat_tile_grid = heat_tile_grid / 1000000.
+        heat_hole_grid = heat_hole_grid / 1000000.
+        heat_cdut_grid = heat_cdut_grid / 1000000.
         heat_resv_grid = heat_resv_grid / 1000000.
         heat_wetl_grid = heat_wetl_grid / 1000000.
         heat_canl_grid = heat_canl_grid / 1000000.
@@ -1035,9 +1078,9 @@
             heat_hbef_grid,heat_haft_grid,heat_rech_grid,heat_gwet_grid, &
             heat_gwsw_grid,heat_swgw_grid,heat_satx_grid,heat_soil_grid, &
             heat_latl_grid,heat_disp_grid,heat_bndr_grid,heat_ppag_grid, &
-            heat_ppex_grid,heat_tile_grid,heat_resv_grid,heat_wetl_grid, &
-            heat_canl_grid,heat_fpln_grid,heat_pond_grid, &
-            mass_error,temp_avg
+            heat_ppex_grid,heat_tile_grid,heat_hole_grid,heat_cdut_grid, &
+            heat_resv_grid,heat_wetl_grid,heat_canl_grid,heat_fpln_grid, &
+            heat_pond_grid,mass_error,temp_avg
         endif
         !add daily heat fluxes to yearly values
         gw_heat_grid_yr%chng = gw_heat_grid_yr%chng + (heat_haft_grid-heat_hbef_grid)
@@ -1053,6 +1096,8 @@
         gw_heat_grid_yr%ppag = gw_heat_grid_yr%ppag + heat_ppag_grid
         gw_heat_grid_yr%ppex = gw_heat_grid_yr%ppex + heat_ppex_grid
         gw_heat_grid_yr%tile = gw_heat_grid_yr%tile + heat_tile_grid
+        gw_heat_grid_yr%hole = gw_heat_grid_yr%hole + heat_hole_grid
+        gw_heat_grid_yr%cdut = gw_heat_grid_yr%cdut + heat_cdut_grid
         gw_heat_grid_yr%resv = gw_heat_grid_yr%resv + heat_resv_grid
         gw_heat_grid_yr%wetl = gw_heat_grid_yr%wetl + heat_wetl_grid
         gw_heat_grid_yr%canl = gw_heat_grid_yr%canl + heat_canl_grid
@@ -1072,6 +1117,8 @@
         gw_heat_grid_aa%ppag = gw_heat_grid_aa%ppag + heat_ppag_grid
         gw_heat_grid_aa%ppex = gw_heat_grid_aa%ppex + heat_ppex_grid
         gw_heat_grid_aa%tile = gw_heat_grid_aa%tile + heat_tile_grid
+        gw_heat_grid_aa%hole = gw_heat_grid_aa%hole + heat_hole_grid
+        gw_heat_grid_aa%cdut = gw_heat_grid_aa%cdut + heat_cdut_grid
         gw_heat_grid_aa%resv = gw_heat_grid_aa%resv + heat_resv_grid
         gw_heat_grid_aa%wetl = gw_heat_grid_aa%wetl + heat_wetl_grid
         gw_heat_grid_aa%canl = gw_heat_grid_aa%canl + heat_canl_grid
@@ -1100,6 +1147,8 @@
           sol_grid_ppag = 0.
           sol_grid_ppex = 0.
           sol_grid_tile = 0.
+          sol_grid_hole = 0.
+          sol_grid_cdut = 0.
           sol_grid_resv = 0.
           sol_grid_wetl = 0.
           sol_grid_canl = 0.
@@ -1123,6 +1172,8 @@
               sol_grid_ppag = sol_grid_ppag + (gwsol_ss(i)%solute(s)%ppag / 1000.)
               sol_grid_ppex = sol_grid_ppex + (gwsol_ss(i)%solute(s)%ppex / 1000.)
               sol_grid_tile = sol_grid_tile + (gwsol_ss(i)%solute(s)%tile / 1000.)
+              sol_grid_hole = sol_grid_hole + (gwsol_ss(i)%solute(s)%hole / 1000.)
+              sol_grid_cdut = sol_grid_cdut + (gwsol_ss(i)%solute(s)%cdut / 1000.)
               sol_grid_soil = sol_grid_soil + (gwsol_ss(i)%solute(s)%soil / 1000.)
               sol_grid_resv = sol_grid_resv + (gwsol_ss(i)%solute(s)%resv / 1000.)
               sol_grid_wetl = sol_grid_wetl + (gwsol_ss(i)%solute(s)%wetl / 1000.)
@@ -1138,7 +1189,7 @@
             mass_error = (1- ((sol_grid_mbef + sol_grid_rech + sol_grid_gwsw + sol_grid_swgw + &
                                sol_grid_satx + sol_grid_advn + sol_grid_disp + &
                                sol_grid_rcti + sol_grid_rcto + sol_grid_minl + &
-                               sol_grid_ppag + sol_grid_ppex + sol_grid_tile + sol_grid_soil + &
+                               sol_grid_ppag + sol_grid_ppex + sol_grid_tile + sol_grid_hole + sol_grid_cdut + sol_grid_soil + &
                                sol_grid_resv + sol_grid_wetl + sol_grid_canl + sol_grid_fpln + sol_grid_pond) / sol_grid_maft)) * 100
           endif
           !print out daily values for the solute
@@ -1148,7 +1199,7 @@
               sol_grid_mbef,sol_grid_maft,sol_grid_rech,sol_grid_gwsw,sol_grid_swgw, &
               sol_grid_satx,sol_grid_soil,sol_grid_advn,sol_grid_disp, &
               sol_grid_rcti,sol_grid_rcto,sol_grid_minl, &
-              sol_grid_sorb,sol_grid_ppag,sol_grid_ppex,sol_grid_tile,sol_grid_resv, &
+              sol_grid_sorb,sol_grid_ppag,sol_grid_ppex,sol_grid_tile,sol_grid_hole,sol_grid_cdut,sol_grid_resv, &
               sol_grid_wetl,sol_grid_canl,sol_grid_fpln,sol_grid_pond, &
               mass_error
           endif
@@ -1168,6 +1219,8 @@
           sol_grid_ppag_mo(s) = sol_grid_ppag_mo(s) + sol_grid_ppag
           sol_grid_ppex_mo(s) = sol_grid_ppex_mo(s) + sol_grid_ppex
           sol_grid_tile_mo(s) = sol_grid_tile_mo(s) + sol_grid_tile
+          sol_grid_hole_mo(s) = sol_grid_hole_mo(s) + sol_grid_hole
+          sol_grid_cdut_mo(s) = sol_grid_cdut_mo(s) + sol_grid_cdut
           sol_grid_soil_mo(s) = sol_grid_soil_mo(s) + sol_grid_soil
           sol_grid_resv_mo(s) = sol_grid_resv_mo(s) + sol_grid_resv
           sol_grid_wetl_mo(s) = sol_grid_wetl_mo(s) + sol_grid_wetl
@@ -1189,6 +1242,8 @@
           sol_grid_ppag_yr(s) = sol_grid_ppag_yr(s) + sol_grid_ppag
           sol_grid_ppex_yr(s) = sol_grid_ppex_yr(s) + sol_grid_ppex
           sol_grid_tile_yr(s) = sol_grid_tile_yr(s) + sol_grid_tile
+          sol_grid_hole_yr(s) = sol_grid_hole_yr(s) + sol_grid_hole
+          sol_grid_cdut_yr(s) = sol_grid_cdut_yr(s) + sol_grid_cdut
           sol_grid_soil_yr(s) = sol_grid_soil_yr(s) + sol_grid_soil
           sol_grid_resv_yr(s) = sol_grid_resv_yr(s) + sol_grid_resv
           sol_grid_wetl_yr(s) = sol_grid_wetl_yr(s) + sol_grid_wetl
@@ -1210,6 +1265,8 @@
           sol_grid_ppag_tt(s) = sol_grid_ppag_tt(s) + sol_grid_ppag
           sol_grid_ppex_tt(s) = sol_grid_ppex_tt(s) + sol_grid_ppex
           sol_grid_tile_tt(s) = sol_grid_tile_tt(s) + sol_grid_tile
+          sol_grid_hole_tt(s) = sol_grid_hole_tt(s) + sol_grid_hole
+          sol_grid_cdut_tt(s) = sol_grid_cdut_tt(s) + sol_grid_cdut
           sol_grid_soil_tt(s) = sol_grid_soil_tt(s) + sol_grid_soil
           sol_grid_resv_tt(s) = sol_grid_resv_tt(s) + sol_grid_resv
           sol_grid_wetl_tt(s) = sol_grid_wetl_tt(s) + sol_grid_wetl
@@ -1239,7 +1296,8 @@
               gw_hyd_ss(i)%satx, gw_hyd_ss(i)%soil, &
               gw_hyd_ss(i)%latl, &
               gw_hyd_ss(i)%ppag, gw_hyd_ss(i)%ppex, &
-              gw_hyd_ss(i)%tile, gw_hyd_ss(i)%resv, &
+              gw_hyd_ss(i)%tile, gw_hyd_ss(i)%hole, &
+              gw_hyd_ss(i)%cdut, gw_hyd_ss(i)%resv, &
               gw_hyd_ss(i)%wetl, gw_hyd_ss(i)%fpln, &
               gw_hyd_ss(i)%canl, gw_hyd_ss(i)%pond, &
               gw_hyd_ss(i)%phyt
@@ -1351,6 +1409,8 @@
           gw_hyd_ss_mo(i)%ppdf = gw_hyd_ss_mo(i)%ppdf / day_mo_r
           gw_hyd_ss_mo(i)%ppex = gw_hyd_ss_mo(i)%ppex / day_mo_r
           gw_hyd_ss_mo(i)%tile = gw_hyd_ss_mo(i)%tile / day_mo_r
+          gw_hyd_ss_mo(i)%hole = gw_hyd_ss_mo(i)%hole / day_mo_r
+          gw_hyd_ss_mo(i)%cdut = gw_hyd_ss_mo(i)%cdut / day_mo_r
           gw_hyd_ss_mo(i)%resv = gw_hyd_ss_mo(i)%resv / day_mo_r
           gw_hyd_ss_mo(i)%wetl = gw_hyd_ss_mo(i)%wetl / day_mo_r
           gw_hyd_ss_mo(i)%canl = gw_hyd_ss_mo(i)%canl / day_mo_r
@@ -1378,7 +1438,8 @@
                 gw_hyd_ss_mo(i)%satx, gw_hyd_ss_mo(i)%soil, &
                 gw_hyd_ss_mo(i)%latl, &
                 gw_hyd_ss_mo(i)%ppag, gw_hyd_ss_mo(i)%ppex, &
-                gw_hyd_ss_mo(i)%tile, gw_hyd_ss_mo(i)%resv, &
+                gw_hyd_ss_mo(i)%tile, gw_hyd_ss_mo(i)%hole, &
+                gw_hyd_ss_mo(i)%cdut, gw_hyd_ss_mo(i)%resv, &
                 gw_hyd_ss_mo(i)%wetl, gw_hyd_ss_mo(i)%fpln, &
                 gw_hyd_ss_mo(i)%canl, gw_hyd_ss_mo(i)%pond, &
                 gw_hyd_ss_mo(i)%phyt
@@ -1419,6 +1480,8 @@
           gw_hyd_ss_mo(i)%ppdf = 0.
           gw_hyd_ss_mo(i)%ppex = 0.
           gw_hyd_ss_mo(i)%tile = 0.
+          gw_hyd_ss_mo(i)%hole = 0.
+          gw_hyd_ss_mo(i)%cdut = 0.
           gw_hyd_ss_mo(i)%resv = 0.
           gw_hyd_ss_mo(i)%wetl = 0.
           gw_hyd_ss_mo(i)%canl = 0.
@@ -1439,6 +1502,8 @@
               gwsol_ss_sum_mo(i)%solute(s)%ppag = 0.
               gwsol_ss_sum_mo(i)%solute(s)%ppex = 0.
               gwsol_ss_sum_mo(i)%solute(s)%tile = 0.
+              gwsol_ss_sum_mo(i)%solute(s)%hole = 0.
+              gwsol_ss_sum_mo(i)%solute(s)%cdut = 0.
               gwsol_ss_sum_mo(i)%solute(s)%resv = 0.
               gwsol_ss_sum_mo(i)%solute(s)%wetl = 0.
               gwsol_ss_sum_mo(i)%solute(s)%canl = 0.
@@ -1462,7 +1527,8 @@
             gw_hyd_grid_mo%gwsw,gw_hyd_grid_mo%swgw, &
             gw_hyd_grid_mo%satx,gw_hyd_grid_mo%soil,gw_hyd_grid_mo%latl, &
             gw_hyd_grid_mo%bndr,gw_hyd_grid_mo%ppag, &
-            gw_hyd_grid_mo%ppex,gw_hyd_grid_mo%tile,gw_hyd_grid_mo%resv, &
+            gw_hyd_grid_mo%ppex,gw_hyd_grid_mo%tile,gw_hyd_grid_mo%hole, &
+            gw_hyd_grid_mo%cdut,gw_hyd_grid_mo%resv, &
             gw_hyd_grid_mo%wetl,gw_hyd_grid_mo%canl, &
             gw_hyd_grid_mo%fpln,gw_hyd_grid_mo%pond,gw_hyd_grid_mo%phyt, &
             gw_hyd_grid_mo%ppdf
@@ -1481,6 +1547,8 @@
         gw_hyd_grid_mo%ppdf = 0.
         gw_hyd_grid_mo%ppex = 0.
         gw_hyd_grid_mo%tile = 0.
+        gw_hyd_grid_mo%hole = 0.
+        gw_hyd_grid_mo%cdut = 0.
         gw_hyd_grid_mo%resv = 0.
         gw_hyd_grid_mo%wetl = 0.
         gw_hyd_grid_mo%canl = 0.
@@ -1502,7 +1570,8 @@
                 sol_grid_rcti_mo(s),sol_grid_rcto_mo(s), &
                 sol_grid_minl_mo(s),sol_grid_sorb_mo(s), &
                 sol_grid_ppag_mo(s),sol_grid_ppex_mo(s), &
-                sol_grid_tile_mo(s),sol_grid_resv_mo(s), &
+                sol_grid_tile_mo(s),sol_grid_hole_mo(s), &
+                sol_grid_cdut_mo(s),sol_grid_resv_mo(s), &
                 sol_grid_wetl_mo(s), &
                 sol_grid_canl_mo(s),sol_grid_fpln_mo(s), &
                 sol_grid_pond_mo(s)
@@ -1522,6 +1591,8 @@
             sol_grid_ppag_mo(s) = 0.
             sol_grid_ppex_mo(s) = 0.
             sol_grid_tile_mo(s) = 0.
+            sol_grid_hole_mo(s) = 0.
+            sol_grid_cdut_mo(s) = 0.
             sol_grid_resv_mo(s) = 0.
             sol_grid_wetl_mo(s) = 0.
             sol_grid_canl_mo(s) = 0.
@@ -1612,6 +1683,8 @@
         gw_hyd_ss_yr(i)%ppdf = gw_hyd_ss_yr(i)%ppdf / day_yr_r
         gw_hyd_ss_yr(i)%ppex = gw_hyd_ss_yr(i)%ppex / day_yr_r
         gw_hyd_ss_yr(i)%tile = gw_hyd_ss_yr(i)%tile / day_yr_r
+        gw_hyd_ss_yr(i)%hole = gw_hyd_ss_yr(i)%hole / day_yr_r
+        gw_hyd_ss_yr(i)%cdut = gw_hyd_ss_yr(i)%cdut / day_yr_r
         gw_hyd_ss_yr(i)%resv = gw_hyd_ss_yr(i)%resv / day_yr_r
         gw_hyd_ss_yr(i)%wetl = gw_hyd_ss_yr(i)%wetl / day_yr_r
         gw_hyd_ss_yr(i)%canl = gw_hyd_ss_yr(i)%canl / day_yr_r
@@ -1639,7 +1712,8 @@
               gw_hyd_ss_yr(i)%satx, gw_hyd_ss_yr(i)%soil, &
               gw_hyd_ss_yr(i)%latl, &
               gw_hyd_ss_yr(i)%ppag, gw_hyd_ss_yr(i)%ppex, &
-              gw_hyd_ss_yr(i)%tile, gw_hyd_ss_yr(i)%resv, &
+              gw_hyd_ss_yr(i)%tile, gw_hyd_ss_yr(i)%hole, &
+              gw_hyd_ss_yr(i)%cdut, gw_hyd_ss_yr(i)%resv, &
               gw_hyd_ss_yr(i)%wetl, gw_hyd_ss_yr(i)%fpln, &
               gw_hyd_ss_yr(i)%canl, gw_hyd_ss_yr(i)%pond, &
               gw_hyd_ss_yr(i)%phyt
@@ -1660,6 +1734,8 @@
         gw_hyd_ss_aa(i)%ppag = gw_hyd_ss_aa(i)%ppag + gw_hyd_ss_yr(i)%ppag
         gw_hyd_ss_aa(i)%ppex = gw_hyd_ss_aa(i)%ppex + gw_hyd_ss_yr(i)%ppex
         gw_hyd_ss_aa(i)%tile = gw_hyd_ss_aa(i)%tile + gw_hyd_ss_yr(i)%tile
+        gw_hyd_ss_aa(i)%hole = gw_hyd_ss_aa(i)%hole + gw_hyd_ss_yr(i)%hole
+        gw_hyd_ss_aa(i)%cdut = gw_hyd_ss_aa(i)%cdut + gw_hyd_ss_yr(i)%cdut
         gw_hyd_ss_aa(i)%resv = gw_hyd_ss_aa(i)%resv + gw_hyd_ss_yr(i)%resv
         gw_hyd_ss_aa(i)%wetl = gw_hyd_ss_aa(i)%wetl + gw_hyd_ss_yr(i)%wetl
         gw_hyd_ss_aa(i)%fpln = gw_hyd_ss_aa(i)%fpln + gw_hyd_ss_yr(i)%fpln
@@ -1711,6 +1787,8 @@
           gw_heat_ss_yr(i)%ppag = (gw_heat_ss_yr(i)%ppag/1000000.) / day_yr_r !J --> MJ
           gw_heat_ss_yr(i)%ppex = (gw_heat_ss_yr(i)%ppex/1000000.) / day_yr_r !J --> MJ
           gw_heat_ss_yr(i)%tile = (gw_heat_ss_yr(i)%tile/1000000.) / day_yr_r !J --> MJ
+          gw_heat_ss_yr(i)%hole = (gw_heat_ss_yr(i)%hole/1000000.) / day_yr_r !J --> MJ
+          gw_heat_ss_yr(i)%cdut = (gw_heat_ss_yr(i)%cdut/1000000.) / day_yr_r !J --> MJ
           gw_heat_ss_yr(i)%resv = (gw_heat_ss_yr(i)%resv/1000000.) / day_yr_r !J --> MJ
           gw_heat_ss_yr(i)%wetl = (gw_heat_ss_yr(i)%wetl/1000000.) / day_yr_r !J --> MJ
           gw_heat_ss_yr(i)%canl = (gw_heat_ss_yr(i)%canl/1000000.) / day_yr_r !J --> MJ
@@ -1730,6 +1808,8 @@
             gwsol_ss_sum(i)%solute(s)%satx = (gwsol_ss_sum(i)%solute(s)%satx/1000.) / day_yr_r !g --> kg
             gwsol_ss_sum(i)%solute(s)%ppex = (gwsol_ss_sum(i)%solute(s)%ppex/1000.) / day_yr_r !g --> kg
             gwsol_ss_sum(i)%solute(s)%tile = (gwsol_ss_sum(i)%solute(s)%tile/1000.) / day_yr_r !g --> kg
+            gwsol_ss_sum(i)%solute(s)%hole = (gwsol_ss_sum(i)%solute(s)%hole/1000.) / day_yr_r !g --> kg
+            gwsol_ss_sum(i)%solute(s)%cdut = (gwsol_ss_sum(i)%solute(s)%cdut/1000.) / day_yr_r !g --> kg
             gwsol_ss_sum(i)%solute(s)%resv = (gwsol_ss_sum(i)%solute(s)%resv/1000.) / day_yr_r !g --> kg
             gwsol_ss_sum(i)%solute(s)%wetl = (gwsol_ss_sum(i)%solute(s)%wetl/1000.) / day_yr_r !g --> kg
             gwsol_ss_sum(i)%solute(s)%canl = (gwsol_ss_sum(i)%solute(s)%canl/1000.) / day_yr_r !g --> kg
@@ -1778,6 +1858,8 @@
         gw_hyd_ss_yr(i)%ppdf = 0.
         gw_hyd_ss_yr(i)%ppex = 0.
         gw_hyd_ss_yr(i)%tile = 0.
+        gw_hyd_ss_yr(i)%hole = 0.
+        gw_hyd_ss_yr(i)%cdut = 0.
         gw_hyd_ss_yr(i)%resv = 0.
         gw_hyd_ss_yr(i)%wetl = 0.
         gw_hyd_ss_yr(i)%canl = 0.
@@ -1800,6 +1882,8 @@
           gw_heat_ss_yr(i)%ppag = 0.
           gw_heat_ss_yr(i)%ppex = 0.
           gw_heat_ss_yr(i)%tile = 0.
+          gw_heat_ss_yr(i)%hole = 0.
+          gw_heat_ss_yr(i)%cdut = 0.
           gw_heat_ss_yr(i)%resv = 0.
           gw_heat_ss_yr(i)%wetl = 0.
           gw_heat_ss_yr(i)%canl = 0.
@@ -1819,6 +1903,8 @@
             gwsol_ss_sum(i)%solute(s)%ppag = 0.
             gwsol_ss_sum(i)%solute(s)%ppex = 0.
             gwsol_ss_sum(i)%solute(s)%tile = 0.
+            gwsol_ss_sum(i)%solute(s)%hole = 0.
+            gwsol_ss_sum(i)%solute(s)%cdut = 0.
             gwsol_ss_sum(i)%solute(s)%resv = 0.
             gwsol_ss_sum(i)%solute(s)%wetl = 0.
             gwsol_ss_sum(i)%solute(s)%canl = 0.
@@ -1842,7 +1928,8 @@
           gw_hyd_grid_yr%gwsw,gw_hyd_grid_yr%swgw, &
           gw_hyd_grid_yr%satx,gw_hyd_grid_yr%soil,gw_hyd_grid_yr%latl, &
           gw_hyd_grid_yr%bndr,gw_hyd_grid_yr%ppag, &
-          gw_hyd_grid_yr%ppex,gw_hyd_grid_yr%tile,gw_hyd_grid_yr%resv, &
+          gw_hyd_grid_yr%ppex,gw_hyd_grid_yr%tile,gw_hyd_grid_yr%hole, &
+          gw_hyd_grid_yr%cdut,gw_hyd_grid_yr%resv, &
           gw_hyd_grid_yr%wetl,gw_hyd_grid_yr%canl, &
           gw_hyd_grid_yr%fpln,gw_hyd_grid_yr%pond,gw_hyd_grid_yr%phyt, &
           gw_hyd_grid_yr%ppdf
@@ -1862,6 +1949,8 @@
       gw_hyd_grid_yr%ppdf = 0.
       gw_hyd_grid_yr%ppex = 0.
       gw_hyd_grid_yr%tile = 0.
+      gw_hyd_grid_yr%hole = 0.
+      gw_hyd_grid_yr%cdut = 0.
       gw_hyd_grid_yr%resv = 0.
       gw_hyd_grid_yr%wetl = 0.
       gw_hyd_grid_yr%canl = 0.
@@ -1883,6 +1972,7 @@
             gw_heat_grid_yr%bndr, &
             gw_heat_grid_yr%ppag,gw_heat_grid_yr%ppex, &
             gw_heat_grid_yr%tile, &
+            gw_heat_grid_yr%hole,gw_heat_grid_yr%cdut, &  
             gw_heat_grid_yr%resv,gw_heat_grid_yr%wetl, &
             gw_heat_grid_yr%canl, &
             gw_heat_grid_yr%fpln,gw_heat_grid_yr%pond
@@ -1900,6 +1990,8 @@
         gw_heat_grid_yr%ppag = 0.
         gw_heat_grid_yr%ppex = 0.
         gw_heat_grid_yr%tile = 0.
+        gw_heat_grid_yr%hole = 0.
+        gw_heat_grid_yr%cdut = 0.
         gw_heat_grid_yr%resv = 0.
         gw_heat_grid_yr%wetl = 0.
         gw_heat_grid_yr%canl = 0.
@@ -1921,7 +2013,8 @@
               sol_grid_rcti_yr(s),sol_grid_rcto_yr(s), &
               sol_grid_minl_yr(s),sol_grid_sorb_yr(s), &
               sol_grid_ppag_yr(s),sol_grid_ppex_yr(s), &
-              sol_grid_tile_yr(s),sol_grid_resv_yr(s), &
+              sol_grid_tile_yr(s),sol_grid_hole_yr(s), &
+              sol_grid_cdut_yr(s),sol_grid_resv_yr(s), &
               sol_grid_wetl_yr(s), &
               sol_grid_canl_yr(s),sol_grid_fpln_yr(s), &
               sol_grid_pond_yr(s)
@@ -1941,6 +2034,8 @@
           sol_grid_ppag_yr(s) = 0.
           sol_grid_ppex_yr(s) = 0.
           sol_grid_tile_yr(s) = 0.
+          sol_grid_hole_yr(s) = 0.
+          sol_grid_cdut_yr(s) = 0.
           sol_grid_resv_yr(s) = 0.
           sol_grid_wetl_yr(s) = 0.
           sol_grid_canl_yr(s) = 0.
@@ -2051,6 +2146,8 @@
               gw_hyd_ss_aa(i)%ppag / nbyr_r, &
               gw_hyd_ss_aa(i)%ppex / nbyr_r, &
               gw_hyd_ss_aa(i)%tile / nbyr_r, &
+              gw_hyd_ss_aa(i)%hole / nbyr_r, &
+              gw_hyd_ss_aa(i)%cdut / nbyr_r, &
               gw_hyd_ss_aa(i)%resv / nbyr_r, &
               gw_hyd_ss_aa(i)%wetl / nbyr_r, &
               gw_hyd_ss_aa(i)%fpln / nbyr_r, &
@@ -2075,6 +2172,8 @@
       gw_hyd_grid_aa%ppdf = gw_hyd_grid_aa%ppdf / nbyr_r
       gw_hyd_grid_aa%ppex = gw_hyd_grid_aa%ppex / nbyr_r
       gw_hyd_grid_aa%tile = gw_hyd_grid_aa%tile / nbyr_r
+      gw_hyd_grid_aa%hole = gw_hyd_grid_aa%hole / nbyr_r
+      gw_hyd_grid_aa%cdut = gw_hyd_grid_aa%cdut / nbyr_r
       gw_hyd_grid_aa%resv = gw_hyd_grid_aa%resv / nbyr_r
       gw_hyd_grid_aa%wetl = gw_hyd_grid_aa%wetl / nbyr_r
       gw_hyd_grid_aa%canl = gw_hyd_grid_aa%canl / nbyr_r
@@ -2088,7 +2187,8 @@
           gw_hyd_grid_aa%gwsw,gw_hyd_grid_aa%swgw, &
           gw_hyd_grid_aa%satx,gw_hyd_grid_aa%soil,gw_hyd_grid_aa%latl, &
           gw_hyd_grid_aa%bndr,gw_hyd_grid_aa%ppag, &
-          gw_hyd_grid_aa%ppex,gw_hyd_grid_aa%tile,gw_hyd_grid_aa%resv, &
+          gw_hyd_grid_aa%ppex,gw_hyd_grid_aa%tile,gw_hyd_grid_aa%hole, &
+          gw_hyd_grid_aa%cdut,gw_hyd_grid_aa%resv, &
           gw_hyd_grid_aa%wetl,gw_hyd_grid_aa%canl, &
           gw_hyd_grid_aa%fpln,gw_hyd_grid_aa%pond,gw_hyd_grid_aa%phyt, &
           gw_hyd_grid_aa%ppdf
@@ -2108,6 +2208,8 @@
       gw_heat_grid_aa%ppag = gw_heat_grid_aa%ppag / nbyr_r
       gw_heat_grid_aa%ppex = gw_heat_grid_aa%ppex / nbyr_r
       gw_heat_grid_aa%tile = gw_heat_grid_aa%tile / nbyr_r
+      gw_heat_grid_aa%hole = gw_heat_grid_aa%hole / nbyr_r
+      gw_heat_grid_aa%cdut = gw_heat_grid_aa%cdut / nbyr_r
       gw_heat_grid_aa%resv = gw_heat_grid_aa%resv / nbyr_r
       gw_heat_grid_aa%wetl = gw_heat_grid_aa%wetl / nbyr_r
       gw_heat_grid_aa%canl = gw_heat_grid_aa%canl / nbyr_r
@@ -2121,6 +2223,7 @@
           gw_heat_grid_aa%swgw,gw_heat_grid_aa%satx,gw_heat_grid_aa%soil, &
           gw_heat_grid_aa%latl,gw_heat_grid_aa%disp,gw_heat_grid_aa%bndr, &
           gw_heat_grid_aa%ppag,gw_heat_grid_aa%ppex,gw_heat_grid_aa%tile, &
+          gw_heat_grid_aa%hole,gw_heat_grid_aa%cdut, &  
           gw_heat_grid_aa%resv,gw_heat_grid_aa%wetl,gw_heat_grid_aa%canl, &
           gw_heat_grid_aa%fpln,gw_heat_grid_aa%pond
       endif
@@ -2142,6 +2245,8 @@
           sol_grid_ppag_tt(s) = sol_grid_ppag_tt(s) / nbyr_r
           sol_grid_ppex_tt(s) = sol_grid_ppex_tt(s) / nbyr_r
           sol_grid_tile_tt(s) = sol_grid_tile_tt(s) / nbyr_r
+          sol_grid_hole_tt(s) = sol_grid_hole_tt(s) / nbyr_r
+          sol_grid_cdut_tt(s) = sol_grid_cdut_tt(s) / nbyr_r
           sol_grid_soil_tt(s) = sol_grid_soil_tt(s) / nbyr_r
           sol_grid_resv_tt(s) = sol_grid_resv_tt(s) / nbyr_r
           sol_grid_wetl_tt(s) = sol_grid_wetl_tt(s) / nbyr_r
@@ -2159,7 +2264,8 @@
               sol_grid_rcti_tt(s),sol_grid_rcto_tt(s), &
               sol_grid_minl_tt(s),sol_grid_sorb_tt(s), &
               sol_grid_ppag_tt(s),sol_grid_ppex_tt(s), &
-              sol_grid_tile_tt(s),sol_grid_resv_tt(s), &
+              sol_grid_tile_tt(s),sol_grid_hole_tt(s), &
+              sol_grid_cdut_tt(s),sol_grid_resv_tt(s), &
               sol_grid_wetl_tt(s), &
               sol_grid_canl_tt(s),sol_grid_fpln_tt(s), &
               sol_grid_pond_tt(s)

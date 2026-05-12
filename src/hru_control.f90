@@ -12,6 +12,7 @@
          snofall, snomlt, usle, canev, ep_day, es_day, etday, inflpcp, isep, iwgen, ls_overq,     &
          nd_30, pet_day, precip_eff, qday, latqrunon, gwsoilq, satexq, surf_bs, bss, bss_ex, brt, &
          gwsoiln, gwsoilp, satexq_chan, surqsalt, latqsalt, tilesalt, percsalt, urbqsalt,         & !rtb gwflow; rtb salt
+         gwholeq,                                                                                 & !ljzhu gwflow sinkhole
          wetqsalt, wtspsalt, gwupsalt, surqcs, latqcs, tilecs, perccs, gwupcs, sedmcs, urbqcs,    &
          wetqcs, wtspcs    !rtb cs
                                                                                                                                         !HAK 7/27/22
@@ -36,7 +37,7 @@
       use salt_module !rtb salt
       use cs_module !rtb cs
       use gwflow_module !rtb gwflow
-	    use tillage_data_module
+      use tillage_data_module
       !use basin_module, only : bsn_cc
       
       implicit none
@@ -271,6 +272,14 @@
         !if (j == 1662) then
         !  write(9003,*)  " route overflow, ob(icmd)%hin_sur%flo: ", ob(icmd)%hin_sur%flo
         !end if          
+        
+        !!direct fill in sinkholes using precip_eff
+        if (bsn_cc%gwflow == 1 .and. gw_sinkhole_flag == 1 .and. &
+            gw_sinkhole_hruflag(j) == 1 .and. precip_eff > 1.e-6) then
+          gwholeq(j) = gw_hole_bypass * gw_sinkhole_hruarea(j) * precip_eff !mm
+          precip_eff = precip_eff - gwholeq(j)
+        end if
+        
         !!route overland flow across hru - add tile flow if not subirrigation or saturated buffer
         tile_fr_surf = 1.   !assume all tile goes overland until get saturated buffer dtbl
         if (ob(icmd)%hin_sur%flo > 1.e-6) then

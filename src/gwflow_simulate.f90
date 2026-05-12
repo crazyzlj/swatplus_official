@@ -175,6 +175,9 @@
           endif
         endif
       endif
+      
+      !sinkhole to groundwater - ----------------------------------------------
+      call gwflow_sinkhole
 
       !groundwater exchange with reservoirs -----------------------------------
       !gwflow_resv called in res_control
@@ -225,6 +228,7 @@
                                gw_hyd_ss(i)%gwsw + gw_hyd_ss(i)%swgw + &
                                gw_hyd_ss(i)%satx + gw_hyd_ss(i)%soil + &
                                gw_hyd_ss(i)%ppag + gw_hyd_ss(i)%ppex + gw_hyd_ss(i)%tile + &
+                               gw_hyd_ss(i)%hole + gw_hyd_ss(i)%cdut + &
                                gw_hyd_ss(i)%resv + gw_hyd_ss(i)%wetl + gw_hyd_ss(i)%canl + &
                                gw_hyd_ss(i)%fpln + gw_hyd_ss(i)%pond + gw_hyd_ss(i)%phyt
         endif
@@ -277,6 +281,8 @@
                                  gw_heat_ss(i)%ppag + & !heat in pumping for irrigation
                                  gw_heat_ss(i)%ppex + & !heat in user-defined pumping
                                  gw_heat_ss(i)%tile + & !heat in tile drainage water
+                                 gw_heat_ss(i)%hole + & !heat in sinkhole inflow water
+                                 gw_heat_ss(i)%cdut + & !heat in conduit outflow water
                                  gw_heat_ss(i)%resv + & !heat in groundwater-reservoir exchange water
                                  gw_heat_ss(i)%wetl + & !heat in groundwater inflow to wetlands
                                  gw_heat_ss(i)%canl + & !heat in groundwater-canal exchange
@@ -299,6 +305,8 @@
                                            gwsol_ss(i)%solute(s)%ppag + & !pumping (irrigation)
                                            gwsol_ss(i)%solute(s)%ppex + & !pumping (external)
                                            gwsol_ss(i)%solute(s)%tile + & !tile outflow
+                                           gwsol_ss(i)%solute(s)%hole + & !sinkhole inflow
+                                           gwsol_ss(i)%solute(s)%cdut + & !conduit outflow
                                            gwsol_ss(i)%solute(s)%resv + & !reservoir exchange
                                            gwsol_ss(i)%solute(s)%wetl + & !wetland
                                            gwsol_ss(i)%solute(s)%canl + & !canal exchange
@@ -518,6 +526,8 @@
         gw_hyd_ss(i)%ppdf = 0.
         gw_hyd_ss(i)%ppex = 0.
         gw_hyd_ss(i)%tile = 0.
+        gw_hyd_ss(i)%hole = 0.
+        gw_hyd_ss(i)%cdut = 0.
         gw_hyd_ss(i)%resv = 0.
         gw_hyd_ss(i)%wetl = 0.
         gw_hyd_ss(i)%canl = 0.
@@ -542,6 +552,8 @@
           gw_heat_ss(i)%ppag = 0.
           gw_heat_ss(i)%ppex = 0.
           gw_heat_ss(i)%tile = 0.
+          gw_heat_ss(i)%hole = 0.
+          gw_heat_ss(i)%cdut = 0.
           gw_heat_ss(i)%resv = 0.
           gw_heat_ss(i)%wetl = 0.
           gw_heat_ss(i)%canl = 0.
@@ -562,6 +574,8 @@
             gwsol_ss(i)%solute(s)%ppag = 0.
             gwsol_ss(i)%solute(s)%ppex = 0.
             gwsol_ss(i)%solute(s)%tile = 0.
+            gwsol_ss(i)%solute(s)%hole = 0.
+            gwsol_ss(i)%solute(s)%cdut = 0.
             gwsol_ss(i)%solute(s)%resv = 0.
             gwsol_ss(i)%solute(s)%wetl = 0.
             gwsol_ss(i)%solute(s)%canl = 0.
@@ -584,6 +598,8 @@
             gwsol_ss(i)%solute(s)%ppag = 0.
             gwsol_ss(i)%solute(s)%ppex = 0.
             gwsol_ss(i)%solute(s)%tile = 0.
+            gwsol_ss(i)%solute(s)%hole = 0.
+            gwsol_ss(i)%solute(s)%cdut = 0.
             gwsol_ss(i)%solute(s)%resv = 0.
             gwsol_ss(i)%solute(s)%wetl = 0.
             gwsol_ss(i)%solute(s)%canl = 0.
