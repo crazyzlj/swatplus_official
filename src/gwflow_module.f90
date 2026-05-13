@@ -293,7 +293,6 @@
       type conduit_channel_info
         integer :: ncon = 0                                        !     |number of cells connected to the channel
         integer, allocatable :: cells(:)                           !     |cells connected to the channel
-        !real, allocatable :: elev(:)                               !m    |conduit elevation
       endtype conduit_channel_info
       type (conduit_channel_info), dimension(:), allocatable :: gw_conduit_info
       

@@ -1396,9 +1396,7 @@
         !allocate array for cell information
         do i=1,sp_ob%chandeg
           allocate(gw_conduit_info(i)%cells(gw_conduit_info(i)%ncon))
-          !allocate(gw_conduit_info(i)%elev(gw_conduit_info(i)%ncon))
           gw_conduit_info(i)%ncon = 0
-          !gw_conduit_info(i)%elev = 0.
         enddo
         !populate the array holding the cell numbers for each channel
         do i=1,ncell
@@ -1407,20 +1405,16 @@
             gw_conduit_info(channel)%ncon = gw_conduit_info(channel)%ncon + 1
             j = gw_conduit_info(channel)%ncon
             gw_conduit_info(channel)%cells(j) = i
-            !min_chan_elev = 99999.
-            !do k=1,gw_chan_info(channel)%ncon
-            !    if(min_chan_elev > gw_chan_info(channel)%elev(k)) then
-            !        min_chan_elev = gw_chan_info(channel)%elev(k)
-            !    endif  
-            !enddo
-            !min_chan_elev = min_chan_elev - gw_bed_change
-            !gw_conduit_info(channel)%elev(j) = gw_state(i)%botm - gw_cdut_depth(i)
-            !if (gw_conduit_info(channel)%elev(j) < gw_state(i)%botm) then
-            !  gw_conduit_info(channel)%elev(j) = gw_conduit_info(channel)%elev(j) + 0.5
-            !endif
           endif
         enddo
-        !flux output file
+        !do i=1,sp_ob%chandeg
+        !  if (gw_conduit_info(i)%ncon > 0) then
+        !    write(9003,*) "channel index: ", i, ", real channel id:", ob(sp_ob1%chandeg+i-1)%gis_id 
+        !    do j=1,gw_conduit_info(i)%ncon
+        !      write(9003,*) "  cell id: ", gw_conduit_info(i)%cells(j), ", original cell id:", cell_id_init_list(gw_conduit_info(i)%cells(j))
+        !    enddo  
+        !  endif  
+        !enddo
       else
         write(out_gw,*) '          gwflow.conduits not found; conduit inflow not simulated'
         gw_tile_flag = 0.
@@ -2601,7 +2595,7 @@
 
       endif !check for LSU-cell connection
 
-      !!markk hrus that flow into sinkholes and the corresponding area fraction 
+      !!mark hrus that flow into sinkholes and the corresponding area fraction 
       if (gw_sinkhole_flag > 0) then
       do i=1,ncell
         if(gw_state(i)%stat.eq.1 .and. gw_state(i)%hole.eq.1) then
@@ -2616,9 +2610,9 @@
       enddo
       !do i=1,sp_ob%hru
       !    if (gw_sinkhole_hruflag(i)>0) then
-      !        print *, "hru id: ", i, ", area fraction to sinkholes: ", gw_sinkhole_hruarea(i)
+      !        write(9003,*) "hru id: ", i, ", area fraction to sinkholes: ", gw_sinkhole_hruarea(i)
       !    endif    
-      !enddo    
+      !enddo
       endif
 
       !output file initialization (extracted to gwflow_output.f90)
