@@ -1320,7 +1320,7 @@
       !format statements (subroutine-local)
 119   format(i8,i8,i8,1000(f12.3))
 130   format(i8,i8,1000(e13.4))
-140   format(i8,i6,i6,i8,i8,i10,4x,a4,i4.4,2f13.3,16e13.4)
+140   format(i8,i6,i6,i8,i8,i10,4x,a4,i4.4,2f13.3,18e13.4)
 8100  format(4i6,2a,2x,a16,f10.3,50e13.4)
 8101  format(4i6,2i8,a18,e13.4)
 8102  format(4i6,2i8,a18,2f13.3,3e13.4)
@@ -1604,7 +1604,7 @@
       endif !end_mo
 
       !format statements (subroutine-local)
-140   format(i8,i6,i6,i8,i8,i10,4x,a4,i4.4,2f13.3,16e13.4)
+140   format(i8,i6,i6,i8,i8,i10,4x,a4,i4.4,2f13.3,18e13.4)
 8100  format(4i6,2a,2x,a16,50e13.4)
 8101  format(4i6,2i8,a18,e13.4)
 8102  format(4i6,2i8,a18,5e13.4)
@@ -2045,7 +2045,7 @@
       endif
 
       !format statements (subroutine-local)
-140   format(i8,i6,i6,i8,i8,i10,4x,a4,i4.4,2f13.3,16e13.4)
+140   format(i8,i6,i6,i8,i8,i10,4x,a4,i4.4,2f13.3,18e13.4)
 8100  format(4i6,2a,2x,a16,50e13.4)
 8101  format(4i6,2i8,a18,e13.4)
 8102  format(4i6,2i8,a18,5e13.4)
@@ -2294,7 +2294,7 @@
 
       !format statements (subroutine-local)
 105   format(i8,1000(e13.4))
-140   format(i8,i6,i6,i8,i8,i10,4x,a4,i4.4,2f13.3,16e13.4)
+140   format(i8,i6,i6,i8,i8,i10,4x,a4,i4.4,2f13.3,18e13.4)
 8100  format(4i6,2a,2x,a16,50e13.4)
 8101  format(4i6,2i8,a18,e13.4)
 8102  format(4i6,2i8,a18,5e13.4)
