@@ -22,6 +22,7 @@
       use reservoir_data_module
       use water_body_module
       use conditional_module
+      use gwflow_module
       
       implicit none
       
@@ -88,6 +89,11 @@
       fp_stor_init = fp_stor(jrch)%flo
       tot_stor(jrch) = ch_stor(jrch) + fp_stor(jrch)
       tot_stor_init = tot_stor(jrch)%flo
+
+      !add groundwater conduit if applied
+      if (bsn_cc%gwflow > 0 .and. gw_conduit_flag > 0) then
+          ht1 = ht1 + gw_conduit_info(jrch)%output
+      endif    
       
       !! keep Muskingum substeps computed in sd_hydsed_init
       !! For daily simulations, substeps may be greater than 1 to satisfy
