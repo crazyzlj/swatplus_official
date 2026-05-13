@@ -86,7 +86,8 @@
       wet_stor_init = wet_stor(jrch)%flo
       ch_stor_init = ch_stor(jrch)%flo
       fp_stor_init = fp_stor(jrch)%flo
-      tot_stor_init = ch_stor_init + fp_stor_init
+      tot_stor(jrch) = ch_stor(jrch) + fp_stor(jrch)
+      tot_stor_init = tot_stor(jrch)%flo
       
       !! keep Muskingum substeps computed in sd_hydsed_init
       !! For daily simulations, substeps may be greater than 1 to satisfy
