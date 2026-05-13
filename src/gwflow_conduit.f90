@@ -5,7 +5,7 @@
 !!    (exchange volumes are used in gwflow_simulate, in groundwater balance equations)
 
       use gwflow_module
-      use hydrograph_module, only : ch_stor,ch_out_d
+      use hydrograph_module, only : ch_stor,ch_out_d, hz
       use constituent_mass_module
 
       implicit none
@@ -22,9 +22,7 @@
 
       !only proceed if conduit is active
       if (gw_conduit_flag == 1) then
-
-        !record starting channel volume (m3)
-        chan_volume = ch_stor(chan_id)%flo
+        gw_conduit_info(chan_id)%output = hz ! reset 
 
         !loop through the cells connected to the channel
         do k=1,gw_conduit_info(chan_id)%ncon
@@ -51,7 +49,8 @@
               gw_hyd_ss_mo(cell_id)%cdut = gw_hyd_ss_mo(cell_id)%cdut + (Q*(-1)) !leaving aquifer - store for monthly water
 
               !add water to channel
-              ch_stor(chan_id)%flo = ch_stor(chan_id)%flo + Q
+              !ch_stor(chan_id)%flo = ch_stor(chan_id)%flo + Q !do not add to ch_stor, since it has little impact on the flow out rate.
+              gw_conduit_info(chan_id)%output%flo = gw_conduit_info(chan_id)%output%flo + Q
 
             endif !check if groundwater head above conduit
           endif !check if cell is active

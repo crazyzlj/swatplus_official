@@ -1,4 +1,6 @@
       module gwflow_module
+    
+      use hydrograph_module, only: hyd_output
      
       implicit none
 
@@ -283,6 +285,7 @@
       !hru-sinkhole connection
       integer, dimension(:), allocatable :: gw_sinkhole_hruflag    !none |indicate if a hru's effective precipitation flows into a sinkhole
       real, dimension(:), allocatable :: gw_sinkhole_hruarea       !none |fraction of a hru intersect with one or more grids contain a sinkhole
+      
       !conduit: variables for groundwater conduit outflow
       integer :: gw_conduit_flag = 0       !     |
       real, dimension (:), allocatable :: gw_cdut_depth            !m        |Conduit elevation related to the connected channel cell's bed elevation
@@ -293,6 +296,7 @@
       type conduit_channel_info
         integer :: ncon = 0                                        !     |number of cells connected to the channel
         integer, allocatable :: cells(:)                           !     |cells connected to the channel
+        type (hyd_output) :: output                                !     |
       endtype conduit_channel_info
       type (conduit_channel_info), dimension(:), allocatable :: gw_conduit_info
       
