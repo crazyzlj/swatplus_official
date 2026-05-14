@@ -276,7 +276,10 @@
         !!direct fill in sinkholes using precip_eff
         if (bsn_cc%gwflow == 1 .and. gw_sinkhole_flag == 1 .and. &
             gw_sinkhole_hruflag(j) == 1 .and. precip_eff > 1.e-6) then
-          gwholeq(j) = gw_hole_bypass * gw_sinkhole_hruarea(j) * precip_eff !mm
+          gwholeq(j) = gw_hole_bypass * gw_sinkhole_hruarea(j) * precip_eff !mm over whole HRU
+          gwholeq(j) = min(gwholeq(j), precip_eff)
+          gwholeq(j) = max(gwholeq(j), 0.)
+
           precip_eff = precip_eff - gwholeq(j)
         end if
         
