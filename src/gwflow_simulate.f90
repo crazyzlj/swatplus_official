@@ -229,7 +229,7 @@
                                gw_hyd_ss(i)%gwsw + gw_hyd_ss(i)%swgw + &
                                gw_hyd_ss(i)%satx + gw_hyd_ss(i)%soil + &
                                gw_hyd_ss(i)%ppag + gw_hyd_ss(i)%ppex + gw_hyd_ss(i)%tile + &
-                               gw_hyd_ss(i)%hole + gw_hyd_ss(i)%cdut + &
+                               gw_hyd_ss(i)%cdut + & ! + gw_hyd_ss(i)%hole, sinkhole should be regarded as rapid flow and not be accounted in gwflow_lateral
                                gw_hyd_ss(i)%resv + gw_hyd_ss(i)%wetl + gw_hyd_ss(i)%canl + &
                                gw_hyd_ss(i)%fpln + gw_hyd_ss(i)%pond + gw_hyd_ss(i)%phyt
         endif
@@ -284,7 +284,7 @@
                                  gw_heat_ss(i)%ppag + & !heat in pumping for irrigation
                                  gw_heat_ss(i)%ppex + & !heat in user-defined pumping
                                  gw_heat_ss(i)%tile + & !heat in tile drainage water
-                                 gw_heat_ss(i)%hole + & !heat in sinkhole inflow water
+                                 gw_heat_ss(i)%hole + & !heat in sinkhole inflow water, todo: add after gwflow_lateral
                                  gw_heat_ss(i)%cdut + & !heat in conduit outflow water
                                  gw_heat_ss(i)%resv + & !heat in groundwater-reservoir exchange water
                                  gw_heat_ss(i)%wetl + & !heat in groundwater inflow to wetlands
@@ -308,7 +308,7 @@
                                            gwsol_ss(i)%solute(s)%ppag + & !pumping (irrigation)
                                            gwsol_ss(i)%solute(s)%ppex + & !pumping (external)
                                            gwsol_ss(i)%solute(s)%tile + & !tile outflow
-                                           gwsol_ss(i)%solute(s)%hole + & !sinkhole inflow
+                                           gwsol_ss(i)%solute(s)%hole + & !sinkhole inflow, todo: add after gwflow_lateral
                                            gwsol_ss(i)%solute(s)%cdut + & !conduit outflow
                                            gwsol_ss(i)%solute(s)%resv + & !reservoir exchange
                                            gwsol_ss(i)%solute(s)%wetl + & !wetland
@@ -380,12 +380,18 @@
 
       !calculate new storage, head, heat, and solute concentrations via lateral flow
       call gwflow_lateral
+      
+      
+      !write (9003,*) "after lateral flow, head: ", gw_state(3606)%head
 
       !transit time update (deferred)
 
-
-      !after updating the groundwater head, storage, and solute mass, assigning current storage to vbef and mbef
+      !after updating the groundwater head, storage, and solute mass, add sinkhole volume to storage and update head,
+      !assigning current storage to vbef and mbef
       do i=1,ncell
+        gw_state(i)%stor = gw_state(i)%stor + gw_hyd_ss(i)%hole
+        gw_state(i)%head = gw_state(i)%head + gw_hyd_ss(i)%hole / (gw_state(i)%spyd * gw_state(i)%area) !new groundwater head (m)
+
         gw_state(i)%vbef = gw_state(i)%stor
       enddo
       if (gw_solute_flag == 1) then
@@ -395,6 +401,8 @@
           enddo  
         enddo
       endif 
+      
+      !write (9003,*) "after add sinkhole vol, head: ", gw_state(3606)%head
       
       !5. save/write out head and solute concentrations ---------------------------------------------------------------      
       
