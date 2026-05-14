@@ -160,6 +160,9 @@
           endif !check if cell is active
         enddo !go to next cell
 
+        !write (9003,*) "after lateral, old head:", gw_state(3606)%head, "new head:", gw_state(3606)%hnew, &
+        !               "old stor:", gw_state(3606)%vbef, "new stor:", gw_state(3606)%stor
+        
         !store new head values into regular head array
         do i=1,ncell
           gw_state(i)%hold = gw_state(i)%head

@@ -177,6 +177,7 @@
       endif
       
       !sinkhole to groundwater - ----------------------------------------------
+      !write (9003,*) "before sinkhole, stor:", gw_state(3606)%stor
       call gwflow_sinkhole
 
       !groundwater exchange with reservoirs -----------------------------------
@@ -233,6 +234,8 @@
                                gw_hyd_ss(i)%fpln + gw_hyd_ss(i)%pond + gw_hyd_ss(i)%phyt
         endif
       enddo
+      
+      !write (9003,*) "after sum sources/sinks: ", gw_hyd_ss(3606)%totl
 
       !write out gwsw cell groups (sum of gw-channel exchange for each channel cell group)
       if(gw_gwsw_group_flag == 1) then

@@ -20,6 +20,7 @@
       integer :: cell_id = 0          !           |id of the gwflow cell
       real :: hole_volume = 0.        !m3         |summation of sinkhole recharge from multiple HRUs
       real :: cell_hole_volume = 0.   !m3         |volume of sinkhole recharge to the cell
+      real :: cell_weight = 0.
 
       !only proceed if conduit is active
       if (gw_sinkhole_flag == 1) then
@@ -33,24 +34,32 @@
           ob_num = sp_ob1%hru + hru_id - 1
           if (gw_sinkhole_hruflag(hru_id) == 1 .and. gwholeq(hru_id) > 0.) then
               hole_volume = (gwholeq(hru_id)/1000.) * (ob(ob_num)%area_ha * 10000.) !m * m2 = m3
+              if (gw_sinkhole_hruarea(hru_id) > 1.e-6) then
               do i=1,hru_num_cells(hru_id)
                 cell_id = hru_cells(hru_id,i)
                 if(gw_state(cell_id)%stat == 2) then !if boundary cell, give recharge to nearest active cell
                     cell_id = gw_bound_near(cell_id)
                 endif
-                cell_hole_volume = hole_volume * hru_cells_fract(hru_id,i)
-                gw_hyd_ss(cell_id)%hole = gw_hyd_ss(cell_id)%hole + cell_hole_volume
-                gw_hyd_ss_yr(cell_id)%hole = gw_hyd_ss_yr(cell_id)%hole + cell_hole_volume !store for annual water
-                gw_hyd_ss_mo(cell_id)%hole = gw_hyd_ss_mo(cell_id)%hole + cell_hole_volume !store for monthly water
+                if (gw_state(cell_id)%hole > 0) then
+                  cell_weight = hru_cells_fract(hru_id,i) / gw_sinkhole_hruarea(hru_id)
+                  cell_weight = max(0., cell_weight)  
+                  cell_hole_volume = hole_volume * cell_weight
+                  gw_hyd_ss(cell_id)%hole = gw_hyd_ss(cell_id)%hole + cell_hole_volume
+                  gw_hyd_ss_yr(cell_id)%hole = gw_hyd_ss_yr(cell_id)%hole + cell_hole_volume !store for annual water
+                  gw_hyd_ss_mo(cell_id)%hole = gw_hyd_ss_mo(cell_id)%hole + cell_hole_volume !store for monthly water
 
-                !if (gw_solute_flag == 1) then
-                !  do s=1,gw_nsolute !loop through the solutes
-                !    !currently not implemented.
-                !  enddo
-                !endif
+                  !if (gw_solute_flag == 1) then
+                  !  do s=1,gw_nsolute !loop through the solutes
+                  !    !currently not implemented.
+                  !  enddo
+                  !endif
+                endif !gw_state(cell_id)%hole > 0
               enddo !loop hru_num_cells(hru_id)
+              endif !gw_sinkhole_hruarea(hru_id) > 1.e-6
            endif ! gw_sinkhole_hruflag(hru_id) == 1 .and. gwholeq(hru_id) > 0.
         enddo !loop sp_ob%hru
+        
+        !write (9003,*) "after sinkhole, hole_volume:", gw_hyd_ss(3606)%hole
 
       endif !check for LSU-cell connection
       endif
