@@ -51,15 +51,15 @@
               !add water to channel
               !ch_stor(chan_id)%flo = ch_stor(chan_id)%flo + Q !do not add to ch_stor, since it has little impact on the flow out rate.
               gw_conduit_info(chan_id)%output%flo = gw_conduit_info(chan_id)%output%flo + Q
-              
-              !if (cell_id == 3606) then
-              !    write (9003,*) "after conduit, Q:", Q
-              !endif    
 
             endif !check if groundwater head above conduit
           endif !check if cell is active
-        enddo !go to next tile cell
-      endif !check if conduit is active
+        enddo !go to next channel
+        
+        !if (cell_id == 3606) then
+        !    write (9003,*) "after conduit, Q:", Q
+        !endif    
+        endif !check if conduit is active
 
       return
     end subroutine gwflow_conduit
