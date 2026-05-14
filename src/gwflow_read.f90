@@ -110,6 +110,8 @@
       real :: conduit_cond_depth = 0.
       real :: conduit_exp = 0.
       real :: conduit_qmx = 0.
+      integer, dimension(:), allocatable :: tmp_cells
+      integer :: tmp_count = 0
       !reservoir information
       integer :: res_cell = 0
       integer :: res_id = 0
@@ -1021,7 +1023,7 @@
       endif
 
       !general method: find closest channel for each grid cell
-      !(this is used for saturation excess flow, tile drains)
+      !(this is used for saturation excess flow, tile drains, conduit flow)
       allocate(cell_channel(ncell))
       cell_channel = 0
       do i=1,ncell
@@ -1310,7 +1312,9 @@
           do i=1,grid_nrow
             do j=1,grid_ncol
               if(cell_id_usg(i,j) > 0) then
-                gw_state(cell_id_usg(i,j))%hole = grid_int(i,j)
+                if(gw_state(cell_id_usg(i,j))%stat == 1) then
+                  gw_state(cell_id_usg(i,j))%hole = grid_int(i,j)
+                endif  
               endif
             enddo
           enddo
@@ -1320,6 +1324,21 @@
           enddo
         endif
         close(in_gw)
+        !counting sinkholes and initialize gw_hole_cdut_info, by default, there is no conduit cells connected to each sinkhole
+        gw_sinkhole_count = 0
+        do i=1,ncell
+          if (gw_state(i)%hole > 0) gw_sinkhole_count = gw_sinkhole_count + 1  
+        enddo    
+        allocate(gw_sinkhole_list(gw_sinkhole_count))
+        allocate(gw_sinkhole_vol(ncell))
+        allocate(gw_hole_cdut_info(gw_sinkhole_count))
+        gw_sinkhole_count = 0
+        do i=1,ncell
+          if (gw_state(i)%hole > 0) then
+            gw_sinkhole_count = gw_sinkhole_count + 1
+            gw_sinkhole_list(gw_sinkhole_count) = i
+          endif    
+        enddo
         !determine the hrus and area fractions that flow into sinkholes
         allocate(gw_sinkhole_hruflag(num_hru))
         allocate(gw_sinkhole_hruarea(num_hru))
@@ -1349,10 +1368,12 @@
         allocate(gw_cdut_conddepth(ncell))
         allocate(gw_cdut_exp(ncell))
         allocate(gw_cdut_qmax(ncell))
+        allocate(gw_cdut_stor(ncell))
         gw_cdut_depth = 0.
         gw_cdut_conddepth = 0.
         gw_cdut_exp = 0.
         gw_cdut_qmax = 0.
+        gw_cdut_stor = 0.
         read(in_gw,*) conduit_relative_depth
         read(in_gw,*) conduit_cond_depth
         read(in_gw,*) conduit_exp
@@ -1366,7 +1387,9 @@
           do i=1,grid_nrow
             do j=1,grid_ncol
               if(cell_id_usg(i,j) > 0) then
-                gw_state(cell_id_usg(i,j))%cdut = grid_int(i,j)
+                if(gw_state(cell_id_usg(i,j))%stat == 1) then
+                  gw_state(cell_id_usg(i,j))%cdut = grid_int(i,j)
+                endif  
               endif
             enddo
           enddo
@@ -1376,7 +1399,7 @@
           enddo
         endif
         close(in_gw)
-        !calculate conduit elevation
+        !
         do i=1,ncell
           if (gw_state(i)%cdut > 0) then
             gw_cdut_depth(i) = conduit_relative_depth
@@ -1385,6 +1408,50 @@
             gw_cdut_qmax(i) = conduit_qmx
           endif  
         enddo
+        !counting conduit cells
+        gw_conduit_count = 0
+        do i=1,ncell
+          if (gw_state(i)%cdut > 0) gw_conduit_count = gw_conduit_count + 1  
+        enddo    
+        allocate(gw_conduit_list(gw_conduit_count))
+        gw_conduit_count = 0
+        do i=1,ncell
+          if (gw_state(i)%cdut > 0) then
+            gw_conduit_count = gw_conduit_count + 1
+            gw_conduit_list(gw_conduit_count) = i
+          endif    
+        enddo
+        !if gw_sinkhole_flag==1, determine the number of conduit cells that are connected to each sinkhole
+        if (gw_sinkhole_flag==1) then
+          if (gw_sinkhole_count > 0) then
+              allocate(tmp_cells(1000))
+              do i=1,gw_sinkhole_count
+                tmp_cells = 0 !reset
+                tmp_count = 0
+                !find closest conduit cells
+                min_dist = 1000. !1 km
+                do k=1,gw_conduit_count
+                  dist_x = gw_state(gw_sinkhole_list(i))%xcrd - gw_state(gw_conduit_list(k))%xcrd !m
+                  dist_y = gw_state(gw_sinkhole_list(i))%ycrd - gw_state(gw_conduit_list(k))%ycrd !m
+                  distance = sqrt((dist_x)**2 + (dist_y)**2)
+                  if(distance.le.min_dist) then
+                    tmp_count = tmp_count + 1  
+                    tmp_cells(tmp_count) = gw_conduit_list(k)
+                  endif
+                enddo
+                if (tmp_count > 0) then
+                  gw_hole_cdut_info(i)%ncon = tmp_count
+                  allocate(gw_hole_cdut_info(i)%cells(tmp_count))
+                  allocate(gw_hole_cdut_info(i)%fract(tmp_count))
+                  do m=1,tmp_count
+                    gw_hole_cdut_info(i)%cells(m) = tmp_cells(m)
+                    gw_hole_cdut_info(i)%fract(m) = 1./tmp_count
+                  enddo   
+                  gw_hole_cdut_info(i)%fract(tmp_count) = gw_hole_cdut_info(i)%fract(tmp_count) + 1. - 1./tmp_count * tmp_count
+                endif    
+              enddo
+          endif !gw_sinkhole_count > 0 
+        endif !gw_sinkhole_flag==1    
         !determine the number of conduit cells that are linked to each channel
         allocate(gw_conduit_info(sp_ob%chandeg))
         do i=1,ncell

@@ -18,12 +18,18 @@
       integer :: hru_id = 0           !           |id of the HRU
       integer :: ob_num = 0           !           |object number of the HRU
       integer :: cell_id = 0          !           |id of the gwflow cell
+      integer :: cdut_cell_id = 0     !           |id of the conduit cell
       real :: hole_volume = 0.        !m3         |summation of sinkhole recharge from multiple HRUs
       real :: cell_hole_volume = 0.   !m3         |volume of sinkhole recharge to the cell
       real :: cell_weight = 0.
+      real :: quick_ratio = 0.
+      real :: quick_vol = 0.
+      real :: slow_vol = 0.
+      real :: tmp_volume = 0.
 
-      !only proceed if conduit is active
       if (gw_sinkhole_flag == 1) then
+        gw_sinkhole_vol = 0.  
+        quick_ratio = 0.9
       !use hru sinkhole recharge to calculate recharge (m3) cell values
       if (lsu_cells_link == 1) then !LSU-cell connection
         !loop through the landscape units
@@ -44,9 +50,11 @@
                   cell_weight = hru_cells_fract(hru_id,i) / gw_sinkhole_hruarea(hru_id)
                   cell_weight = max(0., cell_weight)  
                   cell_hole_volume = hole_volume * cell_weight
-                  gw_hyd_ss(cell_id)%hole = gw_hyd_ss(cell_id)%hole + cell_hole_volume
-                  gw_hyd_ss_yr(cell_id)%hole = gw_hyd_ss_yr(cell_id)%hole + cell_hole_volume !store for annual water
-                  gw_hyd_ss_mo(cell_id)%hole = gw_hyd_ss_mo(cell_id)%hole + cell_hole_volume !store for monthly water
+                  gw_sinkhole_vol(cell_id) = gw_sinkhole_vol(cell_id) + cell_hole_volume
+                  
+                  !gw_hyd_ss(cell_id)%hole = gw_hyd_ss(cell_id)%hole + cell_hole_volume
+                  !gw_hyd_ss_yr(cell_id)%hole = gw_hyd_ss_yr(cell_id)%hole + cell_hole_volume !store for annual water
+                  !gw_hyd_ss_mo(cell_id)%hole = gw_hyd_ss_mo(cell_id)%hole + cell_hole_volume !store for monthly water
 
                   !if (gw_solute_flag == 1) then
                   !  do s=1,gw_nsolute !loop through the solutes
@@ -59,9 +67,30 @@
            endif ! gw_sinkhole_hruflag(hru_id) == 1 .and. gwholeq(hru_id) > 0.
         enddo !loop sp_ob%hru
         
-        !write (9003,*) "after sinkhole, hole_volume:", gw_hyd_ss(3606)%hole
-
+        hole_volume = gw_cdut_stor(2824) + gw_cdut_stor(3489) + gw_cdut_stor(3606) + gw_cdut_stor(3730) + gw_cdut_stor(3964)
+        write (9003,*) "before sinkhole, conduit res stor:", hole_volume
+        
+        do i=1,gw_sinkhole_count
+          cell_id = gw_sinkhole_list(i)
+          slow_vol = gw_sinkhole_vol(cell_id) !if no connected conduit cells, all volume will be added to the slow groundwater storage
+          if(gw_conduit_flag == 1 .and. gw_hole_cdut_info(i)%ncon > 0) then
+            quick_vol = quick_ratio * gw_sinkhole_vol(cell_id)
+            slow_vol = gw_sinkhole_vol(cell_id) - quick_vol
+            do j=1,gw_hole_cdut_info(i)%ncon
+              cdut_cell_id = gw_hole_cdut_info(i)%cells(j)
+              gw_cdut_stor(cdut_cell_id) = gw_cdut_stor(cdut_cell_id) + quick_vol * gw_hole_cdut_info(i)%fract(j)
+            enddo    
+          endif
+              
+          gw_hyd_ss(cell_id)%hole = gw_hyd_ss(cell_id)%hole + slow_vol
+          gw_hyd_ss_yr(cell_id)%hole = gw_hyd_ss_yr(cell_id)%hole + slow_vol !store for annual water
+          gw_hyd_ss_mo(cell_id)%hole = gw_hyd_ss_mo(cell_id)%hole + slow_vol !store for monthly water      
+        enddo    
+        
+        tmp_volume = gw_cdut_stor(2824) + gw_cdut_stor(3489) + gw_cdut_stor(3606) + gw_cdut_stor(3730) + gw_cdut_stor(3964)
+        write (9003,*) "after sinkhole, conduit res stor:", tmp_volume, "delta:", tmp_volume - hole_volume
+        
       endif !check for LSU-cell connection
-      endif
+      endif !gw_sinkhole_flag == 1
       return
       end subroutine gwflow_sinkhole
