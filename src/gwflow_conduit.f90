@@ -13,11 +13,15 @@
       integer, intent (in) :: chan_id    !       |channel number
       integer :: k = 0                   !       |counter for cells connected to the channel
       integer :: cell_id = 0             !       |id of cell connected to the channel
-      real :: chan_volume = 0.           !m3     |water volume in channel before groundwater conduit outflow occurs
+      real :: stor_volume = 0.           !m3     |
       real :: cdut_elev = 0.             !m      |elevation of conduit
       real :: head_diff = 0.             !m      |head difference between groundwater head and conduit
       real :: Q_depth = 0.               !mm/day |
-      real :: Q = 0.                     !m3/day |             
+      real :: Q = 0.                     !m3/day |  
+      real :: Qup = 0.                   !m3/day |
+      real :: Qchan = 0.                 !m3/day |     
+      real :: Qleak = 0.                 !m3/day |      
+      real :: excess = 0.
 
 
       !only proceed if conduit is active
@@ -32,34 +36,57 @@
 
           !only proceed if the cell is active
           if(gw_state(cell_id)%stat == 1) then
-
-            !get head difference between groundwater head and conduit elevation (=channel bed elevation + gw_cdut_depth, calculated in gwflow_read)
-            head_diff = gw_state(cell_id)%head - (gw_state(cell_id)%elev - gw_cdut_depth(cell_id)) !m
-
-            !only perform calculation if water table is above the conduit elevation
-            if(head_diff > 0.) then
-              Q_depth = gw_cdut_conddepth(cell_id) * head_diff ** gw_cdut_exp(cell_id) !mm/day
-              Q_depth = min(Q_depth, gw_cdut_qmax(cell_id))
-              Q = Q_depth * gw_state(cell_id)%area / 1000. !m3/day
-              Q = min(Q, gw_state(cell_id)%stor) !check for available groundwater in the cell - can only remove what is there
-
-              gw_state(cell_id)%stor = gw_state(cell_id)%stor - Q !update available groundwater in the cell
-              gw_hyd_ss(cell_id)%cdut = gw_hyd_ss(cell_id)%cdut + Q * (-1) !leaving aquifer
-              gw_hyd_ss_yr(cell_id)%cdut = gw_hyd_ss_yr(cell_id)%cdut + (Q*(-1)) !leaving aquifer - store for annual water
-              gw_hyd_ss_mo(cell_id)%cdut = gw_hyd_ss_mo(cell_id)%cdut + (Q*(-1)) !leaving aquifer - store for monthly water
-
-              !add water to channel
-              !ch_stor(chan_id)%flo = ch_stor(chan_id)%flo + Q !do not add to ch_stor, since it has little impact on the flow out rate.
-              gw_conduit_info(chan_id)%output%flo = gw_conduit_info(chan_id)%output%flo + Q
-
-            endif !check if groundwater head above conduit
+            !excess = max(0., gw_cdut_stor(cell_id) - gw_cdut_smin(cell_id))
+            !Qup = gw_cdut_k(cell_id) * excess ** gw_cdut_exp(cdut_id)
+            !Qup = min(Qup, gw_cdut_qmax(cell_id))
+            !Qup = min(Qup, gw_cdut_stor(cell_id))
+            !Qchan = (1. - gw_cdut_leak(cell_id)) * Qup
+            excess = max(0., gw_cdut_stor(cell_id) - 10.)
+            Qup = 0.8 * excess
+            !Qup = min(Qup, gw_cdut_qmax(cell_id))
+            Qup = min(Qup, gw_cdut_stor(cell_id))
+            Qchan = (1. - 0.1) * Qup  
+            Qleak = Qup - Qchan
+            
+            gw_cdut_stor(cell_id) = gw_cdut_stor(cell_id) - Qup
+  
+            gw_conduit_info(chan_id)%output%flo = gw_conduit_info(chan_id)%output%flo + Qchan
+            
+            gw_hyd_ss(cell_id)%cdut = gw_hyd_ss(cell_id)%cdut + Qleak !entering aquifer
+            gw_hyd_ss_yr(cell_id)%cdut = gw_hyd_ss_yr(cell_id)%cdut + Qleak !entering aquifer - store for annual water
+            gw_hyd_ss_mo(cell_id)%cdut = gw_hyd_ss_mo(cell_id)%cdut + Qleak !entering aquifer - store for monthly water
+              
+            !!get head difference between groundwater head and conduit elevation (=channel bed elevation + gw_cdut_depth, calculated in gwflow_read)
+            !head_diff = gw_state(cell_id)%head - (gw_state(cell_id)%elev - gw_cdut_depth(cell_id)) !m
+            ! 
+            !!only perform calculation if water table is above the conduit elevation
+            !if(head_diff > 0.) then
+            !  Q_depth = gw_cdut_conddepth(cell_id) * head_diff ** gw_cdut_exp(cell_id) !mm/day
+            !  Q_depth = min(Q_depth, gw_cdut_qmax(cell_id))
+            !  Q = Q_depth * gw_state(cell_id)%area / 1000. !m3/day
+            !  Q = min(Q, gw_state(cell_id)%stor) !check for available groundwater in the cell - can only remove what is there
+            ! 
+            !  gw_state(cell_id)%stor = gw_state(cell_id)%stor - Q !update available groundwater in the cell
+            !  gw_hyd_ss(cell_id)%cdut = gw_hyd_ss(cell_id)%cdut + Q * (-1) !leaving aquifer
+            !  gw_hyd_ss_yr(cell_id)%cdut = gw_hyd_ss_yr(cell_id)%cdut + (Q*(-1)) !leaving aquifer - store for annual water
+            !  gw_hyd_ss_mo(cell_id)%cdut = gw_hyd_ss_mo(cell_id)%cdut + (Q*(-1)) !leaving aquifer - store for monthly water
+            !
+            !  !add water to channel
+            !  !ch_stor(chan_id)%flo = ch_stor(chan_id)%flo + Q !do not add to ch_stor, since it has little impact on the flow out rate.
+            !  gw_conduit_info(chan_id)%output%flo = gw_conduit_info(chan_id)%output%flo + Q
+            !
+            !endif !check if groundwater head above conduit
           endif !check if cell is active
         enddo !go to next channel
         
         !if (cell_id == 3606) then
         !    write (9003,*) "after conduit, Q:", Q
-        !endif    
-        endif !check if conduit is active
+        !endif  
+        if (chan_id == 129) then
+          stor_volume = gw_cdut_stor(2824) + gw_cdut_stor(3489) + gw_cdut_stor(3606) + gw_cdut_stor(3730) + gw_cdut_stor(3964)
+          write (9003,*) "after conduit, cdut_stor:", stor_volume, "to channel:", gw_conduit_info(chan_id)%output%flo
+        endif
+      endif !check if conduit is active
 
       return
     end subroutine gwflow_conduit

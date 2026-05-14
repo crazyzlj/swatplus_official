@@ -57,6 +57,7 @@
       real :: sum_inflo = 0.
       real :: sum_outflo = 0.
       real :: wet_evol = 0. 
+      real :: ratio = 0.
 
       jrch = isdch
       jhyd = sd_dat(jrch)%hyd
@@ -90,6 +91,8 @@
       !add groundwater conduit if applied
       if (bsn_cc%gwflow > 0 .and. gw_conduit_flag > 0) then
           ht1 = ht1 + gw_conduit_info(jrch)%output
+          ratio = gw_conduit_info(jrch)%output%flo / ht1%flo
+          if (jrch == 129) write (9003,*) "rtmusk, conduit inflow:", gw_conduit_info(jrch)%output%flo, "ratio:", ratio
       endif    
       
       !! keep Muskingum substeps computed in sd_hydsed_init
