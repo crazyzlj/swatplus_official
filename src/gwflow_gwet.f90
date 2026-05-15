@@ -63,9 +63,13 @@
             endif
             !check for available groundwater in the cell - can only remove what is there
             if(gw_state(cell_id)%head.gt.gw_state(cell_id)%botm) then
-              if(gwet_volume.ge.gw_state(cell_id)%stor) then
-                gwet_volume = gw_state(cell_id)%stor
-              endif
+              if (gw_state(cell_id)%stor > 0.) then
+                if(gwet_volume.ge.gw_state(cell_id)%stor) then
+                  gwet_volume = gw_state(cell_id)%stor
+                endif
+              else
+                gwet_volume = 0.
+              endif  
             else
               gwet_volume = 0.
             endif
@@ -109,9 +113,13 @@
           gwet_volume = (gwet/1000.) * (ob(ob_num)%area_ha * 10000.) !m3 of groundwater
           !check for available groundwater in the cell - can only remove what is there
           if(gw_state(cell_id)%head.gt.gw_state(cell_id)%botm) then
-            if(gwet_volume.ge.gw_state(cell_id)%stor) then
-              gwet_volume = gw_state(cell_id)%stor
-            endif
+            if (gw_state(cell_id)%stor > 0.) then
+              if(gwet_volume.ge.gw_state(cell_id)%stor) then
+                gwet_volume = gw_state(cell_id)%stor
+              endif
+            else
+              gwet_volume = 0.
+            endif  
           else
             gwet_volume = 0.
           endif

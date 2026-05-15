@@ -104,8 +104,12 @@
                             !if the seepage is positive, then water is taken from the volume of water already diverted from
                             !channels (point source diversion = recall object)
               if(Q < 0) then !groundwater --> canal
-                if (-Q .ge.gw_state(cell_id)%stor) then !can only remove what is there
-                  Q = -gw_state(cell_id)%stor
+                if (gw_state(cell_id)%stor > 0.) then
+                  if (-Q .ge.gw_state(cell_id)%stor) then !can only remove what is there
+                    Q = -gw_state(cell_id)%stor
+                  endif
+                else
+                  Q = 0.
                 endif
                 gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q !update available groundwater in the cell
               elseif(Q > 0) then !canal --> groundwater

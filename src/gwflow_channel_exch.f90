@@ -88,9 +88,13 @@
 
           !store values in gwflow source/sink arrays
           if(Q < 0) then !aquifer --> channel
-            if (-Q >= gw_state(cell_id)%stor) then !can only remove what is there
-              Q = -gw_state(cell_id)%stor
-            endif
+            if (gw_state(cell_id)%stor > 0.) then  
+              if (-Q >= gw_state(cell_id)%stor) then !can only remove what is there
+                Q = -gw_state(cell_id)%stor
+              endif
+            else 
+              Q = 0.
+            endif  
             gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q
             gw_hyd_ss(cell_id)%gwsw = gw_hyd_ss(cell_id)%gwsw + Q
             gw_hyd_ss_yr(cell_id)%gwsw = gw_hyd_ss_yr(cell_id)%gwsw + Q

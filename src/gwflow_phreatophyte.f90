@@ -38,8 +38,12 @@
                     enddo
 
                     !check against available groundawter storage (m3)
-                    if(et_Q > gw_state(cell_id)%stor) then
-                      et_Q = gw_state(cell_id)%stor
+                    if (gw_state(cell_id)%stor > 0.) then
+                      if(et_Q > gw_state(cell_id)%stor) then
+                        et_Q = gw_state(cell_id)%stor
+                      endif
+                    else
+                      et_Q = 0.  
                     endif
 
                     !change sign (negative = removal of groundwater from aquifer)

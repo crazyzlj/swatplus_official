@@ -41,10 +41,11 @@
             !Qup = min(Qup, gw_cdut_qmax(cell_id))
             !Qup = min(Qup, gw_cdut_stor(cell_id))
             !Qchan = (1. - gw_cdut_leak(cell_id)) * Qup
+              
             excess = max(0., gw_cdut_stor(cell_id) - 10.)
             Qup = 0.8 * excess
             !Qup = min(Qup, gw_cdut_qmax(cell_id))
-            Qup = min(Qup, gw_cdut_stor(cell_id))
+            Qup = min(Qup, excess)
             Qchan = (1. - 0.1) * Qup  
             Qleak = Qup - Qchan
             

@@ -77,8 +77,12 @@
 							!if the seepage is positive, then water is assumed to come from an unlimited source
 							!outside the model boundary
               if(Q < 0) then !groundwater --> canal
-                if (-Q .ge.gw_state(cell_id)%stor) then !can only remove what is there
-                  Q = -gw_state(cell_id)%stor
+                if (gw_state(cell_id)%stor > 0.) then
+                  if (-Q .ge.gw_state(cell_id)%stor) then !can only remove what is there
+                    Q = -gw_state(cell_id)%stor
+                  endif  
+                else
+                  Q = 0.  
                 endif
                 gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q !update available groundwater in the cell
               endif

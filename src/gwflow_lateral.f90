@@ -148,6 +148,11 @@
 
               !update storage and head for the cell
               stor_change = (Q + gw_hyd_ss(i)%totl) * gw_time_step !change in storage (m3)
+              if (stor_change < 0) then
+                if (-stor_change >= gw_state(i)%vbef) then
+                  stor_change = -gw_state(i)%vbef
+                endif    
+              endif    
               gw_state(i)%stor = gw_state(i)%vbef + stor_change !new storage (m3)
               sat_change = stor_change / (gw_state(i)%spyd * gw_state(i)%area) !change in saturated thickness (m3)
               gw_state(i)%hnew = gw_state(i)%head + sat_change !new groundwater head (m)
