@@ -83,9 +83,13 @@
 
             !compare potential Q to available water in cell or channel
             if(Q < 0) then !leaving aquifer
-              if((Q*-1) >= gw_state(cell_id)%stor) then !can only remove what is there
-                Q = gw_state(cell_id)%stor * (-1)
-              endif
+              if (gw_state(cell_id)%stor > 0.) then  
+                if(-Q >= gw_state(cell_id)%stor) then !can only remove what is there
+                  Q = gw_state(cell_id)%stor * (-1)
+                endif
+              else
+                Q = 0.  
+              endif  
               gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q !remove discharged groundwater
             else !entering aquifer
               if(Q > ch_stor(chan_id)%flo) then !can only remove what is there

@@ -52,8 +52,12 @@
               Q = gw_tile_drain_area(cell_id) * gw_tile_K(cell_id) * head_diff !m3/day
 
               !check for available groundwater in the cell - can only remove what is there
-              if(Q > gw_state(cell_id)%stor) then
-                Q = gw_state(cell_id)%stor
+              if (gw_state(cell_id)%stor > 0.) then
+                if(Q > gw_state(cell_id)%stor) then
+                  Q = gw_state(cell_id)%stor
+                endif
+              else
+                Q = 0.  
               endif
               gw_state(cell_id)%stor = gw_state(cell_id)%stor - Q !update available groundwater in the cell
               gw_hyd_ss(cell_id)%tile = gw_hyd_ss(cell_id)%tile + Q * (-1) !leaving aquifer

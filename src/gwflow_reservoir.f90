@@ -72,9 +72,13 @@
                   Q = 0.
                 endif
               elseif(Q < 0) then !aquifer --> reservoir
-                if (-Q .ge.gw_state(cell_id)%stor) then
-                  Q = -gw_state(cell_id)%stor   
+                if (gw_state(cell_id)%stor > 0.) then
+                  if (-Q .ge.gw_state(cell_id)%stor) then
+                    Q = -gw_state(cell_id)%stor   
+                  endif  
                   gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q   
+                else
+                  Q = 0.  
                 endif   
               endif
 

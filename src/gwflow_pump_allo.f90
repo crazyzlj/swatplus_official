@@ -74,7 +74,11 @@
           !check for available groundwater in the cell
           if(gw_state(cell_id)%head > gw_state(cell_id)%botm) then !if water table is above bedrock
             !gwvol_avail = ((gw_state(cell_id)%head-gw_state(cell_id)%botm) * gw_state(cell_id)%area) * gw_state(cell_id)%spyd !m3
-            gwvol_avail = gw_state(cell_id)%stor
+            if (gw_state(cell_id)%stor > 0.) then
+              gwvol_avail = gw_state(cell_id)%stor
+            else
+              gwvol_avail = 0.
+            endif  
           else
             gwvol_avail = 0.
           endif
@@ -202,7 +206,11 @@
         !check for available groundwater in the cell
         if(gw_state(cell_id)%head > gw_state(cell_id)%botm) then !if water table is above bedrock
           !gwvol_avail = ((gw_state(cell_id)%head-gw_state(cell_id)%botm) * gw_state(cell_id)%area) * gw_state(cell_id)%spyd !m3
-          gwvol_avail = gw_state(cell_id)%stor
+          if (gw_state(cell_id)%stor > 0.) then
+            gwvol_avail = gw_state(cell_id)%stor
+          else
+            gwvol_avail = 0.
+          endif  
         else
           gwvol_avail = 0.
         endif
@@ -330,7 +338,11 @@
           !check for available groundwater in the cell
           if(gw_state(cell_id)%head > gw_state(cell_id)%botm) then !if water table is above bedrock
             !gwvol_avail = ((gw_state(cell_id)%head-gw_state(cell_id)%botm) * gw_state(cell_id)%area) * gw_state(cell_id)%spyd !m3
-            gwvol_avail = gw_state(cell_id)%stor
+            if (gw_state(cell_id)%stor > 0.) then
+              gwvol_avail = gw_state(cell_id)%stor
+            else
+              gwvol_avail = 0.
+            endif    
           else
             gwvol_avail = 0.
           endif
@@ -404,7 +416,11 @@
         !check for available groundwater in the cell
         if(gw_state(cell_id)%head > gw_state(cell_id)%botm) then !if water table is above bedrock
           !gwvol_avail = ((gw_state(cell_id)%head-gw_state(cell_id)%botm) * gw_state(cell_id)%area) * gw_state(cell_id)%spyd !m3
-          gwvol_avail = gw_state(cell_id)%stor
+          if (gw_state(cell_id)%stor > 0.) then
+            gwvol_avail = gw_state(cell_id)%stor
+          else
+            gwvol_avail = 0.
+          endif  
         else
           gwvol_avail = 0.
         endif

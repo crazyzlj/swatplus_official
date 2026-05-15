@@ -42,9 +42,13 @@
 
                 !check to make sure there is enough groundwater to satisfy the pumping rate
                 Q = gw_pumpex_rates(i,j)
-                if(Q.ge.gw_state(cell_id)%stor) then
-                  Q = gw_state(cell_id)%stor
+                if (gw_state(cell_id)%stor > 0.) then
+                  if(Q.ge.gw_state(cell_id)%stor) then
+                    Q = gw_state(cell_id)%stor
+                  endif
                   gw_state(cell_id)%stor = gw_state(cell_id)%stor - Q
+                else
+                  Q = 0.
                 endif
                 gw_hyd_ss(cell_id)%ppex = gw_hyd_ss(cell_id)%ppex - Q !negative = leaving the aquifer
                 gw_hyd_ss_yr(cell_id)%ppex = gw_hyd_ss_yr(cell_id)%ppex - Q !store for annual water

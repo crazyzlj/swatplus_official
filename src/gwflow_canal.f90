@@ -131,9 +131,13 @@
 
                 !store values in gwflow source/sink arrays
                 if(Q < 0) then !groundwater --> canal
-                  if (-Q .ge. gw_state(cell_id)%stor) then !can only remove what is there
-                    Q = -gw_state(cell_id)%stor
-                  endif
+                  if (gw_state(cell_id)%stor > 0.) then
+                    if (-Q .ge. gw_state(cell_id)%stor) then !can only remove what is there
+                      Q = -gw_state(cell_id)%stor
+                    endif
+                  else
+                    Q = 0.
+                  endif  
                   gw_state(cell_id)%stor = gw_state(cell_id)%stor + Q !update available groundwater in the cell
                 else !canal --> groundwater (seepage)
                   if(Q > 0) then !canal seepage; remove water from channel

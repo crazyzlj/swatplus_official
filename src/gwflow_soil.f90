@@ -61,9 +61,12 @@
             if(vadose_z < hru_soilz) then !water table is within the soil profile
               poly_area = gw_state(cell_id)%area * cells_fract(hru_id,k) !area of cell within HRU
               hru_Q = (hru_soilz - vadose_z) * poly_area * gw_state(cell_id)%spyd !m3 of groundwater to transfer to the soil profile
-              
-              if (hru_Q  >= gw_state(cell_id)%stor) then !can only remove what is there
-                hru_Q = gw_state(cell_id)%stor
+              if (gw_state(cell_id)%stor > 0.) then
+                if (hru_Q  >= gw_state(cell_id)%stor) then !can only remove what is there
+                  hru_Q = gw_state(cell_id)%stor
+                endif
+              else
+                  hru_Q = 0.
               endif
               gw_state(cell_id)%stor = gw_state(cell_id)%stor - hru_Q !update available groundwater in the cell
 
