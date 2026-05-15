@@ -61,8 +61,8 @@
       j = ihru
       ires =  hru(j)%dbs%surf_stor !Jaehak 2022
 
-      !if (j == 1662) then
-      !    print *, "begin swr_percmain, ires: ", ires
+      !if (j == 2986) then
+      !    write (9003, *) "begin swr_percmain, 5th st: ", soil(j)%phys(5)%st
       !end if
       !rtb gwflow: add groundwater transferred to soil profile
       if(bsn_cc%gwflow.eq.1) then
@@ -145,8 +145,8 @@
       !end if
       do j1 = 1, soil(j)%nly
         soil(j)%sw = soil(j)%sw + soil(j)%phys(j1)%st
-        !if (j == 1662) then
-        !  print *, "   layer, soil water: ", j1, soil(j)%sw
+        !if (j == 2986) then
+        !  write(9003, *) "   layer, soil water: ", j1, soil(j)%sw, "st:", soil(j)%phys(j1)%st
         !end if
       end do
 
@@ -229,13 +229,13 @@
 
       !! update soil profile water
       soil(j)%sw = 0.
-      !if (j == 1662) then
-      !    print *, "   end of swr_satexcess, soil profile water: "
+      !if (j == 2986) then
+      !    write (9003,*) "   end of swr_satexcess, soil profile water: ", soil(j)%sw
       !end if
       do j1 = 1, soil(j)%nly
         soil(j)%sw = soil(j)%sw + soil(j)%phys(j1)%st
-        !if (j == 1662) then
-        !  print *, "   layer, soil water: ", j1, soil(j)%sw
+        !if (j == 2986) then
+        !  write (9003,*) "   layer, soil water: ", j1, soil(j)%sw, "st:", soil(j)%phys(j1)%st
         !end if
       end do
 
