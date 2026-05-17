@@ -1422,6 +1422,7 @@
           endif    
         enddo
         !if gw_sinkhole_flag==1, determine the number of conduit cells that are connected to each sinkhole
+        !currently, find the nearest one conduit cell
         if (gw_sinkhole_flag==1) then
           if (gw_sinkhole_count > 0) then
               allocate(tmp_cells(1000))
@@ -1429,7 +1430,7 @@
                 tmp_cells = 0 !reset
                 tmp_count = 0
                 !find closest conduit cells
-                min_dist = 1000. !1 km
+                min_dist = 1. !set to 1m means the same cell
                 do k=1,gw_conduit_count
                   dist_x = gw_state(gw_sinkhole_list(i))%xcrd - gw_state(gw_conduit_list(k))%xcrd !m
                   dist_y = gw_state(gw_sinkhole_list(i))%ycrd - gw_state(gw_conduit_list(k))%ycrd !m

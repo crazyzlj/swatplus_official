@@ -42,11 +42,11 @@
             !Qup = min(Qup, gw_cdut_stor(cell_id))
             !Qchan = (1. - gw_cdut_leak(cell_id)) * Qup
               
-            excess = max(0., gw_cdut_stor(cell_id) - 10.)
-            Qup = 0.8 * excess
+            excess = max(0., gw_cdut_stor(cell_id) - 0.)
+            Qup = 0.9 * excess
             !Qup = min(Qup, gw_cdut_qmax(cell_id))
             Qup = min(Qup, excess)
-            Qchan = (1. - 0.1) * Qup  
+            Qchan = (1. - 0.05) * Qup
             Qleak = Qup - Qchan
             
             gw_cdut_stor(cell_id) = gw_cdut_stor(cell_id) - Qup
@@ -83,10 +83,10 @@
         !if (cell_id == 3606) then
         !    write (9003,*) "after conduit, Q:", Q
         !endif  
-        if (chan_id == 129) then
-          stor_volume = gw_cdut_stor(2824) + gw_cdut_stor(3489) + gw_cdut_stor(3606) + gw_cdut_stor(3730) + gw_cdut_stor(3964)
-          write (9003,*) "after conduit, cdut_stor:", stor_volume, "to channel:", gw_conduit_info(chan_id)%output%flo
-        endif
+        !if (chan_id == 129) then
+        !  stor_volume = gw_cdut_stor(2824) + gw_cdut_stor(3489) + gw_cdut_stor(3606) + gw_cdut_stor(3730) + gw_cdut_stor(3964)
+        !  write (9003,*) "after conduit, cdut_stor:", stor_volume, "to channel:", gw_conduit_info(chan_id)%output%flo
+        !endif
       endif !check if conduit is active
 
       return
