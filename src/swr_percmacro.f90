@@ -24,22 +24,30 @@
 
       use hru_module, only : sepbtm, voltot, inflpcp, ihru, sepcrk, sepcrktot, volcrmin
       use soil_module
+      use basin_module, only : bsn_cc, bsn_prm
       
       implicit none
 
-      
-      
-      
       external :: layersplit
       integer :: j = 0          !none          |HRU number
       integer :: ly = 0         !none          |counter (soil layer)
       real :: crklch = 0.5      !none          | 
       real :: xx = 0.           !mm H2O        |water deficiency in soil layer
       real :: crk = 0.          !mm H2O        |percolation due to crack flow
+      real :: frz_hyd = 0.      !none          |hydraulic activity remaining under frozen soil
+      real :: frz_prof = 0.     !none          |profile hydraulic frozen state
+      real :: volcr_eff = 0.    !mm            |hydraulically effective crack volume
 
       j = ihru
 
-      sepcrk = Min(voltot, inflpcp)
+      if (bsn_cc%froz_soil == 0) then
+          frz_hyd = 1.0
+      else
+          frz_prof = Max(0.0, Min(1.0, soil(j)%frz_state)) ** bsn_prm%frz_prof_exp
+          frz_hyd = Max(0.0, Min(1.0, 1.0 - frz_prof))
+      end if
+      volcr_eff = voltot * frz_hyd
+      sepcrk = Min(volcr_eff, inflpcp)
       sepcrktot = sepcrk
       if (sepcrk > 1.e-4) then
         do ly = soil(j)%nly, 1, -1
@@ -47,7 +55,8 @@
           xx = 0.
           if (ly == soil(j)%nly) then
           crk = crklch*(soil(j)%ly(ly)%volcr/(soil(j)%phys(ly)%d -          &
-                soil(j)%phys(ly-1)%d) * voltot - volcrmin)
+                soil(j)%phys(ly-1)%d) * volcr_eff - volcrmin)
+          crk = Max(0., crk)
             if (crk < sepcrk) then
               sepcrk = sepcrk - crk
               sepbtm(j) = sepbtm(j) + crk

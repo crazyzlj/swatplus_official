@@ -58,9 +58,21 @@
       real, dimension (0:time%step+1) :: exinc     !mm H2O        |runoff for time step
       real, dimension (0:time%step+1) :: rateinf   !mm/hr         |infiltration rate for time step
       real, dimension (0:time%step+1) :: rintns    !mm/hr         |rainfall intensity
-		real:: swdt, sw_fac, r2
+      real :: swdt
+      real :: sw_fac
+      real :: r2
+      real :: frz_hyd = 0.                  !none          |hydraulic activity remaining under frozen soil
+      real :: frz_surf = 0.                 !none          |surface hydraulic frozen state
+      real :: r2_unfroz = 0.                !none          |retention parameter for unfrozen soil state
+      real :: r2_froz = 0.                  !none          |retention parameter for frozen soil state
       !! array location #1 is for last time step of prev day
        j = ihru
+       if (bsn_cc%froz_soil == 0) then
+           frz_hyd = 1.0
+       else
+           frz_surf = Max(0.0, Min(1.0, soil(j)%frz_state)) ** bsn_prm%frz_surf_exp
+           frz_hyd = Max(0.0, Min(1.0, 1.0 - frz_surf))
+       end if
        ulu = hru(j)%luse%urb_lu
        
        !! reset values for day
@@ -86,7 +98,7 @@
          dthet = (1. - soilw / soil(j)%sumfc) * soil(j)%phys(1)%por * 0.95
          rateinf(1) = 2000.
        end if
-       psidt = dthet * wfsh(j)
+       psidt = Max(1.e-6, dthet * wfsh(j) * Max(frz_hyd, 1.e-6))
    !    rintns(1) = 60. * w%ts(1) / Real(time%dtm) 
 		 
        do k = 1, time%step
@@ -94,6 +106,7 @@
           !! Update effective hydraulic conductivity
           adj_hc = (56.82 * soil(j)%phys(1)%k ** 0.286) / (1. + 0.051 * Exp(0.062 * cnday(j))) - 2.
           if (adj_hc <= 0.) adj_hc = 0.001
+          adj_hc = Max(1.e-6, adj_hc * frz_hyd)
 			 
          !! calculate total amount of rainfall during day for time step
            cumr(k) = cumr(k-1) + w%ts(k)
@@ -163,12 +176,18 @@
          if (sw_fac > 20.) sw_fac = 20.
          
          if ((swdt + Exp(sw_fac)) > 0.001) then
-           r2 = smx(j) * (1. - swdt / (swdt + Exp(sw_fac)))
+           r2_unfroz = smx(j) * (1. - swdt / (swdt + Exp(sw_fac)))
          else
-           r2 = smx(j)
+           r2_unfroz = smx(j)
          end if
          
-         if (soil(j)%phys(2)%tmp <= 0.) r2 = smx(j) * (1. - Exp(- bsn_prm%cn_froz * r2))
+         if (bsn_cc%froz_soil == 0) then
+           r2 = r2_unfroz
+           if (soil(j)%phys(2)%tmp <= 0.) r2 = smx(j) * (1. - Exp(- bsn_prm%cn_froz * r2))
+         else
+           r2_froz = smx(j) * (1. - Exp(- bsn_prm%cn_froz * r2_unfroz))
+           r2 = r2_unfroz * frz_hyd + r2_froz * (1.0 - frz_hyd)
+         end if
          r2 = Max(3.,r2)
          
          cnday(j) = 25400. / (r2 + 254.)

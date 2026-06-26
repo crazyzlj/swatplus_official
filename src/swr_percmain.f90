@@ -34,7 +34,7 @@
 !!    ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
       use hru_module, only : hru, ihru, i_sep, inflpcp, isep, latlyr, latq, lyrtile, qstemm, sepbtm, sepcrktot, sepday,   &
-         sw_excess, wt_shall, qtile   !rtb gwflow
+         sw_excess, wt_shall, qtile, satexq   !rtb gwflow
       use soil_module
       use septic_data_module
       use hydrograph_module
@@ -57,15 +57,40 @@
       real :: swst_del = 0.  !           |changes of water storage in soil layer
       real :: wtst_del = 0.  !           |changes of water table depth
       real :: sumqtile = 0.  !           | 
+      real :: frz_hyd = 0.   !none       |hydraulic activity remaining under frozen soil
+      real :: frz_prof = 0.  !none       |profile hydraulic frozen state
+      real :: qstemm_to_soil = 0. !mm H2O |septic effluent entering biozone under frozen soil
+      real :: qstemm_excess = 0.  !mm H2O |septic effluent rejected by frozen soil
+      logical :: septic_added = .false. !none |prevents repeated addition in slug loop
     
       j = ihru
+      if (bsn_cc%froz_soil == 0) then
+          frz_hyd = 1.0
+      else
+          frz_prof = Max(0.0, Min(1.0, soil(j)%frz_state)) ** bsn_prm%frz_prof_exp
+          frz_hyd = Max(0.0, Min(1.0, 1.0 - frz_prof))
+      end if
       ires =  hru(j)%dbs%surf_stor !Jaehak 2022
+      if (i_sep(j) > 0 .and. isep > 0) then
+        if (sep(isep)%opt /= 0) then
+          if (bsn_cc%froz_soil == 0) then
+            if (soil(j)%phys(i_sep(j))%tmp > 0.) then
+              qstemm_to_soil = qstemm(j)
+            else
+              qstemm_to_soil = 0.
+            end if
+          else
+            qstemm_to_soil = qstemm(j) * frz_hyd
+          end if
+          qstemm_excess = Max(0., qstemm(j) - qstemm_to_soil)
+        end if
+      end if
 
       !if (j == 2986) then
       !    write (9003, *) "begin swr_percmain, 5th st: ", soil(j)%phys(5)%st
       !end if
       !rtb gwflow: add groundwater transferred to soil profile
-      if(bsn_cc%gwflow.eq.1) then
+      if(bsn_cc%gwflow == 1) then
         call gwflow_soil(j)
       endif
 
@@ -98,10 +123,13 @@
         
       !! septic tank inflow to biozone layer  J.Jeong
       ! STE added to the biozone layer if soil temp is above zero. 
-      if (j1 == i_sep(j) .and. soil(j)%phys(j1)%tmp > 0. .and.          &
-            sep(isep)%opt  /= 0) then
-        soil(j)%phys(j1)%st = soil(j)%phys(j1)%st + qstemm(j)  ! in mm
+      if (i_sep(j) > 0 .and. isep > 0) then
+        if (j1 == i_sep(j) .and. sep(isep)%opt /= 0 .and. .not. septic_added) then
+          soil(j)%phys(j1)%st = soil(j)%phys(j1)%st + qstemm_to_soil  ! in mm
+          if (qstemm_excess > 1.e-9) satexq(j) = satexq(j) + qstemm_excess
+          septic_added = .true.
         end if
+      end if
 
        !! determine gravity drained water in layer
         sw_excess = soil(j)%phys(j1)%st - soil(j)%phys(j1)%fc
@@ -154,7 +182,7 @@
       qtile = 0.
       wt_shall = soil(j)%zmx
       !! drainmod tile equations   08/11/2006
-      if (soil(j)%phys(2)%tmp > 0.) then   !Daniel 1/29/09
+      if (frz_hyd > 1.e-6) then
         por_air = 0.9
         d = soil(j)%zmx - hru(j)%lumv%sdr_dep   !height of tiles above bottom of soil profile
         !! drainmod wt_shall equations   10/23/2006
@@ -196,8 +224,10 @@
             if (bsn_cc%tdrn == 1) then
               !! drainmod tile equations
               call swr_drains           !! compute tile flow using drainmod tile equations 
+              qtile = qtile * frz_hyd
             else                        
               call swr_origtile(d)      !! compute tile flow using existing tile equations 
+              qtile = qtile * frz_hyd
               if(qtile < 0.) qtile = 0.
             end if 
           end if

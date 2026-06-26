@@ -36,6 +36,7 @@
       real :: r2 = 0.        !none        |retention parameter in CN equation
       real :: r2_unfroz = 0. !none        |retention parameter for unfrozen soil state
       real :: r2_froz = 0.   !none        |retention parameter for frozen soil state
+      real :: frz_surf = 0.  !none        |surface hydraulic frozen state
       real :: sw_fac = 0.    !none        |variable used to store intermediate value of soil water factor
 
       j = ihru
@@ -51,10 +52,15 @@
         r2_unfroz = smx(j)
       end if
 
-      !if (soil(j)%phys(2)%tmp <= 0.) r2 = smx(j) * (1. - Exp(- bsn_prm%cn_froz * r2))
-      r2_froz = smx(j) * (1. - Exp(- bsn_prm%cn_froz * r2_unfroz))
-      r2 = r2_unfroz * (1.0 - soil(j)%frz_state) + r2_froz * soil(j)%frz_state
-      
+      if (bsn_cc%froz_soil == 0) then
+          r2 = r2_unfroz
+          if (soil(j)%phys(2)%tmp <= 0.) r2 = smx(j) * (1. - Exp(- bsn_prm%cn_froz * r2))
+      else
+          r2_froz = smx(j) * (1. - Exp(- bsn_prm%cn_froz * r2_unfroz))
+          frz_surf = Max(0.0, Min(1.0, soil(j)%frz_state)) ** bsn_prm%frz_cn_exp
+          r2 = r2_unfroz * (1.0 - frz_surf) + r2_froz * frz_surf
+      endif
+
       r2 = Max(3.,r2)
 
       cnday(j) = 25400. / (r2 + 254.)

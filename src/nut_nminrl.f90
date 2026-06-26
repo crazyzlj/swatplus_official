@@ -70,6 +70,9 @@
       real :: sut = 0.      !none          |soil water factor
       real :: nactfr = 0.   !none          |nitrogen active pool fraction. The fraction
                             !              |of organic nitrogen in the active pool. 
+      real :: frz_prof = 0. !none          |profile frozen-soil restriction factor
+      real :: bio_factor = 1.0 !none       |biological activity factor for current layer
+      logical :: bio_active = .true. !none |true if mineralization/decomposition is allowed
 
       j = ihru
       nactfr = .02
@@ -97,8 +100,27 @@
           kk = k
         end if
 
-        !! mineralization can occur only if temp above 0 deg
-        if (soil(j)%phys(kk)%tmp > 0.) then
+        if (bsn_cc%froz_soil == 0) then
+          !! Original SWAT+ frozen-soil behavior:
+          !! mineralization and decomposition occur only when
+          !! the controlling soil-layer temperature is above 0 deg C.
+          if (soil(j)%phys(kk)%tmp > 0.0) then
+            bio_active = .true.
+            bio_factor = 1.0
+          else
+            bio_active = .false.
+            bio_factor = 0.0
+          end if
+        else
+          !! Enhanced frozen-soil behavior:
+          !! progressively restrict biological activity using the
+          !! continuous frozen-soil state.
+          frz_prof = Max(0.0, Min(1.0, soil(j)%frz_state ** bsn_prm%frz_prof_exp))
+          bio_factor = Max(0.0, Min(1.0, 1.0 - frz_prof))
+          bio_active = bio_factor > 1.e-6
+        end if
+
+        if (bio_active) then
           !! compute soil water factor
           sut = .1 + .9 * Sqrt(soil(j)%phys(kk)%st / soil(j)%phys(kk)%fc)
           sut = Max(.05, sut)
@@ -112,7 +134,7 @@
           xx = cdg * sut
           if (xx < 0.) xx = 0.
           if (xx > 1.e6) xx = 1.e6
-          csf = Sqrt(xx)
+          csf = Sqrt(xx) * bio_factor
 
           !! compute flow from active to stable pools- maintain fraction of active (nactfr)
           rwn = .1e-4 * ((soil1(j)%hact(k)%n * (1. / nactfr - 1.) - soil1(j)%hsta(k)%n))
@@ -168,7 +190,11 @@
             
             idp = pcom(j)%plcur(ipl)%idplt
             decr = pldb(idp)%rsdco_pl * ca * csf
-            decr = Max(bsn_prm%decr_min, decr)
+            if (bsn_cc%froz_soil == 0) then
+              decr = Max(bsn_prm%decr_min, decr)
+            else
+              decr = Max(bsn_prm%decr_min * bio_factor, decr)
+            end if
             decr = Min(decr, 1.)
             decomp = decr * soil1(j)%pl(ipl)%rsd(k)
             soil1(j)%pl(ipl)%rsd(k) = soil1(j)%pl(ipl)%rsd(k) - decomp
@@ -189,7 +215,7 @@
           wdn = 0.   
           if (i_sep(j) /= k .or. sep(isep)%opt  /= 1) then
             if (sut >= bsn_prm%sdnco) then
-              wdn = soil1(j)%mn(k)%no3 * (1.-Exp(-bsn_prm%cdn * cdg * soil1(j)%cbn(k) / 100.))
+              wdn = soil1(j)%mn(k)%no3 * (1.-Exp(-bsn_prm%cdn * cdg * bio_factor * soil1(j)%cbn(k) / 100.))
             else
               wdn = 0.
             endif

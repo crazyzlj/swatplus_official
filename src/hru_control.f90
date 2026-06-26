@@ -10,7 +10,8 @@
          orgn_con, orgp_con, cnday, percn, tileno3, sedorgn, sedorgp, surqno3, latno3,            &
          surqsolp, sedminpa, sedminps, fertn, fertp, fixn, grazn, grazp, ipl, qp_cms, qtile,      &
          snofall, snomlt, usle, canev, ep_day, es_day, etday, inflpcp, isep, iwgen, ls_overq,     &
-         nd_30, pet_day, precip_eff, qday, latqrunon, gwsoilq, satexq, surf_bs, bss, bss_ex, brt, &
+         nd_30, pet_day, precip_eff, precip_eff_liq, qday,                                        &
+         latqrunon, gwsoilq, satexq, surf_bs, bss, bss_ex, brt,                                   &
          gwsoiln, gwsoilp, satexq_chan, surqsalt, latqsalt, tilesalt, percsalt, urbqsalt,         & !rtb gwflow; rtb salt
          gwholeq,                                                                                 & !ljzhu gwflow sinkhole
          wetqsalt, wtspsalt, gwupsalt, surqcs, latqcs, tilecs, perccs, gwupcs, sedmcs, urbqcs,    &
@@ -61,6 +62,7 @@
       integer :: ith = 0            !              |
       integer :: iwgn = 0           !              |
       integer :: ires = 0           !none          |reservoir number
+      integer :: iru_frz = 0        !none          |routing unit counter for frozen-soil routing update
       integer :: isched = 0         !              |
       integer :: isalt = 0          !              |salt ion counter (rtb salt)
       integer :: ics = 0            !              |constituent counter (rtb cs)
@@ -96,6 +98,10 @@
       real :: saltcon = 0.       !Jeong 2024
       real :: qsurf = 0.         !Jeong 2024
       real :: sedppm = 0.        !Jeong 2024
+      real :: sink_frz_factor = 1. !none          |hydraulic access factor for sinkhole bypass
+      real :: frz_surf = 0.        !none          |surface hydraulic frozen state
+      real :: precip_eff_before_sink = 0.
+      real :: liq_frac_before_sink = 0.
       
       j = ihru
       
@@ -137,6 +143,7 @@
         w%tave = w%tave + ob(iob)%tlaps
       end if
       precip_eff = w%precip
+      precip_eff_liq = 0.
       
       !if (j == 1662) then
       !  print *, "pcp, tmax, tmin, tave: ", precip_eff, w%tmax, w%tmin, w%tave
@@ -154,8 +161,8 @@
       hnb_d(j)%denit = 0.
 
       if (bsn_cc%cswat == 2 .or. bsn_cc%cswat == 3) then
-        if (tillage_switch(ihru) .eq. 1) then
-          if (tillage_days(ihru) .ge. 30) then
+        if (tillage_switch(ihru) == 1) then
+          if (tillage_days(ihru) >= 30) then
             tillage_switch(ihru) = 0
             tillage_days(ihru) = 0
           else
@@ -261,8 +268,17 @@
         !! calculate soil temperature for soil layers
         call stmp_solt
         
-        !! update concentration time for hru routing
-        call time_conc_upd(j)
+        !! update HRU/RU routing response only for enhanced frozen-soil mode.
+        !! In original SWAT+, routing concentration time is assigned during
+        !! initialization and is not recalculated every simulation day.
+        if (bsn_cc%froz_soil == 1) then
+          call time_conc_upd(j)
+          if (j == sp_ob%hru) then
+            do iru_frz = 1, sp_ob%ru
+              call ru_tc_upd(iru_frz)
+            end do
+          end if
+        end if
         
         !!compute canopy interception
         call sq_canopyint
@@ -277,10 +293,26 @@
         if (bsn_cc%gwflow == 1 .and. gw_sinkhole_flag == 1 .and. &
             gw_sinkhole_hruflag(j) == 1 .and. precip_eff > 1.e-6) then
           gwholeq(j) = gw_hole_bypass * gw_sinkhole_hruarea(j) * precip_eff !mm over whole HRU
+          if (bsn_cc%froz_soil == 1) then
+              frz_surf = Max(0.0, Min(1.0, soil(j)%frz_state)) ** bsn_prm%frz_surf_exp
+              sink_frz_factor = 1.0 - bsn_prm%sink_frz_block * frz_surf
+              sink_frz_factor = Max(0.0, Min(1.0, sink_frz_factor))
+              gwholeq(j) = gwholeq(j) * sink_frz_factor !partial blockage of sinkhole access by frozen surface
+          end if
+
+          precip_eff_before_sink = precip_eff
+
+          if (precip_eff_before_sink > 1.e-6) then
+              liq_frac_before_sink = precip_eff_liq / precip_eff_before_sink
+              liq_frac_before_sink = max(0., min(1., liq_frac_before_sink))
+          else
+              liq_frac_before_sink = 0.
+          endif
           gwholeq(j) = min(gwholeq(j), precip_eff)
           gwholeq(j) = max(gwholeq(j), 0.)
-
           precip_eff = precip_eff - gwholeq(j)
+          precip_eff_liq = precip_eff_liq - gwholeq(j) * liq_frac_before_sink
+          precip_eff_liq = max(0., min(precip_eff_liq, precip_eff))
         end if
         
         !!route overland flow across hru - add tile flow if not subirrigation or saturated buffer
@@ -542,7 +574,7 @@
         es_day = es_day
 
         !rtb gwflow
-        if(bsn_cc%gwflow.eq.1) then
+        if(bsn_cc%gwflow == 1) then
           etremain(j) = pet_day - etday
         endif
  
@@ -801,7 +833,8 @@
         hwb_d(j)%sw = soil(j)%sw
         hwb_d(j)%sw_final = soil(j)%sw
         hwb_d(j)%sw_300 = soil(j)%sw_300
-        hwb_d(j)%snopack = hru(j)%sno_mm
+        !total snowpack water equivalent; sno_liq is zero when original snow routine is used
+        hwb_d(j)%snopack = hru(j)%sno_mm + hru(j)%sno_liq
         hwb_d(j)%pet = pet_day
         hwb_d(j)%qtile = qtile
         hwb_d(j)%irr = irrig(j)%applied

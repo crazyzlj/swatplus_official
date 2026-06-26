@@ -8,12 +8,10 @@
       implicit none
 
       integer :: ii = 0             !none          |counter
-      integer :: ielem = 0          !none          |counter
-      real :: rto = 0.              !none          |cloud cover factor
       
      ! compute delivery ratio for each hru in the sub
-      do iru = 1, sp_ob%ru
-          call dr_ru_upd(iru)
+      do ii = 1, sp_ob%ru
+          call dr_ru_upd(ii)
       end do
 
       return
@@ -30,8 +28,8 @@
       integer :: ii = 0
       integer :: ielem = 0
       
-      do ii = 1, ru_def(iru)%num_tot
-        ielem = ru_def(iru)%num(ii)
+      do ii = 1, ru_def(jru)%num_tot
+        ielem = ru_def(jru)%num(ii)
         call dr_elem_upd(jru, ielem)
       end do  
       return
@@ -54,15 +52,15 @@
         select case (ru_elem(ielem)%obtyp)
         case ("hru")
             ihru = ru_elem(ielem)%obtypno
-            if (ru_tc(iru) > 1.e-6) then
-                rto = tconc(ihru) / ru_tc(iru)
+            if (ru_tc(jru) > 1.e-6) then
+                rto = tconc(ihru) / ru_tc(jru)
             else
                 rto = 1.
             endif
         case ("hlt")
             ihru = ru_elem(ielem)%obtypno
-            if (ru_tc(iru) > 1.e-6) then
-                rto = (hlt_db(ihru)%tc / 3600.) / ru_tc(iru)
+            if (ru_tc(jru) > 1.e-6) then
+                rto = (hlt_db(ihru)%tc / 3600.) / ru_tc(jru)
             else
                 rto = 1.
             endif

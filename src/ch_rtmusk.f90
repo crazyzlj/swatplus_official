@@ -60,6 +60,26 @@
       real :: wet_evol = 0. 
       real :: ratio = 0.
 
+      ! Icejam dynamic Muskingum override variables.  Wedge water-balance
+      ! capture/release is owned by sd_channel_icejam; this routine only routes
+      ! the ice-adjusted inflow and applies phase-dependent K/X modifiers.
+      type(icejam_param_type), save :: ice_prm
+      logical, save :: ice_prm_initialized = .false.
+      real :: k_norm_hr = 0.
+      real :: k_cur_hr = 0.
+      real :: x_cur = 0.
+      real :: denom_msk = 0.
+      real :: c1_ice = 0.
+      real :: c2_ice = 0.
+      real :: c3_ice = 0.
+      real :: k_lower = 0.
+
+      if (.not. ice_prm_initialized) then
+        call icejam_default_params(ice_prm)
+        call icejam_validate_params(ice_prm)
+        ice_prm_initialized = .true.
+      endif
+
       jrch = isdch
       jhyd = sd_dat(jrch)%hyd
       
@@ -91,13 +111,22 @@
       tot_stor(jrch) = ch_stor(jrch) + fp_stor(jrch)
       tot_stor_init = tot_stor(jrch)%flo
 
+      !! Icejam module has already adjusted ht1%flo for wedge capture/release.
+      !! ch_rtmusk remains the routing engine.  Optional conduit inflow is added
+      !! here as an additional channel inflow and is not captured by icejam in
+      !! this first clean-boundary implementation.
+
       !add groundwater conduit if applied
       if (bsn_cc%gwflow > 0 .and. gw_conduit_flag > 0) then
           ht1 = ht1 + gw_conduit_info(jrch)%output
-          ratio = gw_conduit_info(jrch)%output%flo / ht1%flo
-          if (jrch == 129) write (9003,*) "rtmusk, conduit inflow:", gw_conduit_info(jrch)%output%flo, "ratio:", ratio
-      endif    
-      
+          !ratio = gw_conduit_info(jrch)%output%flo / ht1%flo
+          !if (jrch == 129) write (9003,*) "rtmusk, conduit inflow:", gw_conduit_info(jrch)%output%flo, "ratio:", ratio
+      endif
+
+      ! Channel water balance sees the current inflow hydrograph.  Any icejam
+      ! wedge capture/release has been applied upstream in sd_channel_icejam.
+      sum_inflo = ht1%flo
+
       !! keep Muskingum substeps computed in sd_hydsed_init
       !! For daily simulations, substeps may be greater than 1 to satisfy
       !! the Muskingum stability criterion. Do not reset them here.
@@ -151,9 +180,37 @@
           sd_ch(jrch)%out1_vol = 0.
         else
           if (bsn_cc%rte == 1) then
-          !! Muskingum flood routing method
-            outflo = sd_ch(jrch)%msk%c1 * inflo + sd_ch(jrch)%msk%c2 * sd_ch(jrch)%in1_vol +     &
-                                                sd_ch(jrch)%msk%c3 * sd_ch(jrch)%out1_vol
+          !! Muskingum flood routing method. Icejam optionally overrides
+          !! K and X to represent ice-cover/jam hydraulic resistance only.
+            if (bsn_cc%icejam == 1 .and. sd_ch(jrch)%ice_hydro_active == 1) then
+              k_norm_hr = max(1.0e-3, ch_rcurv(jrch)%in2%ttime)
+              if (sd_ch(jrch)%stor_dis_bf > 1.0e-6) k_norm_hr = max(1.0e-3, sd_ch(jrch)%stor_dis_bf)
+
+              k_cur_hr = k_norm_hr * max(ice_prm%k_min_mult, min(ice_prm%k_max_mult, sd_ch(jrch)%ice_k_mult))
+              x_cur = max(0.0, min(0.49, sd_ch(jrch)%ice_x_current))
+              ! Active ice jam is reservoir-like; enforce tiny X even if an
+              ! upstream state assignment fails to pass x_jam correctly.
+              if (sd_ch(jrch)%ice_phase == 3 .and. sd_ch(jrch)%is_jamming) then
+                x_cur = min(x_cur, ice_prm%x_jam)
+              endif
+
+              !! Stability guards for 2 K X <= dt <= 2 K (1-X).
+              if (2.0 * k_cur_hr * x_cur > dthr) then
+                x_cur = min(x_cur, 0.49 * dthr / max(k_cur_hr, 1.0e-6))
+              endif
+              k_lower = dthr / max(2.0 * (1.0 - x_cur), 1.0e-6)
+              if (k_cur_hr < k_lower) k_cur_hr = 1.001 * k_lower
+
+              denom_msk = 2.0 * k_cur_hr * (1.0 - x_cur) + dthr
+              c1_ice = (dthr - 2.0 * k_cur_hr * x_cur) / denom_msk
+              c2_ice = (dthr + 2.0 * k_cur_hr * x_cur) / denom_msk
+              c3_ice = (2.0 * k_cur_hr * (1.0 - x_cur) - dthr) / denom_msk
+
+              outflo = c1_ice * inflo + c2_ice * sd_ch(jrch)%in1_vol + c3_ice * sd_ch(jrch)%out1_vol
+            else
+              outflo = sd_ch(jrch)%msk%c1 * inflo + sd_ch(jrch)%msk%c2 * sd_ch(jrch)%in1_vol +     &
+                                                  sd_ch(jrch)%msk%c3 * sd_ch(jrch)%out1_vol
+            endif
             outflo = Min (outflo, tot_stor(jrch)%flo)
             outflo = Max (outflo, 0.)
                
@@ -202,7 +259,14 @@
         end if  ! tot_stor(jrch)%flo < 1.e-6
 
       end do    ! end of sub-daily loop
-      
+
+      !! =========================================================
+      !! Icejam:
+      !! Explicit ice-jam water capture/release is handled by sd_channel_icejam
+      !! before routing. No additional ch_stor storage-busting release is
+      !! applied here.
+      !! =========================================================
+
       !! compute water balance - evap and seep
       !! calculate transmission losses (seepage), only when gwflow is not activated
       if(bsn_cc%gwflow == 0) then
@@ -215,10 +279,10 @@
           rto = trans_loss / ch_stor(jrch)%flo
           ch_stor(jrch) = (1. - rto) * ch_stor(jrch)
         end if
-        ch_wat_d(ich)%seep = trans_loss
+        ch_wat_d(jrch)%seep = trans_loss
       else
         !if gwflow active, seepage computed in gwflow routine
-        ch_wat_d(ich)%seep = 0.
+        ch_wat_d(jrch)%seep = 0.
       endif
 
       !! calculate evaporation losses
@@ -236,7 +300,7 @@
         rto = evap / ch_stor(jrch)%flo
         ch_stor(jrch)%flo = (1. - rto) * ch_stor(jrch)%flo
       end if
-      ch_wat_d(ich)%evap = evap
+      ch_wat_d(jrch)%evap = evap
       
       tot_stor(jrch) = ch_stor(jrch) + fp_stor(jrch)
 
@@ -265,9 +329,39 @@
       ch_fp_wb(jrch)%wet_stor = wet_stor(jrch)%flo
 
       !!conceptual ice-jam: transport downstream
-      if(bsn_cc%icejam.eq.1) then
-          call sd_channel_ice_advect(ich)
+      if(bsn_cc%icejam == 1) then
+          call sd_channel_ice_advect(jrch)
       end if
+
+!      if (jrch == 68) then
+!          write(9003,*) time%yrc, time%day, jrch, &
+!                  "phase", sd_ch(jrch)%ice_phase, &
+!                  "jamming", sd_ch(jrch)%is_jamming, &
+!                  "releasing", sd_ch(jrch)%is_releasing, &
+!                  "Kmult", sd_ch(jrch)%ice_k_mult, &
+!                  "Xice", sd_ch(jrch)%ice_x_current, &
+!                  "ch_stor", ch_stor(jrch)%flo, &
+!                  "fp_stor", fp_stor(jrch)%flo, &
+!                  "tot_stor", tot_stor(jrch)%flo, &
+!                  "bnk_stor", sd_ch(jrch)%bankfull_storage, &
+!                  "wedge_stor", sd_ch(jrch)%ice_wedge_stor, &
+!                  "wedge_cap", sd_ch(jrch)%ice_wedge_capacity, &
+!                  "wedge_cap_day", sd_ch(jrch)%ice_wedge_capture, &
+!                  "wedge_rel", sd_ch(jrch)%ice_wedge_release, &
+!                  "wedge_leak", sd_ch(jrch)%ice_wedge_leak, &
+!                  "wedge_ratio", sd_ch(jrch)%ice_wedge_stor / max(sd_ch(jrch)%ice_wedge_capacity, 1.e-6), &
+!                  "stor_ratio", ch_stor(jrch)%flo / max(sd_ch(jrch)%bankfull_storage, 1.e-6), &
+!                  "excess", sd_ch(jrch)%ice_excess_storage, &
+!                  "shock_rel", sd_ch(jrch)%ice_shock_release, &
+!                  "Khr", k_cur_hr, &
+!                  "Xcur", x_cur, &
+!                  "c1", c1_ice, &
+!                  "c2", c2_ice, &
+!                  "c3", c3_ice, &
+!                  "force", sd_ch(jrch)%force_eff, &
+!                  "resist", sd_ch(jrch)%resistance, &
+!                  "F_R", sd_ch(jrch)%force_eff / max(sd_ch(jrch)%resistance, 1.e-6)
+!      endif
 
       return
       end subroutine ch_rtmusk

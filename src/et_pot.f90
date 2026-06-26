@@ -79,6 +79,7 @@
       real :: rc = 0.              !s/m           |canopy resistance
       real :: rho = 0.             !MJ/(m3*kPa)   |K1*0.622*xl*rho/pb
       real :: rout = 0.            !MJ/m2         |outgoing radiation
+      real :: snowpack_swe = 0.    !mm H2O        |solid snow plus retained liquid water
       real :: d = 0.               !cm            |displacement height for plant type
       real :: chz = 0.             !cm            |vegetation height
       real :: gsi_adj = 0.         !              |
@@ -89,6 +90,7 @@
 
       !! initialize local variables
       j = ihru
+      snowpack_swe = hru(j)%sno_mm + hru(j)%sno_liq
 
       tk = w%tave + 273.15
 
@@ -118,7 +120,7 @@
      
        !! net radiation
          !! calculate net short-wave radiation for PET
-          if (hru(j)%sno_mm <= .5) then
+          if (snowpack_swe <= .5) then
             ralb = w%solrad * (1.0 - 0.23)
           else
             ralb = w%solrad * (1.0 - 0.8)
@@ -151,7 +153,7 @@
 
        !! net radiation
          !! calculate net short-wave radiation for PET
-          if (hru(j)%sno_mm <= .5) then
+          if (snowpack_swe <= .5) then
             ralb = w%solrad * (1.0 - 0.23) 
           else
             ralb = w%solrad * (1.0 - 0.8) 

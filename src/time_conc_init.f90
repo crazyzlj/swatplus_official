@@ -26,6 +26,7 @@
       use hru_module, only : hru, ihru
       use hydrograph_module, only : sp_ob, ru_def, ru_elem, sp_ob1, ob
       use soil_module, only : soil
+      use basin_module, only : bsn_cc, bsn_prm
     
       implicit none 
       
@@ -35,6 +36,8 @@
       integer :: ielem = 0         !none         |counter
       integer :: iob = 0           !             | 
       real :: current_ovn_hru = 0. !none        |manning's roughness coefficient of hru
+      real :: frz_surf = 0.        !none        |surface hydraulic frozen state
+      real :: frz_ovn_min = 0.   !none        |minimum overland roughness under frozen soil
     
      ! compute weighted Mannings n for each subbasin
       !do iru = 1, sp_ob%ru
@@ -43,8 +46,14 @@
         do ii = 1, ru_def(iru)%num_tot
           ielem = ru_def(iru)%num(ii)
           if (ru_elem(ielem)%obtyp == "hru") then
-            ihru = ru_elem(ielem)%obtypno 
-            current_ovn_hru = hru(ihru)%luse%ovn * (1.0 - soil(ihru)%frz_state) + (0.01 * soil(ihru)%frz_state)
+            ihru = ru_elem(ielem)%obtypno
+            if (bsn_cc%froz_soil == 0) then
+                current_ovn_hru = hru(ihru)%luse%ovn
+            else
+                frz_ovn_min = bsn_prm%frz_ovn_min
+                frz_surf = Max(0.0, Min(1.0, soil(ihru)%frz_state)) ** bsn_prm%frz_surf_exp
+                current_ovn_hru = hru(ihru)%luse%ovn * (1.0 - frz_surf) + frz_ovn_min * frz_surf
+            end if
             ru_n(iru) = ru_n(iru) + current_ovn_hru * hru(ihru)%km
           else
             ru_n(iru) = 0.1
@@ -92,7 +101,7 @@
       subroutine time_conc_upd(j) 
     
       use hru_module, only : hru
-      use basin_module, only: bsn_prm
+      use basin_module, only : bsn_cc, bsn_prm
       use soil_module, only : soil
       
       implicit none 
@@ -100,10 +109,20 @@
       integer, intent(in) :: j    !none   |HRU number
       real :: current_ovn         !none   |manning's roughness coefficient   
       real :: current_surlag      !days   |lag
-      
-      current_ovn = hru(j)%luse%ovn * (1.0 - soil(j)%frz_state) + (0.01 * soil(j)%frz_state)
-      current_surlag = bsn_prm%surlag * (1.0 - soil(j)%frz_state) + (24.0 * soil(j)%frz_state)
+      real :: frz_surf            !none   |surface hydraulic frozen state
+      real :: frz_ovn_min = 0.    !none   |minimum overland roughness under frozen soil
+      real :: frz_surlag_max = 0.  !days   |maximum runoff lag coefficient under frozen soil
 
+      if (bsn_cc%froz_soil == 0) then
+          current_ovn = hru(j)%luse%ovn
+          current_surlag = bsn_prm%surlag
+      else
+          frz_ovn_min = bsn_prm%frz_ovn_min
+          frz_surlag_max = bsn_prm%frz_surlag_max
+          frz_surf = Max(0.0, Min(1.0, soil(j)%frz_state)) ** bsn_prm%frz_surf_exp
+          current_ovn = hru(j)%luse%ovn * (1.0 - frz_surf) + frz_ovn_min * frz_surf
+          current_surlag = bsn_prm%surlag * (1.0 - frz_surf) + frz_surlag_max * frz_surf
+      endif
       call compute_hru_routing(j, current_ovn, current_surlag)
       
       return

@@ -44,6 +44,7 @@
       integer :: j = 0       !none                   |HRU number
       !real :: usle = 0.      !metric tons/ha         | daily soil loss predicted with USLE equation
       real :: rock = 0.      !percent                |rock fragments
+      real :: snowpack_swe = 0.  !mm H2O             |solid snow plus retained liquid water
 
       j = ihru
       
@@ -62,12 +63,12 @@
       if (sedyld(j) < 0.) sedyld(j) = 0.
 
       !!adjust sediment yield for protection of snow cover
-      if (hru(j)%sno_mm > 0.) then
-        if (sedyld(j) < 1.e-6) sedyld(j) = 0.0
-      else if (hru(j)%sno_mm > 100.) then
+      snowpack_swe = hru(j)%sno_mm + hru(j)%sno_liq
+      if (snowpack_swe > 100.) then
         sedyld(j) = 0.
-      else
-        sedyld(j) = sedyld(j) / Exp(hru(j)%sno_mm * 3. / 25.4)
+      else if (snowpack_swe > 0.) then
+        sedyld(j) = sedyld(j) / Exp(snowpack_swe * 3. / 25.4)
+        if (sedyld(j) < 1.e-6) sedyld(j) = 0.0
       end if
 
       !! Particle size distribution of sediment yield

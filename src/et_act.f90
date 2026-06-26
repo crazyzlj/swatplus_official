@@ -74,6 +74,10 @@
       real :: evz = 0.           !              | 
       real :: sev = 0.           !mm H2O        |amount of evaporation from soil layer
       real :: sev_st = 0.        !mm H2O        |evaporation / soil water for no3 flux from layer 1 -> 2
+      real :: snowpack_swe = 0.  !mm H2O        |solid snow plus retained liquid water
+      real :: snow_evap = 0.     !mm H2O        |evaporation/sublimation removed from snowpack
+      real :: frz_surf = 0.      !none          |surface hydraulic frozen state
+      real :: frz_evap = 1.      !none          |soil evaporation activity under frozen soil
       real :: cover = 0.         !kg/ha         |soil cover
       real :: wetvol_mm = 0.     !mm            |wetland water volume - average depth over hru
       integer :: ly = 0          !none          |counter     
@@ -125,7 +129,8 @@
         es_max = 0.
         eos1 = 0.
         cover = pl_mass(j)%ab_gr_com%m + pl_mass(j)%rsd_tot%m
-        if (hru(j)%sno_mm >= 0.5) then
+        snowpack_swe = hru(j)%sno_mm + hru(j)%sno_liq
+        if (snowpack_swe >= 0.5) then
           eaj = 0.5
         else
           eaj = Exp(cej * (cover + 0.1))
@@ -169,19 +174,31 @@
         !if (j == 1662) then
         !  write(9003,*)  "init soil et var, esleft:", esleft
         !end if
-        !! compute sublimation
-        if (w%tave > 0.) then
-          if (hru(j)%sno_mm >= esleft) then
-            !! take all soil evap from snow cover
-            hru(j)%sno_mm = hru(j)%sno_mm - esleft
-            snoev = snoev + esleft
-            esleft = 0.
+        !! compute snow evaporation/sublimation from the snowpack before soil evaporation.
+        !! With the revised snow routine, snowpack water includes solid snow and retained liquid water.
+        snowpack_swe = hru(j)%sno_mm + hru(j)%sno_liq
+        if (snowpack_swe > 1.e-6 .and. esleft > 1.e-9) then
+          if (w%tave > 0.) then
+            snow_evap = Min(esleft, hru(j)%sno_liq)
+            hru(j)%sno_liq = hru(j)%sno_liq - snow_evap
+            esleft = esleft - snow_evap
+            snoev = snoev + snow_evap
+            snow_evap = Min(esleft, hru(j)%sno_mm)
+            hru(j)%sno_mm = hru(j)%sno_mm - snow_evap
+            esleft = esleft - snow_evap
+            snoev = snoev + snow_evap
           else
-            !! take all soil evap from snow cover before taking from soil
-            esleft = esleft - hru(j)%sno_mm
-            snoev = snoev + hru(j)%sno_mm
-            hru(j)%sno_mm = 0.
-          endif
+            snow_evap = Min(esleft, hru(j)%sno_mm)
+            hru(j)%sno_mm = hru(j)%sno_mm - snow_evap
+            esleft = esleft - snow_evap
+            snoev = snoev + snow_evap
+            snow_evap = Min(esleft, hru(j)%sno_liq)
+            hru(j)%sno_liq = hru(j)%sno_liq - snow_evap
+            esleft = esleft - snow_evap
+            snoev = snoev + snow_evap
+          end if
+          if (hru(j)%sno_mm < 1.e-9) hru(j)%sno_mm = 0.
+          if (hru(j)%sno_liq < 1.e-9) hru(j)%sno_liq = 0.
         endif
         !if (j == 1662) then
         !  write(9003,*)  "after sublimation, esleft:", esleft, ", w%tave:", w%tave
@@ -237,6 +254,9 @@
           !if (j == 1662) then
           !    write(9003,*) "  xx:", xx, ", sev: ", sev
           !endif
+          frz_surf = Max(0.0, Min(1.0, soil(j)%frz_state)) ** 0.7
+          frz_evap = Max(0.05, 1.0 - frz_surf)
+          sev = sev * frz_evap
           sev = Min(sev, soil(j)%phys(ly)%st * etco)
 
           if (sev < 0.) sev = 0.

@@ -49,6 +49,9 @@
       real :: aqu_inflo = 0.          !m3            |aquifer inflow if using geomorphic baseflow
       integer :: iw = 0               !              |counter for water allocation object
       integer :: iwallo = 0           !              |variable to pass to wallo_control
+      real :: tempin = 0.
+      real :: tempout = 0.
+      real :: tempdelta = 0.
       
       ich = isdch
       isd_db = sd_dat(ich)%hyd
@@ -147,24 +150,23 @@
       
       
       !if gwflow is active, calculate aquifer interactions (ht1 is updated)
-      if(bsn_cc%gwflow.eq.1) then
+      if(bsn_cc%gwflow == 1) then
         call gwflow_conduit(ich) !groundwater conduit --> channel
+        tempin = ch_stor(ich)%flo
         call gwflow_channel_exch(ich) !channel <--> groundwater
+        tempdelta = ch_stor(ich)%flo - tempin
+        !if (ich == 68) then
+        !    write(9003,*) "before", tempin, "after", ch_stor(ich)%flo, &
+        !            "delta", tempdelta
+        !endif
         call gwflow_canal(ich) !channel --> canal seepage
         call gwflow_tile(ich) !groundwater --> channel
         call gwflow_satexcess(ich) !groundwater --> channel
       end if
-      
-      !if (ich == 68) then
-      !    write(9003,*) time%yrc, time%day, ich, &
-      !                "after_gwflow", ht1%flo, &
-      !                "ch_stor", ch_stor(ich)%flo, &
-      !                "fp_stor", fp_stor(ich)%flo
-      !endif
 
       !!conceptual ice-jam storage/release
       !!modifies ht1%flo by blocking or releasing jam-stored water
-      if(bsn_cc%icejam.eq.1) then
+      if(bsn_cc%icejam == 1) then
         call sd_channel_icejam(ich)
       end if
             

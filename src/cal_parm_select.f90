@@ -209,6 +209,30 @@
       case ("snomelt_lag")
         hru(ielem)%sno%timp = chg_par(hru(ielem)%sno%timp,            &
                          chg_typ, chg_val, absmin, absmax)
+
+      case ("sno_tband")
+          hru(ielem)%sno%tband = chg_par(hru(ielem)%sno%tband, &
+                  chg_typ, chg_val, absmin, absmax)
+
+      case ("sno_liqmx")
+          hru(ielem)%sno%liqmx = chg_par(hru(ielem)%sno%liqmx, &
+                  chg_typ, chg_val, absmin, absmax)
+
+      case ("sno_refz")
+          hru(ielem)%sno%refz = chg_par(hru(ielem)%sno%refz, &
+                  chg_typ, chg_val, absmin, absmax)
+
+      case ("sno_rosk")
+          hru(ielem)%sno%rosk = chg_par(hru(ielem)%sno%rosk, &
+                  chg_typ, chg_val, absmin, absmax)
+
+      case ("sno_pfmax")
+          hru(ielem)%sno%pfmax = chg_par(hru(ielem)%sno%pfmax, &
+                  chg_typ, chg_val, absmin, absmax)
+
+      case ("sno_clrain")
+          hru(ielem)%sno%clrain = chg_par(hru(ielem)%sno%clrain, &
+                  chg_typ, chg_val, absmin, absmax)
                      
       case ("tile_dep")
         hru(ielem)%lumv%sdr_dep = chg_par(hru(ielem)%lumv%sdr_dep,      &
@@ -374,9 +398,10 @@
       case ("surlag")
         bsn_prm%surlag = chg_par(bsn_prm%surlag,                         &
                          chg_typ, chg_val, absmin, absmax)
-        do ihru = 1, sp_ob%hru
-          brt(ihru) = 1. - Exp(-bsn_prm%surlag / tconc(ihru))
-        end do
+        call time_conc_init
+        !do ihru = 1, sp_ob%hru
+        !  brt(ihru) = 1. - Exp(-bsn_prm%surlag / tconc(ihru))
+        !end do
         
       case ("adj_pkr")
         bsn_prm%adj_pkr = chg_par(bsn_prm%adj_pkr,                      &
@@ -430,17 +455,22 @@
       case ("msk_co1")
         bsn_prm%msk_co1= chg_par(bsn_prm%msk_co1,                       &
                          chg_typ, chg_val, absmin, absmax)
+        bsn_prm%msk_co2 = 1. - bsn_prm%msk_co1
+        call sd_hydsed_init
         
       case ("msk_co2")
         bsn_prm%msk_co2 = chg_par(bsn_prm%msk_co2,                      &
                          chg_typ, chg_val, absmin, absmax)
+        bsn_prm%msk_co1 = 1. - bsn_prm%msk_co2
+        call sd_hydsed_init
         
       case ("msk_x")
         bsn_prm%msk_x = chg_par(bsn_prm%msk_x,                          &
                          chg_typ, chg_val, absmin, absmax)
+        call sd_hydsed_init
                     
       case ("nperco_lchtile")
-        bsn_prm%msk_x = chg_par(bsn_prm%nperco_lchtile,                          &
+        bsn_prm%nperco_lchtile = chg_par(bsn_prm%nperco_lchtile,                          &
                          chg_typ, chg_val, absmin, absmax)                         
 
       case ("cdn")
@@ -469,6 +499,29 @@
       case ("tlag")
         bsn_prm%tlag = chg_par(bsn_prm%tlag,                      &
                          chg_typ, chg_val, absmin, absmax)
+      case ("frz_t_thaw")
+          bsn_prm%frz_t_thaw = chg_par(bsn_prm%frz_t_thaw, chg_typ, chg_val, absmin, absmax)
+
+      case ("frz_t_froz")
+          bsn_prm%frz_t_froz = chg_par(bsn_prm%frz_t_froz, chg_typ, chg_val, absmin, absmax)
+
+      case ("frz_surf_exp")
+          bsn_prm%frz_surf_exp = chg_par(bsn_prm%frz_surf_exp, chg_typ, chg_val, absmin, absmax)
+
+      case ("frz_cn_exp")
+          bsn_prm%frz_cn_exp = chg_par(bsn_prm%frz_cn_exp, chg_typ, chg_val, absmin, absmax)
+
+      case ("frz_prof_exp")
+          bsn_prm%frz_prof_exp = chg_par(bsn_prm%frz_prof_exp, chg_typ, chg_val, absmin, absmax)
+
+      case ("frz_ovn_min")
+          bsn_prm%frz_ovn_min = chg_par(bsn_prm%frz_ovn_min, chg_typ, chg_val, absmin, absmax)
+
+      case ("frz_surlag_max")
+          bsn_prm%frz_surlag_max = chg_par(bsn_prm%frz_surlag_max, chg_typ, chg_val, absmin, absmax)
+
+      case ("sink_frz_block")
+          bsn_prm%sink_frz_block = chg_par(bsn_prm%sink_frz_block, chg_typ, chg_val, absmin, absmax)
 !!     SWQ
       case ("mumax")
           ch_nut(ielem)%mumax = chg_par(ch_nut(ielem)%mumax,                &

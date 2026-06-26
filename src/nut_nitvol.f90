@@ -33,6 +33,9 @@
                                   !              |to volatilization
       real :: tf = 0.             !              | 
       real :: cecf = 0.15         !none          |volatilization CEC factor 
+      real :: frz_prof = 0.       !none          |profile frozen-soil restriction factor
+      real :: bio_factor = 1.0    !none          |biological activity factor for current layer
+      logical :: bio_active = .true. !none       |true if nitrification/volatilization is allowed
  
       j = 0
       j = ihru 
@@ -44,7 +47,18 @@
         tf = 0.
         tf = .41 * (soil(j)%phys(k)%tmp - 5.) / 10.
 
-        if (soil1(j)%mn(k)%nh4 > 0. .and. tf >= 0.001) then
+        if (bsn_cc%froz_soil == 0) then
+          !! Original SWAT+ behavior: use the original temperature factor only.
+          bio_active = .true.
+          bio_factor = 1.0
+        else
+          !! Enhanced frozen-soil behavior: progressively restrict biological activity.
+          frz_prof = Max(0.0, Min(1.0, soil(j)%frz_state ** bsn_prm%frz_prof_exp))
+          bio_factor = Max(0.0, Min(1.0, 1.0 - frz_prof))
+          bio_active = bio_factor > 1.e-6
+        end if
+
+        if (soil1(j)%mn(k)%nh4 > 0. .and. tf >= 0.001 .and. bio_active) then
           sw25 = 0.
           swwp = 0.
           sw25 = soil(j)%phys(k)%wpmm + 0.25 * soil(j)%phys(k)%fc
@@ -64,8 +78,8 @@
 
           dmidl = (soil(j)%phys(k)%d + xx) / 2.
           dpf = 1. - dmidl / (dmidl + Exp(4.706 - .0305 * dmidl))
-          akn = tf * swf
-          akv = tf * dpf * cecf
+          akn = tf * swf * bio_factor
+          akv = tf * dpf * cecf * bio_factor
           rnv = soil1(j)%mn(k)%nh4 * (1. - Exp(-akn - akv))
           rnit = 1. - Exp(-akn)
           rvol = 1. - Exp(-akv)

@@ -115,9 +115,16 @@
 
       !added by ljzhu for icejam modeling 05/16/2026
       sd_ch(:)%ros = .false.
+      sd_ch(:)%snowpack = 0.
+      sd_ch(:)%snowpack_m3 = 0.
+      sd_ch(:)%snowpack_area_ha = 0.
+      sd_ch(:)%frz_surf_avg = 0.
+      sd_ch(:)%frz_area_frac = 0.
       sd_ch(:)%snow_melt = 0.
       sd_ch(:)%snow_melt_m3 = 0.
       sd_ch(:)%snow_melt_area_ha = 0.
+      sd_ch(:)%ros_water = 0.
+      sd_ch(:)%ros_water_m3 = 0.
       sd_ch(:)%ros_area_ha = 0.
 
 !----------------------------------------------------        

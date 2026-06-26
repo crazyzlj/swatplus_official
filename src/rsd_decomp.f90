@@ -53,6 +53,9 @@
       real :: decr = 0.     !              |
       real :: cdg = 0.      !none          |soil temperature factor
       real :: sut = 0.      !none          |soil water factor
+      real :: frz_surf = 0. !none          |surface frozen-soil restriction factor
+      real :: bio_factor = 1.0 !none       |biological activity factor for surface residue
+      logical :: bio_active = .true. !none |true if surface residue decomposition is allowed
       
       j = ihru
       
@@ -65,8 +68,27 @@
       !! compute surface residue decomp and mineralization of fresh organic n and p of each layer
       do ipl = 1, pcom(j)%npl
         !! use soil layer 1 (10 mm) for temperature and moisture
-        !! mineralization can occur only if temp above 0 deg
-        if (soil(j)%phys(1)%tmp > 0.) then
+        if (bsn_cc%froz_soil == 0) then
+          !! Original SWAT+ frozen-soil behavior:
+          !! surface residue decomposition occurs only when the
+          !! surface soil-layer temperature is above 0 deg C.
+          if (soil(j)%phys(1)%tmp > 0.0) then
+            bio_active = .true.
+            bio_factor = 1.0
+          else
+            bio_active = .false.
+            bio_factor = 0.0
+          end if
+        else
+          !! Enhanced frozen-soil behavior:
+          !! progressively restrict surface residue decay using the
+          !! continuous frozen-soil state.
+          frz_surf = Max(0.0, Min(1.0, soil(j)%frz_state ** bsn_prm%frz_surf_exp))
+          bio_factor = Max(0.0, Min(1.0, 1.0 - frz_surf))
+          bio_active = bio_factor > 1.e-6
+        end if
+
+        if (bio_active) then
           
           !if (j == 1662) then
           !  write(9003,*) "rsd_decomp of plant ", ipl, " for soil layer 1, BEFORE: activeN:", soil1(j)%hact(1)%n, ",no3:",soil1(j)%mn(1)%no3, ", stableP:",soil1(j)%hsta(1)%p,",solP:",soil1(j)%mp(1)%lab
@@ -101,13 +123,17 @@
           xx = cdg * sut
           if (xx < 0.) xx = 0.
           if (xx > 1.e6) xx = 1.e6
-          csf = Sqrt(xx)
+          csf = Sqrt(xx) * bio_factor
           ca = Min(cnrf, cprf, 1.)
           
           !! compute residue decomp and mineralization for each plant
           idp = pcom(j)%plcur(ipl)%idplt
           decr = pldb(idp)%rsdco_pl * ca * csf
-          decr = Max(bsn_prm%decr_min, decr)
+          if (bsn_cc%froz_soil == 0) then
+            decr = Max(bsn_prm%decr_min, decr)
+          else
+            decr = Max(bsn_prm%decr_min * bio_factor, decr)
+          end if
           decr = Min(decr, 1.)
           
           !! apply decay to total carbon pool for both C models
@@ -125,7 +151,7 @@
           !if (j == 1662) then
           !  write(9003,*)  "rsd_decomp of plant ", ipl, " for soil layer 1, AFTER: activeN:", soil1(j)%hact(1)%n, ",no3:",soil1(j)%mn(1)%no3, ", stableP:",soil1(j)%hsta(1)%p,",solP:",soil1(j)%mp(1)%lab
           !endif
-        end if     ! soil temperature > 0.
+        end if     ! bio_active
       end do       ! ipl = 1, pcom(j)%npl
       
       !! update total surface residue

@@ -180,7 +180,8 @@
         real :: chk = 0.        !mm/h       |channel bottom conductivity
         real :: cov = 0.        !0-1        |channel cover factor
         real :: sinu = 0.       !none       |sinuousity - ratio of channel length and straight line length
-        real :: vcr_coef = 0.        !m/m        |critical velocity coefficient
+        real :: vcr_coef = 0.   !m/m        |critical velocity coefficient
+        real :: chdep = 0.      !m          |depth of flow on day
         real :: d50 = 0.
         real :: ch_clay = 0.
         real :: carbon = 0.
@@ -217,6 +218,20 @@
         real :: stor_dis_bf = 0.        !hr         |storage time constant at bankfull
         logical :: ros = .false.        !0/1        |whether rain-on-snow occurs on one of the upstream HRUs 
         real :: snow_melt = 0.          !mm         |snow melt, used for identifying ice jam trigger
+        real :: snow_melt_m3 = 0.       !m3         |snow melt volume
+        real :: snow_melt_area_ha = 0.  !ha         |area of upstream hrus with snow melt
+        real :: area_ha = 0.            !ha         |direct drainage area represented by this channel
+        
+        real :: ros_water = 0.          !mm         |liquid water forcing from ROS and snowpack release
+        real :: ros_water_m3 = 0.       !m3         |volume of ROS liquid water forcing
+        real :: ros_area_ha = 0.        !ha         |area of upstream hrus that have ros occurred
+        real :: snowpack = 0.           !mm         |area-weighted channel-associated snowpack SWE
+        real :: snowpack_peak = 0.      !mm         |max snowpack in the snow year
+        real :: snowpack_ante = 0.      !mm         |antecedent snowpack memory
+        real :: snowpack_m3 = 0.        !m3         |snowpack water-equivalent volume from upstream HRUs
+        real :: snowpack_area_ha = 0.   !ha         |area of upstream HRUs used for snowpack aggregation
+        real :: frz_surf_avg = 0.       !0-1        |area-weighted effective frozen-soil state
+        real :: frz_area_frac = 0.      !frac       |fraction of channel-associated HRU area frozen
         real :: tmp_prx = 0.            !deg C      |parallel physical water temperature
         real :: ice = 0.0               !m3         |ice cover condition state
         real :: ice_jam_stor = 0.0      !m3         |water temporarily stored behind ice jam
@@ -239,6 +254,48 @@
         real :: icejam_qratio = 0.      !none       |raw inflow / bankfull flow
         real :: icejam_qrise = 0.       !none       |relative daily rise in raw inflow
         real :: icejam_susc = 0.        !none       |ice-jam susceptibility
+
+        ! -- Icejam structural-mechanics / hydraulic-retardation states --
+        real :: q_bankfull = 0.0        !m3/s       |bankfull discharge used for ice resistance scaling
+        real :: ice_vol = 0.0           !m3         |solid channel ice volume, water-equivalent
+        real :: ice_integrity = 0.0     !0-1        |slow structural integrity of ice cover/jam
+        real :: ice_integrity_peak = 0.0 !0-1       |seasonal maximum prior ice-cover integrity
+        real :: ice_surface_weak = 0.0   !0-1       |fast thermal/surface weakening of ice cover
+        real :: ice_surface_int = 1.0    !0-1       |fast surface integrity used for daily hydraulics
+        real :: major_jam_factor = 0.0  !0-1        |diagnostic major-release potential
+        integer :: warm_flush_today = 0 !0/1        |warm-flush trigger diagnosed today
+        integer :: warm_flush_timer = 0 !days       |remaining major warm-flush release window
+        integer :: winter_drain_timer = 0 !days       |controlled under-ice drainage memory during stable winter pulses
+        integer :: major_release_today = 0 !0/1     |major jam-break release occurred today
+        integer :: major_release_pending_timer = 0 !days |major-release candidate waiting for stronger hydraulic force
+        integer :: major_bg_timer = 0 !days       |major-release background memory before warm/hydraulic trigger
+        integer :: major_release_done = 0  !0/1        |major release already occurred in current ice season
+        real :: breakup_intensity = 0.0 !0-1        |relative force exceedance at breakup trigger
+        logical :: is_jamming = .false.    !           |dynamic jam buildup state
+        logical :: is_releasing = .false.  !           |dynamic jam release state
+        logical :: ice_season_done = .false. !        |true after seasonal breakup release until next freeze season
+        integer :: jam_timer = 0           !days       |diagnostic counter for current dynamic event
+        integer :: wedge_release_timer = 0 !days       |day counter within current wedge-release episode
+        integer :: release_active_today = 0 !0/1       |whether jam-break wedge release occurred today
+        integer :: jam_active_today = 0     !0/1       |whether a jam existed or formed today
+        integer :: post_release_lock_timer = 0 !days       |days remaining before another jam can form
+        integer :: jam_inactive_days = 0      !days       |consecutive days without valid jam material/transport
+        real :: force_eff = 0.0         !m3/s       |effective hydraulic force on ice
+        real :: resistance = 0.0        !m3/s       |ice structural resistance
+        real :: ice_k_mult = 1.0        !none       |dynamic multiplier on Muskingum K
+        real :: ice_x_current = 0.2     !none       |dynamic Muskingum X used under ice conditions
+        integer :: ice_hydro_active = 0 !0/1        |whether ch_rtmusk should override K/X
+        real :: bankfull_storage = 0.0  !m3         |diagnostic bankfull channel storage
+        real :: ice_excess_storage = 0.0 !m3        |diagnostic storage above bankfull threshold
+        real :: ice_shock_release = 0.0 !m3/day     |explicit storage-busting release volume
+        real :: ice_freeze_water = 0.0  !m3/day     |liquid storage converted to ice today
+        real :: ice_melt_water = 0.0    !m3/day     |ice melted back to channel storage today
+        real :: ice_wedge_stor = 0.0     !m3         |equivalent backwater-wedge storage impounded by ice
+        real :: ice_wedge_capacity = 0.0 !m3         |maximum equivalent backwater-wedge capacity
+        real :: ice_wedge_capture = 0.0  !m3/day     |liquid water captured into wedge storage today
+        real :: ice_wedge_release = 0.0  !m3/day     |liquid water released from wedge storage today
+        real :: ice_wedge_leak = 0.0     !m3/day     |slow drainage from residual wedge storage
+        real :: ice_mobile_in = 0.0       !m3/day     |incoming/captured mobile ice available for local jam material
 
         type (muskingum_parameters) :: msk
         type (floodplain_parameters) :: fp

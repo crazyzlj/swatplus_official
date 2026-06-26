@@ -46,7 +46,8 @@
       chan_volume = ch_stor(chan_id)%flo
 
       !characteristics of channel
-      chan_depth = sd_ch(chan_id)%chd !depth (m) of water in channel
+      !chan_depth = sd_ch(chan_id)%chd !depth (m) of water in channel
+      chan_depth = sd_ch(chan_id)%chdep !depth (m) of water in channel
       chan_width = sd_ch(chan_id)%chw !width (m) of channel
 
       !loop through the cells connected to the channel

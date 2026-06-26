@@ -79,6 +79,13 @@
          real :: covmx = 25.0     !mm H20        |snow water content at full ground cover
          real :: cov50 = 0.5      !none          |frac of covmx at 50% snow cover
          real :: init_mm = 0.     !mm H20        |initial snow water content at start of simulation
+         ! Enhanced parameters used only when bsn_cc%snom = 1
+         real :: tband = 2.0      !deg C         |mixed rain-snow transition width above falltmp; larger value means smoother phase partition
+         real :: liqmx = 0.065    !none          |maximum liquid-water holding fraction of solid SWE; larger value means slower drainage
+         real :: refz = 0.30      !none          |refreezing coefficient relative to melt factor; larger value means stronger nocturnal/cold refreezing
+         real :: rosk = 0.22      !mm/mm         |extra turbulent/latent ROS melt per mm rain at full humid-windy activation
+         real :: pfmax = 0.75     !none          |maximum preferential release fraction of new liquid input; larger value means faster ROS/melt response
+         real :: clrain = 4.0     !mm/day        |daily ROS rain required to relax cold-lock drainage; larger value means less cold-condition release
       end type snow_parameters
       type (snow_parameters), dimension (:), allocatable :: snodb
       
@@ -279,6 +286,9 @@
                                 !!      |modified snow routine with sno_liq by ljzhu 04/28/2026:
                                 !!      | precip_eff includes rainfall bypassing snow cover plus liquid water
                                 !!      | actually released from snowpack; gross snowmelt may be retained/refrozen
+      real :: precip_eff_liq = 0. !!mm  |liquid rainfall that directly reaches the land surface after canopy
+                                  !!    |interception and snow-cover bypass;
+                                  !!    |excluding snowmelt and retained/released snowpack liquid water
       real :: qday = 0.         !! mm   |surface runoff that reaches main channel during day in HRU
       real :: satexq_chan = 0.  !! mm   |saturation excess runoff that reaches main channel during day in HRU
 
