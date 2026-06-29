@@ -3,15 +3,15 @@
 !!    ~ ~ ~ PURPOSE ~ ~ ~
 !!    this subroutine calculates the water exchange volume between the aquifer and the soil profile
 !!    (exchange volumes are used in gwflow_simulate, in groundwater balance equations)
-      
+
       use gwflow_module
       use soil_module, only : soil
       use hydrograph_module, only : ob
       use hru_module, only : gwsoilq
-      
+      use time_module, only : time
+
       implicit none
 
-      external :: sq_crackvol
       integer, intent (in) :: hru_id     !       |hru number
       integer :: k = 0                   !       |counter
       integer :: s = 0                   !       |solute counter
@@ -28,30 +28,34 @@
       real :: layer_fraction = 0.        !       |fraction of saturated soil profile within the layer
       real :: layer_transfer = 0.        !       |amount of water and solute transferred to the soil layer
       real :: hru_area_m2 = 0.           !m2     |surface area of the hru
-      
+      real :: heat_flux = 0.             !J      |total groundwater heat flux transferred to HRU soils
+      real :: soil_volm = 0.             !m3     |volume of soil water in the layer
+      real :: soil_heat = 0.             !J      |heat in the soil water of the layer
 
-      !area of the HRU in m2
-      hru_area_m2 = ob(hru_id)%area_ha * 10000.    
-      
+
+
+			!area of the HRU in m2
+			hru_area_m2 = ob(hru_id)%area_ha * 10000.
+
       !only proceed if gw-->soil exchange is active
       if (gw_soil_flag == 1) then
-      
+
         !HRU soil thickness
         hru_soilz = soil(hru_id)%phys(soil(hru_id)%nly)%d / 1000. !m
-        
+
         !loop through the grid cells connected to the HRU -------------------------------------------------------------
-        hru_Q = 0.
+				hru_Q = 0.
         do k=1,hru_num_cells(hru_id)
-          
+
           !cell in connection with the HRU
           cell_id = hru_cells(hru_id,k)
-        
+
           !only proceed if the cell is active
-          if(gw_state(cell_id)%stat == 1) then 
-          
+          if(gw_state(cell_id)%stat == 1) then
+
             !calculate the current thickness of the vadose zone (m)
             vadose_z = gw_state(cell_id)%elev - gw_state(cell_id)%head !thickness of vadose zone (m)
-            
+
             !if water table is within the soil profile --> calculate groundwater volume (Q) to transfer; then transfer to soil layer
             hru_Q = 0.
             if(vadose_z < hru_soilz) then !water table is within the soil profile
@@ -66,14 +70,16 @@
               if (hru_Q  >= gw_state(cell_id)%stor) then !can only remove what is there
                 hru_Q = gw_state(cell_id)%stor
               endif
-              gw_state(cell_id)%stor = gw_state(cell_id)%stor + (hru_Q*(-1)) !update available groundwater in the cell
-              gw_ss(cell_id)%soil = gw_ss(cell_id)%soil + (hru_Q*(-1)) !negative = leaving the aquifer
-              gw_ss_sum(cell_id)%soil = gw_ss_sum(cell_id)%soil + (hru_Q*(-1))
+
+              !store for water balance calculations (in gwflow_simulate)
+              gw_hyd_ss(cell_id)%soil = gw_hyd_ss(cell_id)%soil + (hru_Q*(-1)) !negative = leaving the aquifer
+              gw_hyd_ss_yr(cell_id)%soil = gw_hyd_ss_yr(cell_id)%soil + (hru_Q*(-1)) !store for annual water
+              gw_hyd_ss_mo(cell_id)%soil = gw_hyd_ss_mo(cell_id)%soil + (hru_Q*(-1)) !store for monthly water
               !if (hru_id == 1662 .and. cell_id == 612) then
               !  write(9003,*) "  hru_Q: ",hru_Q, "gw_ss: ", gw_ss(cell_id)%soil
               !endif
 
-            !solutes
+              !solutes
               if (gw_solute_flag == 1) then
                 !solute mass transferred from aquifer to soil
                 do s=1,gw_nsolute
@@ -91,6 +97,16 @@
                 enddo  
               endif !end solutes
 
+              !heat
+              if(gw_heat_flag == 1) then
+                heat_flux = gwheat_state(cell_id)%temp * gw_rho * gw_cp * hru_Q !J
+                if(heat_flux >= gwheat_state(cell_id)%stor) then
+                  heat_flux = gwheat_state(cell_id)%stor
+                endif
+                gw_heat_ss(cell_id)%soil = gw_heat_ss(cell_id)%soil + (heat_flux*(-1))
+                gw_heat_ss_yr(cell_id)%soil = gw_heat_ss_yr(cell_id)%soil + (heat_flux*(-1))
+              endif
+
               !determine which HRU soil layers are to receive groundwater
               water_depth = 0.
               water_depth_tot = 0.
@@ -107,10 +123,10 @@
                     endif
                   endif
                   water_depth_tot = water_depth_tot + water_depth(jj)
-                endif  
+                endif
               enddo !next soil layer
 
-            !transfer the groundwater and the solute mass to the HRU soil layers
+							!transfer the groundwater and the solute mass to the HRU soil layers
               do jj=1,soil(hru_id)%nly
                 if(water_depth_tot > 0) then
                   layer_fraction = water_depth(jj) / water_depth_tot
@@ -132,15 +148,24 @@
                     !endif
                   enddo
                 endif
-              enddo  
+                if(gw_heat_flag == 1) then
+                  !heat transferred to HRU soil profile
+                  layer_transfer = (heat_flux * layer_fraction) !J
+                  !update temperature in soil layer
+                  soil_volm = (soil(hru_id)%phys(jj)%st/1000.) * hru_area_m2 !m3 of soil water
+                  soil_heat = soil(hru_id)%phys(jj)%tmp * gw_rho * gw_cp * soil_volm !J
+                  soil_heat = soil_heat + layer_transfer
+                  soil(hru_id)%phys(jj)%tmp = soil_heat / (gw_rho * gw_cp * soil_volm)
+                endif
+              enddo
 
             endif !check for water table in soil profile
-                      
+
           endif !check if cell is active
-          
+
         enddo !go to next connected cell
-        
+
       endif !check if gw-->soil transfer is active
-      
+
       return
-      end subroutine gwflow_soil     
+    end subroutine gwflow_soil
