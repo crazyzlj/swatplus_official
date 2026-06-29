@@ -30,7 +30,7 @@ if(NOT TAG)
     # 1) Prefer Git tag information when the repository has tags.
     if(GIT_FOUND)
         execute_process(
-          COMMAND ${GIT_EXECUTABLE} describe --tags
+          COMMAND ${GIT_EXECUTABLE} describe --tags  --exact-match
           WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
           OUTPUT_VARIABLE TAG
           RESULT_VARIABLE TAG_RESULT
