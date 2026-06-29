@@ -33,8 +33,8 @@
         crlag = 0.
         volcrnew = soil(j)%phys(l)%crdep * (soil(j)%phys(l)%fc -      &
                    soil(j)%phys(l)%st) / (soil(j)%phys(l)%fc)
-        !! modify according to soil frozen state
-        volcrnew = volcrnew * (1.0 - soil(j)%frz_state)
+        !! crack volume is a structural capacity controlled by shrink-swell water status;
+        !! frozen-soil hydraulic blockage is applied later to actual crack flow.
         if (soil(j)%sw < .90 * soil(j)%sumfc) then
           if (volcrnew > soil(j)%ly(l)%volcr) then
             crlag = crlagdry
@@ -53,8 +53,8 @@
         !endif
       end do
       
-      !!modify according to soil frozen state
-      voltot = voltot * (1.0 - soil(j)%frz_state)
+      !! do not reduce structural crack volume here; use an effective hydraulic
+      !! crack volume in sq_crackflow and swr_percmacro instead.
       
       return
       end subroutine sq_crackvol

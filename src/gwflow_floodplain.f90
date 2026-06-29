@@ -53,7 +53,8 @@
           if(gw_state(cell_id)%stat.eq.1) then
 
             !characteristics of channel
-            chan_depth = sd_ch(chan_id)%chd !depth (m) of water in channel
+            !chan_depth = sd_ch(chan_id)%chd !depth (m) of water in channel
+            chan_depth = sd_ch(chan_id)%chdep !depth (m) of water in channel
 
             !characteristics of cell
             bed_elev = gw_state(cell_id)%elev

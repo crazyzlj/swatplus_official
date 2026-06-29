@@ -26,15 +26,20 @@
       use basin_module
       use climate_module
       use septic_data_module
+      use hydrograph_module, only : ob,sp_ob,sp_ob1
       use hru_module, only : hru, iseptic, ihru, i_sep, iwgen, albday, isep 
       use soil_module
       use time_module
       use organic_mineral_mass_module
+      use sd_channel_module
       
       implicit none
 
       integer :: j = 0           !none          |HRU number
       integer :: k = 0           !none          |counter
+      integer :: iob = 0         !none          |object number
+      integer :: iru = 0         !none          |routing unit object number
+      integer :: icha = 0        !none          |sequential channel index
       real :: f = 0.             !none          |variable to hold intermediate calculation result
       real :: dp = 0.            !mm            |maximum damping depth
       real :: ww = 0.            !none          |variable to hold intermediate calculation
@@ -50,10 +55,13 @@
       real :: tbare = 0.         !deg C         |temperature of bare soil surface
       real :: tcov = 0.          !deg C         |temperature of soil surface corrected for cover
       real :: tmp_srf = 0.       !deg C         |temperature of soil surface
+      real :: snowpack_swe = 0.  !mm H2O        |solid snow plus retained liquid water
       real :: cover = 0.         !kg/ha         |soil cover
-      real :: t_start = 0.0      !deg C         |max temperature for frozen soil
-      real :: t_end = -2.0       !deg C         |min temperature for frozen soil
-      real :: t_lyr2 = 0.        !deg C         |soil temperature of the second layer
+      real :: t_thaw = 0.        !deg C         |temperature at which frozen-state target is zero
+      real :: t_froz = 0.        !deg C         |temperature at which frozen-state target is one
+      real :: t_lyr2 = 0.        !deg C         |soil temperature used for frozen-state update
+      real :: frz_target = 0.    !none          |instantaneous frozen-state target
+      real :: frz_alpha = 0.
 
       j = ihru
 
@@ -90,10 +98,11 @@
 !! SWAT manual equation 2.3.11
       cover = pl_mass(j)%ab_gr_com%m + pl_mass(j)%rsd_tot%m
       bcv = cover / (cover + Exp(7.563 - 1.297e-4 * cover))
-      if (hru(j)%sno_mm /= 0.) then
-        if (hru(j)%sno_mm <= 120.) then
+      snowpack_swe = hru(j)%sno_mm + hru(j)%sno_liq
+      if (snowpack_swe /= 0.) then
+        if (snowpack_swe <= 120.) then
           xx = 0.
-          xx = hru(j)%sno_mm / (hru(j)%sno_mm + Exp(6.055 - .3002 * hru(j)%sno_mm))
+          xx = snowpack_swe / (snowpack_swe + Exp(6.055 - .3002 * snowpack_swe))
         else
           xx = 1.
         end if
@@ -143,24 +152,74 @@
 
       end do
 
-      t_start = 0.0
-      t_end = -2.0
       if (soil(j)%nly >= 2) then
-          t_lyr2 = soil(j)%phys(2)%tmp
-          if (t_lyr2 >= t_start) then
-            soil(j)%frz_state = 0.0
-          else if (t_lyr2 <= t_end) then
-            soil(j)%frz_state = 1.0
-          else
-            soil(j)%frz_state = (t_start - t_lyr2) / (t_start - t_end)
-          end if
+        t_lyr2 = soil(j)%phys(2)%tmp
       else
-          if (soil(j)%phys(1)%tmp <= 0.0) then
+        t_lyr2 = soil(j)%phys(1)%tmp
+      endif
+
+      if (bsn_cc%froz_soil == 0) then
+          !! Original SWAT+ style: binary frozen condition using 0 deg C
+          if (t_lyr2 <= 0.0) then
               soil(j)%frz_state = 1.0
           else
               soil(j)%frz_state = 0.0
           end if
-      endif
+      else
+          !! Enhanced method: continuous frozen-soil state
+          t_thaw = bsn_prm%frz_t_thaw
+          t_froz = bsn_prm%frz_t_froz
+          if (t_lyr2 >= t_thaw) then
+            frz_target = 0.0
+          else if (t_lyr2 <= t_froz) then
+            frz_target = 1.0
+          else
+            frz_target = (t_thaw - t_lyr2) / (t_thaw - t_froz)
+          end if
+          frz_target = Max(0.0, Min(1.0, frz_target))
+
+          if (frz_target > soil(j)%frz_state) then
+              ! freezing or refreezing
+              if (t_lyr2 <= -1.0) then
+                  frz_alpha = bsn_prm%frz_alpha_fr_cold
+              else
+                  frz_alpha = bsn_prm%frz_alpha_fr_warm
+              end if
+          else
+              ! thawing
+              if (t_lyr2 >= 0.0) then
+                  frz_alpha = bsn_prm%frz_alpha_th_warm
+              else if (t_lyr2 >= -0.5) then
+                  frz_alpha = bsn_prm%frz_alpha_th_cool
+              else
+                  frz_alpha = bsn_prm%frz_alpha_th_cold
+              end if
+          endif
+          soil(j)%frz_state = soil(j)%frz_state + frz_alpha * &
+                  (frz_target - soil(j)%frz_state)
+          soil(j)%frz_state = Max(0.0, Min(1.0, soil(j)%frz_state))
+      end if
+      if (bsn_cc%icejam == 1) then
+          !! Update frozen soil diagnostics for the downstream channel.
+          iob = j + sp_ob1%hru - 1
+          if (ob(iob)%ru_tot > 0) then
+              iru = ob(iob)%ru(1)                     ! lsu number
+              iru = iru + sp_ob1%ru - 1
+              if (ob(iru)%src_tot > 0) then
+                  if (ob(iru)%obtyp_out(1) == 'sdc') then
+                      icha = ob(iru)%obj_out(1)          ! channel object index
+                      icha = icha - sp_ob1%chandeg + 1  ! sequential channel index
+                      if (icha > 0 .and. icha <= size(sd_ch)) then
+                          sd_ch(icha)%frz_surf_avg = sd_ch(icha)%frz_surf_avg + &
+                                  soil(j)%frz_state ** bsn_prm%frz_surf_exp * hru(j)%area_ha
+                          if (soil(j)%frz_state >= 0.5) then
+                              sd_ch(icha)%frz_area_frac = sd_ch(icha)%frz_area_frac + hru(j)%area_ha
+                          endif
+                      endif
+                  endif
+              endif
+          endif
+      end if
       
       return
       end subroutine stmp_solt

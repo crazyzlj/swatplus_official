@@ -34,12 +34,10 @@
       use septic_data_module
       use hru_module, only : hru, ihru, bz_perc, i_sep, isep, latlyr, lyrtile, sepday, sw_excess
       use soil_module
+      use basin_module, only : bsn_cc, bsn_prm
       
       implicit none
-      
-      
-      
-      
+
       external :: layersplit
       integer, intent (in) :: ly1     !none          |soil layer number
       integer :: j = 0                !none          |HRU number
@@ -47,13 +45,22 @@
                                       !              |result
       real :: ratio = 0.              !none          |ratio of seepage to (latq + sepday)
       real :: sol_k_sep = 0.          !              |
+      real :: frz_hyd = 0.            !none          |hydraulic activity remaining under frozen soil
+      real :: frz_prof = 0.           !none          |profile hydraulic frozen state
 
       j = ihru
 
-      !! if temperature of layer is 0 degrees C or below
-      !! there is no water flow
-      if (soil(j)%phys(ly1)%tmp <= 0.) then
+      !! Frozen soil progressively restricts water movement.
+      if (bsn_cc%froz_soil == 0) then
+          frz_hyd = 1.0
+      else
+          frz_prof = Max(0.0, Min(1.0, soil(j)%frz_state)) ** bsn_prm%frz_prof_exp
+          frz_hyd = Max(0.0, Min(1.0, 1.0 - frz_prof))
+      end if
+      if (bsn_cc%froz_soil == 1 .and. frz_hyd <= 1.e-6) then
         sepday = 0.
+        latlyr = 0.
+        lyrtile = 0.
         return
       end if
 
@@ -67,6 +74,7 @@
           latlyr = 0.
         else
           latlyr = hru(j)%hyd%latq_co * ho * soil(j)%phys(ly1)%k * hru(j)%topo%slope / hru(j)%topo%lat_len * .024
+          latlyr = latlyr * frz_hyd
         end if
         
       if (latlyr < 0.) latlyr = 0. 
@@ -93,7 +101,7 @@
 
       !! compute seepage to the next layer
       sepday = (soil(j)%phys(ly1)%st - soil(j)%phys(ly1)%fc) * (1. - Exp(-24. / soil(j)%phys(ly1)%hk))
-      sepday = Max(0., sepday)
+      sepday = Max(0., sepday) * frz_hyd
       
       !! limit maximum seepage from biozone layer below potential perc amount
       if(ly1 == i_sep(j).and.sep(isep)%opt ==1) then

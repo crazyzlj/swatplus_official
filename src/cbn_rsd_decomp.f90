@@ -60,6 +60,10 @@
       real :: sut = 0.      !none          |soil water factor
       real :: nactfr = 0.   !none          |nitrogen active pool fraction. The fraction
                             !              |of organic nitrogen in the active pool. 
+      real :: frz_bio = 0.  !none          |biological activity remaining under frozen soil
+      real :: frz_prof = 0. !none          |profile frozen-soil restriction factor
+      real :: bio_factor = 1.0 !none       |biological activity multiplier
+      logical :: bio_active = .false. !none|true if transformations are allowed
 
       j = ihru
       nactfr = .02
@@ -75,9 +79,29 @@
       !! compute humus mineralization of organic soil pools 
       do k = 1, soil(j)%nly
 
+        if (bsn_cc%froz_soil == 0) then
+          !! Original SWAT+ method:
+          !! mineralization and residue decomposition occur only when
+          !! the soil-layer temperature is above 0 deg C.
+          if (soil(j)%phys(k)%tmp > 0.0) then
+            bio_active = .true.
+            bio_factor = 1.0
+          else
+            bio_active = .false.
+            bio_factor = 0.0
+          end if
+        else
+          !! Enhanced frozen-soil method:
+          !! biological activity is progressively restricted by the
+          !! continuous frozen-soil state.
+          frz_prof = Max(0.0, Min(1.0, soil(j)%frz_state ** bsn_prm%frz_prof_exp))
+          frz_bio = Max(0.0, Min(1.0, 1.0 - frz_prof))
+          bio_factor = frz_bio
+          bio_active = bio_factor > 1.e-6
+        end if
+
         do ipl = 1, pcom(j)%npl
-          !! mineralization can occur only if temp above 0 deg
-          if (soil(j)%phys(k)%tmp > 0.) then
+          if (bio_active) then
             !! compute soil water factor
             sut = .1 + .9 * Sqrt(soil(j)%phys(k)%st / soil(j)%phys(k)%fc)
             sut = Max(.05, sut)
@@ -91,7 +115,7 @@
             xx = cdg * sut
             if (xx < 0.) xx = 0.
             if (xx > 1.e6) xx = 1.e6
-            csf = Sqrt(xx)
+            csf = Sqrt(xx) * bio_factor
 
             !! compute residue decomp and mineralization of 
             !! fresh organic n and p (upper two layers only)
@@ -117,7 +141,11 @@
             
             idp = pcom(j)%plcur(ipl)%idplt 
             decr = pldb(idp)%rsdco_pl * ca * csf
-            decr = Max(bsn_prm%decr_min, decr)
+            if (bsn_cc%froz_soil == 0) then
+              decr = Max(bsn_prm%decr_min, decr)
+            else
+              decr = Max(bsn_prm%decr_min * bio_factor, decr)
+            end if
             decr = Min(decr, 1.)
             decomp = decr * soil1(j)%pl(ipl)%rsd(k)
             soil1(j)%pl(ipl)%rsd(k) = soil1(j)%pl(ipl)%rsd(k) - decomp
@@ -159,7 +187,7 @@
             soil1(j)%str(k)%p = soil1(j)%str(k)%p + rsd_str%p
             soil1(j)%lig(k)%p = soil1(j)%lig(k)%p + lig_frac * rsd_str%p
             
-          end if    ! soil temp > 0
+          end if    ! bio_active
           
         end do      ! ipl = 1, pcom(j)%npl
       end do        ! k = 1, soil(j)%nly

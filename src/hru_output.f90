@@ -53,7 +53,7 @@
         
         hwb_d(j)%sw_final = soil(j)%sw
         hwb_d(j)%sw = (hwb_d(j)%sw_init + hwb_d(j)%sw_final) / 2.
-        hwb_d(j)%sno_final = hru(j)%sno_mm
+        hwb_d(j)%sno_final = hru(j)%sno_mm + hru(j)%sno_liq
         hwb_d(j)%snopack = (hwb_d(j)%sno_init + hwb_d(j)%sno_final) / 2.
              
       !! daily print

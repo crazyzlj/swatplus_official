@@ -67,8 +67,8 @@
            endif ! gw_sinkhole_hruflag(hru_id) == 1 .and. gwholeq(hru_id) > 0.
         enddo !loop sp_ob%hru
         
-        hole_volume = gw_cdut_stor(2824) + gw_cdut_stor(3489) + gw_cdut_stor(3606) + gw_cdut_stor(3730) + gw_cdut_stor(3964)
-        write (9003,*) "before sinkhole, conduit res stor:", hole_volume
+        !hole_volume = gw_cdut_stor(2824) + gw_cdut_stor(3489) + gw_cdut_stor(3606) + gw_cdut_stor(3730) + gw_cdut_stor(3964)
+        !write (9003,*) "before sinkhole, conduit res stor:", hole_volume
         
         do i=1,gw_sinkhole_count
           cell_id = gw_sinkhole_list(i)
@@ -87,8 +87,8 @@
           gw_hyd_ss_mo(cell_id)%hole = gw_hyd_ss_mo(cell_id)%hole + slow_vol !store for monthly water      
         enddo    
         
-        tmp_volume = gw_cdut_stor(2824) + gw_cdut_stor(3489) + gw_cdut_stor(3606) + gw_cdut_stor(3730) + gw_cdut_stor(3964)
-        write (9003,*) "after sinkhole, conduit res stor:", tmp_volume, "delta:", tmp_volume - hole_volume
+        !tmp_volume = gw_cdut_stor(2824) + gw_cdut_stor(3489) + gw_cdut_stor(3606) + gw_cdut_stor(3730) + gw_cdut_stor(3964)
+        !write (9003,*) "after sinkhole, conduit res stor:", tmp_volume, "delta:", tmp_volume - hole_volume
         
       endif !check for LSU-cell connection
       endif !gw_sinkhole_flag == 1

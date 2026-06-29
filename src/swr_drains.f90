@@ -122,11 +122,12 @@
       end do
       if((deep <= 0.001).or.(sum <= 0.001)) then
         sum = 0.
-        deep = 0.001
+        deep = 0.
         do j1=1,soil(j)%nly
           sum = sum + soil(j)%ly(j1)%conk * soil(j)%phys(j1)%thick !Daniel 10/09/07
-          deep = deep + dg   !Daniel 10/09/07
+          deep = deep + soil(j)%phys(j1)%thick
         end do
+        deep = Max(deep, 0.001)
       cone=sum/deep
     else
       cone=sum/deep

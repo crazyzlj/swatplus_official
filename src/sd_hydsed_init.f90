@@ -30,6 +30,7 @@
       integer :: ipath = 0              !none      |counter
       integer :: idat = 0
       integer :: i_dep = 0              !none      |counter
+      integer :: iru = 0
       integer :: icha = 0
       integer :: isalt = 0
       integer :: ics = 0
@@ -77,7 +78,7 @@
         sd_ch(i)%chw = sd_chd(idb)%chw
         sd_ch(i)%chd = sd_chd(idb)%chd
         sd_ch(i)%chs = sd_chd(idb)%chs
-        if (sd_ch(i)%chs < 1.e-9) sd_ch(i)%chs = .000001
+        if (sd_ch(i)%chs < 1.e-6) sd_ch(i)%chs = 1.e-6
         sd_ch(i)%chl = sd_chd(idb)%chl
         sd_ch(i)%chn = sd_chd(idb)%chn
         if (sd_ch(i)%chn < .05) sd_ch(i)%chn = .05
@@ -308,11 +309,34 @@
           enddo
         enddo
       endif
+
+      !initial channel's area, that is the area of all hrus drained into the channel
+      sd_ch(:)%area_ha = 0. !reset to 0. in case of repeatedly invoke this subroutine for initialization.
+      do i=1,sp_ob%hru
+          iob = i + sp_ob1%hru - 1
+          if (ob(iob)%ru_tot > 0) then
+              iru = ob(iob)%ru(1)                     ! lsu number
+              iru = iru + sp_ob1%ru - 1
+              if (ob(iru)%src_tot > 0) then
+                  if (ob(iru)%obtyp_out(1) == 'sdc') then
+                      icha = ob(iru)%obj_out(1)          ! channel object index
+                      icha = icha - sp_ob1%chandeg + 1  ! sequential channel index
+                      if (icha > 0 .and. icha <= size(sd_ch)) then
+                          sd_ch(icha)%area_ha = sd_ch(icha)%area_ha + ob(iob)%area_ha
+                      endif
+                  endif
+              endif
+          endif
+      enddo
       
-      !do ich = 1, sp_ob%chandeg
-      !    write(9003, *) ich, sd_ch(ich)%sinu, ch_rcurv(ich)%elev(1)%flo_rate, ch_rcurv(ich)%elev(2)%flo_rate,  &
-      !    ch_rcurv(ich)%elev(3)%flo_rate, ch_rcurv(ich)%elev(4)%flo_rate
-      !enddo    
+!      do ich = 1, sp_ob%chandeg
+!          write(9003, *) ich, sd_ch(ich)%area_ha, sd_ch(ich)%chl, sd_ch(ich)%chs, sd_ch(ich)%sinu, &
+!                  sd_ch(ich)%chn, sd_ch(ich)%bankfull_flo, sd_ch(ich)%stor_dis_bf, sd_ch(ich)%stor_dis_01bf, &
+!                  sd_ch(ich)%msk%substeps, sd_ch(ich)%msk%c1, sd_ch(ich)%msk%c2, sd_ch(ich)%msk%c3, &
+!                  ch_stor(ich)%flo, fp_stor(ich)%flo, tot_stor(ich)%flo, &
+!                  ch_rcurv(ich)%elev(1)%flo_rate, ch_rcurv(ich)%elev(2)%flo_rate,  &
+!                  ch_rcurv(ich)%elev(3)%flo_rate, ch_rcurv(ich)%elev(4)%flo_rate
+!      enddo
       
       return
       end subroutine sd_hydsed_init

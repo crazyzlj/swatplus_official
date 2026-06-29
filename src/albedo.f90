@@ -14,6 +14,7 @@
       real :: eaj = 0.  !none           |soil cover index      
       integer :: j = 0  ! none          |HRU number
       real :: cover = 0.  !kg/ha          |soil cover
+      real :: snowpack_swe = 0. !mm H2O    |solid snow plus retained liquid water
       
       j = ihru
 
@@ -21,8 +22,9 @@
       cej = -5.e-5
       cover = pl_mass(j)%ab_gr_com%m + pl_mass(j)%rsd_tot%m
       eaj = Exp(cej * (cover + .1))   !! equation 2.2.16 in SWAT manual
-
-      if (hru(j)%sno_mm <= .5) then
+      !total snowpack water equivalent; sno_liq is zero when original snow routine is used
+      snowpack_swe = hru(j)%sno_mm + hru(j)%sno_liq
+      if (snowpack_swe <= .5) then
         !! equation 2.2.14 in SWAT manual
         albday = soil(j)%ly(1)%alb
 

@@ -70,6 +70,14 @@
                                  !! 2 = Use epic tillage method to use if cswat = 2
                                  !! 3 = Use Kemanian tillage method to use if cswat = 2
                                  !! 4 = Use dndc tillage method to use if cswat = 2
+        integer :: snom = 0      !! 0 = SWAT original degree-day method; 1 = improved method considering
+                                 !!     rain-on-snow heat exchange, snowpack liquid-water retention/release,
+                                 !!     and explicit diurnal refreezing in the snowpack
+        integer :: froz_soil = 0 !! 0 = original SWAT+ frozen-soil treatment binary frozen condition
+                                 !! based on soil temperature <= 0 deg C; 1 = enhanced frozen-soil treatment
+                                 !! continuous frozen-state variable soil(j)%frz_state in [0,1],
+                                 !! affects CN, infiltration, percolation, lateral flow,
+                                 !! surface routing, crack flow, and sinkhole/conduit access
         integer :: icejam = 0    !! 0 = ice-jam conceptural model not active; 1 = ice-jam conceptural model active
 
       end type basin_control_codes
@@ -112,6 +120,19 @@
         real :: bact_swf = 0.15     !! frac of manure containing active colony forming units
         real :: tb_adj = 0.         !! adjustment factor for subdaily unit hydrograph basetime
         real :: cn_froz = 0.000862  !! parameter for frozen soil adjustment on infiltraion/runoff
+        real :: frz_t_thaw = 0.2    !! deg C         |soil temperature where enhanced frozen state becomes zero
+        real :: frz_t_froz = -1.5   !! deg C         |soil temperature where enhanced frozen state becomes one
+        real :: frz_alpha_fr_cold = 0.45  !! none    |daily update weight for fast freezing when soil is cold
+        real :: frz_alpha_fr_warm = 0.20  !! none    |daily update weight for slow freezing near 0 deg C
+        real :: frz_alpha_th_warm = 0.50  !! none    |daily update weight for fast thawing above 0 deg C
+        real :: frz_alpha_th_cool = 0.35  !! none    |daily update weight for thawing near 0 deg C
+        real :: frz_alpha_th_cold = 0.20  !! none    |daily update weight for slow thawing below -0.5 deg C
+        real :: frz_surf_exp = 0.7  !! none          |exponent converting frozen state to surface hydraulic blockage
+        real :: frz_cn_exp = 1.2    !! none          |exponent converting frozen state to CN response
+        real :: frz_prof_exp = 1.3  !! none          |exponent converting frozen state to profile hydraulic blockage
+        real :: frz_ovn_min = 0.03  !! none          |minimum overland Manning n under fully frozen surface
+        real :: frz_surlag_max = 24.0 !! days        |maximum surface runoff lag under fully frozen surface
+        real :: sink_frz_block = 0.9  !! none        |sinkhole access blockage fraction under fully frozen surface
         real :: dorm_hr = -1.       !! time threshold used to define dormant (hrs)
         real :: tlag = 0.8          !! lag coefficient for soil temperature
         real :: plaps = 0.          !! mm/km        |precipitation lapse rate: mm per km of elevation difference
