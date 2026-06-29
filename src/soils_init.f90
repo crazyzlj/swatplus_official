@@ -65,6 +65,11 @@
         sol(isol)%s%anion_excl = soildb(isol)%s%anion_excl
         sol(isol)%s%crk = soildb(isol)%s%crk                  
         sol(isol)%s%texture = soildb(isol)%s%texture
+        
+        !The ffc of each soil in sol() has never been assigned, I think bsn_prm%ffcb should be used.
+        !However, this initialization is prior to the calibration of ffcb. 
+        !So, this issue should be fixed in the future. -ljzhu, 04/25/2026
+        sol(isol)%s%ffc = bsn_prm%ffcb
 
         inquire (file="soil_lyr_depths.sol",exist=i_exist)
         if (.not. i_exist) then
@@ -302,6 +307,7 @@
             * sol(isol)%phys(1)%clay-0.003479*sol(isol)%phys(1)%clay ** 2 *         &
             sol(isol)%phys(1)%por - 0.000799 * sol(isol)%phys(1)%sand ** 2 *        & 
             sol(isol)%phys(1)%por)
+        
         soil(ihru) = sol(isol)%s
         nly = soil(ihru)%nly
         allocate (soil(ihru)%ly(nly))

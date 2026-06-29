@@ -54,8 +54,8 @@
       real :: yy = 0.        !           |
       real :: xx = 0.        !           |
       real :: wat = 0.       !mm H2O     |shallow water table depth below the soil surface to up to impervious layer
-      real :: sw_del = 0.    !           |
-      real :: wt_del = 0.    !           |
+      real :: swst_del = 0.  !           |changes of water storage in soil layer
+      real :: wtst_del = 0.  !           |changes of water table depth
       real :: sumqtile = 0.  !           | 
     
       j = ihru
@@ -172,17 +172,18 @@
           end if
         else
           !compute water table depth using Daniel"s modifications
+          swst_del = 0.
+          wtst_del = 0.
           do j1 = 1, soil(j)%nly
-            if (soil(j)%wat_tbl < soil(j)%phys(j1)%d) then
-              sw_del = soil(j)%swpwt - soil(j)%sw
-              wt_del = sw_del * soil(j)%ly(j1)%vwt
-              soil(j)%wat_tbl = soil(j)%wat_tbl + wt_del
-              if(soil(j)%wat_tbl > soil(j)%zmx)  soil(j)%wat_tbl = soil(j)%zmx
-              wt_shall = soil(j)%zmx - soil(j)%wat_tbl
-              soil(j)%swpwt = soil(j)%sw
-              exit
-            end if
+            swst_del = soil(j)%phys(j1)%stpwt - soil(j)%phys(j1)%st
+            wtst_del = swst_del * soil(j)%ly(j1)%vwt
+            soil(j)%wat_tbl = soil(j)%wat_tbl + wtst_del
+            if(soil(j)%wat_tbl < 0.0) soil(j)%wat_tbl = 0.0
+            if(soil(j)%wat_tbl > soil(j)%zmx)  soil(j)%wat_tbl = soil(j)%zmx
+            wt_shall = soil(j)%zmx - soil(j)%wat_tbl
+            soil(j)%phys(j1)%stpwt = soil(j)%phys(j1)%st
           end do
+          soil(j)%swpwt = soil(j)%sw
         end if
         !! drainmod wt_shall equations   10/23/2006
         
