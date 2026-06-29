@@ -17,21 +17,76 @@ project(swatplus VERSION 0.2 LANGUAGES Fortran)
 
 include(CTest)
 
+# Resolve SWAT+ version used in executable names and generated source files.
+# Priority:
+#   1. Git tag information, when available.
+#   2. A manually maintained VERSION file in the project root.
+#   3. The short hash of the latest Git commit.
+# A user-provided -DTAG=... still overrides this auto-detection block.
 if(NOT TAG)
+    set(SWAT_VERSION_SOURCE "unknown")
     find_package(Git QUIET)
+
+    # 1) Prefer Git tag information when the repository has tags.
     if(GIT_FOUND)
         execute_process(
-          COMMAND ${GIT_EXECUTABLE} describe --tags
-          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+          COMMAND ${GIT_EXECUTABLE} describe --tags  --exact-match
+          WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
           OUTPUT_VARIABLE TAG
+          RESULT_VARIABLE TAG_RESULT
           OUTPUT_STRIP_TRAILING_WHITESPACE
           ERROR_QUIET
         )
+
+        if(TAG_RESULT EQUAL 0 AND NOT TAG STREQUAL "")
+            set(SWAT_VERSION_SOURCE "git tag")
+        else()
+            unset(TAG)
+        endif()
     endif()
 
-    if(NOT TAG OR TAG STREQUAL "")
-      set(TAG "unknown")
+    # 2) If no tag is available, read the first non-empty line from VERSION.
+    if(NOT TAG)
+        set(VERSION_FILE "${PROJECT_SOURCE_DIR}/VERSION")
+        if(EXISTS "${VERSION_FILE}")
+            file(STRINGS "${VERSION_FILE}" VERSION_LINES LIMIT_COUNT 1)
+            if(VERSION_LINES)
+                list(GET VERSION_LINES 0 TAG)
+                string(STRIP "${TAG}" TAG)
+            endif()
+
+            if(TAG)
+                set(SWAT_VERSION_SOURCE "VERSION file")
+            else()
+                unset(TAG)
+            endif()
+        endif()
     endif()
+
+    # 3) If neither tags nor VERSION exist, fall back to the latest commit short hash.
+    if(NOT TAG AND GIT_FOUND)
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+            OUTPUT_VARIABLE TAG
+            RESULT_VARIABLE HASH_RESULT
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+
+        if(HASH_RESULT EQUAL 0 AND TAG)
+            set(SWAT_VERSION_SOURCE "git commit")
+        else()
+            unset(TAG)
+        endif()
+    endif()
+
+    if(NOT TAG)
+        set(TAG "unknown")
+        set(SWAT_VERSION_SOURCE "unknown")
+    endif()
+else()
+    set(SWAT_VERSION_SOURCE "manual TAG")
 endif()
 
 # user-configurable optimization level for Release.
@@ -39,6 +94,10 @@ endif()
 set(OPT_LEVEL "O1" CACHE STRING "Optimization level for non-Debug configs: O0, O1, O2, O3")
 set_property(CACHE OPT_LEVEL PROPERTY STRINGS O0 O1 O2 O3)
 string(TOLOWER "${OPT_LEVEL}" OPT_LEVEL_TAG)
+
+# Normalize Linux distribution strings for robust matching.
+string(TOLOWER "${os_id}" os_id_lc)
+string(TOLOWER "${os_like}" os_like_lc)
 
 # define compiler/link option lists
 set(F_COMMON "")
@@ -57,6 +116,10 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
 
     if(WIN32)
         list(APPEND F_COMMON /fpp /free /fpe0 /traceback)
+        if(FFC STREQUAL "ifo")
+            # suppress noisy diagnostics/remarks.
+            list(APPEND F_COMMON /Qdiag-disable:all /Qdiag-disable:remarks)
+        endif()
         list(APPEND F_DEBUG  /warn:all /check:bounds /Od)
         list(APPEND F_NONDEBUG /${OPT_LEVEL})
         list(APPEND F_LINK -static)
@@ -73,30 +136,41 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
     set(FFC "gnu")
-
+    # keep only dialect and semantic/numeric-stability flags in all configurations;
+    # put runtime diagnostic traps in Debug only. This avoids Release crashes caused by
+    # benign FP flags raised inside optimized system math routines.
     list(APPEND F_COMMON
         -cpp
         -fimplicit-none
         -ffree-line-length-none
         -fbacktrace
+        -finit-local-zero
+        -fno-unsafe-math-optimizations
+        -frounding-math
     )
 
     list(APPEND F_DEBUG
         -Wall
         -fcheck=all
-        -ffpe-trap=invalid,zero,overflow
-        -finit-local-zero
+        -ffpe-trap=invalid,zero,overflow,underflow
+        -fsignaling-nans
         -O0
     )
 
     list(APPEND F_NONDEBUG
         -${OPT_LEVEL}
-        -fno-unsafe-math-optimizations
-        -frounding-math
-        -fsignaling-nans
     )
 
-    if(WIN32 OR (UNIX AND NOT APPLE AND NOT ("${os_id}" MATCHES "Arch|fedora" OR "${os_like}" MATCHES "arch")))
+    if(APPLE)
+        # macOS cannot fully statically link libSystem. Static-link the GNU Fortran
+        # runtime libraries to avoid depending on Homebrew gcc dylibs where possible.
+        list(APPEND F_LINK -static-libgfortran -static-libquadmath -static-libgcc)
+    elseif(WIN32 OR (UNIX AND NOT ("${os_id_lc}" STREQUAL "arch" OR
+                                   "${os_like_lc}" MATCHES "arch" OR
+                                   "${os_id_lc}" STREQUAL "fedora" OR
+                                   "${os_like_lc}" MATCHES "fedora")))
+        # Avoid fully static GNU builds on Arch/Fedora-like Linux systems, where
+        # static runtime/library availability is commonly incomplete or discouraged.
         list(APPEND F_LINK -static)
     endif()
 endif()
@@ -222,6 +296,7 @@ message( "-- PROJECT_DIR           ${PROJECT_SOURCE_DIR}")
 message( "-- BINARY_DIR            ${PROJECT_BINARY_DIR}")
 message( "-- Install Prefix        ${CMAKE_INSTALL_PREFIX}")
 message( "-- Executable Base       ${SWATPLUS_EXE_BASE}, rev/tag: ${SWAT_VERSION}")
+message( "-- Version Source        ${SWAT_VERSION_SOURCE}")
 message( "--  Debug Name           ${SWATPLUS_EXE_BASE}-Dbg")
 message( "--  Release Name         ${SWATPLUS_EXE_BASE}-Rel-${OPT_LEVEL_TAG}")
 message( "--  RelWithDebInfo Name  ${SWATPLUS_EXE_BASE}-RelWithDebInfo-${OPT_LEVEL_TAG}")
