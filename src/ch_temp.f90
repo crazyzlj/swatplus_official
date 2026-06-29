@@ -415,9 +415,9 @@
       if (dep_flow > sd_chd(ich)%chd*2) then
           dep_flow = sd_chd(ich)%chd*2
       end if
-
+      
       sd_ch(ich)%chdep = dep_flow !the depth of water is updated on each day
-
+      
       rttime = sd_ch_vel(ich)%rttime / 24   !routing time in days
               
       k_factor = 1000. * 4186. * dep_flow / 86400       ! E: Density*Spec_heat_water*water_depth / time_convers 

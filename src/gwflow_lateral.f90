@@ -1,4 +1,4 @@
-      subroutine gwflow_lateral
+!      subroutine gwflow_lateral
 
 !!    ~ ~ ~ PURPOSE ~ ~ ~
 !!    this subroutine calculates lateral groundwater flow between adjacent cells

@@ -49,6 +49,10 @@
       !chan_depth = sd_ch(chan_id)%chd !depth (m) of water in channel
       chan_depth = sd_ch(chan_id)%chdep !depth (m) of water in channel
       chan_width = sd_ch(chan_id)%chw !width (m) of channel
+      
+      !if (chan_id == 68) then
+      !    write (*,*) "depth", chan_depth, "width", chan_width
+      !endif    
 
       !loop through the cells connected to the channel
       do k=1,gw_chan_info(chan_id)%ncon
